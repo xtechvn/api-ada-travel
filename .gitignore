@@ -1,3 +1,19 @@
 
 /API_CORE/Properties
 /API_CORE/.config
+/API_CORE/bin
+/API_CORE/obj
+/API_PUBLIC/obj
+/DAL/bin
+/API_LOGIN/obj
+/DAL/obj
+/ENTITIES/obj
+/REDIS/bin
+/REDIS/obj
+/REPOSITORIES/bin
+/REPOSITORIES/obj
+/ServiceReceiverMedia/obj
+/Utilities/obj
+/ENTITIES/bin
+/Utilities/bin
+/.vs
