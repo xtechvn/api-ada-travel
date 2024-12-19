@@ -1,0 +1,22 @@
+{
+  "endpoint": "hotel_store/_search?filter_path=hits.hits._source.name,hits.hits._source.street,hits.hits._source.hotelid,hits.hits._source.city,hits.hits._source.state,hits.hits._source.typeofroom,hits.hits._source.hoteltype",
+  "input_query": {
+    "query": {
+      "bool": {
+        "should": [
+          {
+            "match_phrase": {
+              "name": "{keyword}"
+            }
+          },
+          {
+            "match_phrase": {
+              "street": "{keyword}"
+            }
+          }
+        ]
+      }
+    },
+    "_source": [ "name", "street", "hotelid", "city", "state", "typeofroom", "hoteltype" ]
+  }
+}

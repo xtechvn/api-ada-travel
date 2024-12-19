@@ -1,0 +1,243 @@
+﻿<!doctype html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Simple Email</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .btn-default {
+            display: inline-block;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 40px;
+            border-radius: 10px;
+            padding: 0 24px;
+            text-align: center;
+            background: #FF5B00;
+            transition: 0.2s all;
+            border: 1px solid #FF5B00;
+            cursor: pointer;
+        }
+
+            .btn-default.gray {
+                background: #E3EBF3;
+                color: #00264D;
+                border: 1px solid #E3EBF3;
+            }
+
+            .btn-default.full {
+                width: 100%;
+            }
+
+        table td {
+            padding: 6px;
+            vertical-align: top;
+        }
+    </style>
+</head>
+
+<body style="background-color: #f6f6f6; font-family:Arial; -webkit-font-smoothing: antialiased; font-size: 14px;color: #00264D; line-height: 1.4;max-width: 700px; margin: 0 auto; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+    <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">
+        This
+        is preheader text. Some clients will show this text as a preview.
+    </span>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%;">
+        <tr>
+            <td class="container" style="padding: 0;background: #fff url(https://static-image.adavigo.com/uploads/images/email/Mask.png) no-repeat right 0 top 0;">
+                <div class="content" style="margin: 0 auto; max-width: 700px;box-sizing: border-box; display: block; padding: 15px 20px;">
+                    <table role="presentation" border="0" width="100%">
+                        <tr>
+                            <td>
+                                <div style="font-size: 24px">
+                                    <span style="color:#00264D">E-ticket</span> <span style="color:#8C9FB1">/ Vé điện tử</span>
+                                </div>
+                                <div>Departure Flight <span style="color:#8C9FB1">/ Chuyến bay đi</span></div>
+                            </td>
+                            <td style="text-align: right;"><img width="100" alt="" src="https://static-image.adavigo.com/uploads/images/email/logo.png"></td>
+                        </tr>
+                    </table>
+                    </br>
+                    <table role="presentation" border="0" style="width: 100% !important;">
+                        <tr>
+                            <td>
+                                <div style="margin-bottom: 6px !important">
+                                    <span style="
+                                        display: inline-block !important;
+                                        background: #F73B2F !important;
+                                        width: 12px !important;
+                                        height: 12px !important;
+                                        border-radius: 50% !important;
+                                        float: left !important;
+                                        margin: 3px 8px 0 0 !important;
+                                        "></span> <strong>Chiều đi: {{timeGo}}</strong>
+                                </div>
+                                <div style="background: #F1F5F9;border-radius: 8px;padding: 8px 10px;margin-bottom: 8px">
+                                    <!--<img alt="" src="https://static-image.adavigo.com/uploads/images/email/bamboo.png" style="float: left;">-->
+                                    <img alt="" src="{{logoAirlineGo}}" style="float: left; height: 24px; max-width: 50px; max-height: 40px; ">
+                                    <span style="margin-left:6px">{{planeName}}</span><!--Bamboo Airways-->
+                                    <span style="margin-left:6px;color: #698096">Chuyến bay</span>
+                                    <strong style="margin-left:6px;color:#FF5B00">{{planeCode}}</strong><!--VJ446-->
+                                    <span style="margin-left:6px">{{ticketClass}} ( PROMO )</span><!--Subclass A -->
+                                </div>
+                                <table role="presentation" border="0" style="width: 100% !important;">
+                                    <tr>
+                                        <td style="width: 35% !important;">
+                                            <div><strong style="font-size: 20px">{{fromTime}}</strong></div><!--10:40-->
+                                            <div><strong>{{fromAirplaneGo}}</strong> / {{fromAirplaneNameGo}}</div><!--<strong>Hanoi (HAN)</strong> / Hà Nội-->
+                                            <div>{{fromAirplaneNameEnGo}}</div><!--Noibai International Airport - Terminal 1-->
+                                            <div style="color: #698096;font-size:12px">{{fromAirplaneDetailGo}}</div><!--Sân bay Nội Bài - Nhà ga 1-->
+                                        </td>
+                                        <td style="width: 18% !important; vertical-align: middle;"><img alt="" src="https://static-image.adavigo.com/uploads/images/email/fly.png" style="width: 100px"></td>
+                                        <td style="width: 40% !important;">
+                                            <div><strong style="font-size: 20px">{{fromTimeBack}}</strong></div>
+                                            <div><strong>{{fromAirplaneBack}}</strong> / {{fromAirplaneNameBack}}</div>
+                                            <div>{{fromAirplaneNameEnBack}}</div>
+                                            <div style="color: #698096;font-size:12px">{{fromAirplaneDetailBack}}</div>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div style="margin-bottom: 6px; {{displayBack}}">
+                                    <span style="
+                                        display: inline-block !important;
+                                        background: #F73B2F !important;
+                                        width: 12px !important;
+                                        height: 12px !important;
+                                        border-radius: 50% !important;
+                                        float: left !important;
+                                        margin: 3px 8px 0 0 !important;
+                                        "></span> <strong>Chiều về: {{timeBack}}</strong>
+                                </div>
+
+                                <div style="background: #F1F5F9;border-radius: 8px;padding: 8px 10px;margin-bottom: 8px; {{displayBack}}"> 
+                                    <!--<img alt="" src="https://static-image.adavigo.com/uploads/images/email/bamboo.png" style="float: left;">-->
+                                    <img alt="" src="{{logoAirlineBack}}" style="float: left; height: 24px; max-width: 50px; max-height: 40px; ">
+                                    <span style="margin-left:6px">{{planeNameBack}}</span><!--Bamboo Airways-->
+                                    <span style="margin-left:6px;color: #698096">Chuyến bay</span>
+                                    <strong style="margin-left:6px;color:#FF5B00">{{planeCodeBack}}</strong><!--VJ446-->
+                                    <span style="margin-left:6px">{{ticketClassBack}} ( PROMO )</span><!--Subclass A -->
+                                </div>
+                                <div style="{{displayBack}}">
+                                    <table role="presentation" border="0" style="width: 100% !important; {{displayBack}}">
+                                        <tr>
+                                            <td style="width: 35% !important;">
+                                                <div><strong style="font-size: 20px">{{fromTimeBackFrom}}</strong></div><!--10:40-->
+                                                <div><strong>{{fromAirplaneBack1}}</strong> / {{fromAirplaneNameBack1}}</div><!--<strong>Hanoi (HAN)</strong> / Hà Nội-->
+                                                <div>{{fromAirplaneNameEnBack1}}</div><!--Noibai International Airport - Terminal 1-->
+                                                <div style="color: #698096;font-size:12px">{{fromAirplaneDetailBack1}}</div><!--Sân bay Nội Bài - Nhà ga 1-->
+                                            </td>
+                                            <td style="width: 18% !important; vertical-align: middle;"><img alt="" src="https://static-image.adavigo.com/uploads/images/email/fly.png" style="width: 100px"></td>
+                                            <td style="width: 40% !important;">
+                                                <div><strong style="font-size: 20px">{{fromTimeBackTo}}</strong></div>
+                                                <div><strong>{{fromAirplaneBack2}}</strong> / {{fromAirplaneNameBack2}}</div>
+                                                <div>{{fromAirplaneNameEnBack2}}</div>
+                                                <div style="color: #698096;font-size:12px">{{fromAirplaneDetailBack2}}</div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="border-left:1px solid #E3EBF3;padding-left:10px">
+                                    <!--<div>Mã đơn hàng</div>-->
+                                    <div style="color: #698096;">Mã đơn hàng</div>
+                                    <div><strong>{{orderNo}}</strong></div><!--690821082-->
+                                    <div style="margin-bottom:10px"></div>
+                                    <div>Airline Booking Code (PNR)</div>
+                                    <div style="color: #698096;">Mã đặt chỗ</div>
+                                    <div><strong>{{bookingCode}}</strong></div><!--690821082-->
+                                    <span style="display: inline-block;background: #E3EBF3;
+                                        border-radius: 36px;padding:3px 10px;font-size: 10px;color: #698096;">Không hoàn tiền</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    </br>
+                    <div style="padding: 0 6px">
+                        <div style="border-top:3px solid #E3EBF3;margin-bottom:10px"></div>
+                    </div>
+                    <table role="presentation" border="0" width="100%">
+                        <tr style="color: #698096;">
+                            <td>
+                                <img alt="" src="https://static-image.adavigo.com/uploads/images/email/img1.png" style="float: left;margin: 3px 8px 0 0;">
+                                Trình CMND/hộ chiếu và vé khi làm thủ tục bay
+                            </td>
+                            <td>
+                                <img alt="" src="https://static-image.adavigo.com/uploads/images/email/img2.png" style="float: left;margin: 3px 8px 0 0;">
+                                Làm thủ tục ít nhất <strong>90 phút</strong> trước giờ khởi hành
+                            </td>
+                            <td>
+                                <img alt="" src="https://static-image.adavigo.com/uploads/images/email/img3.png" style="float: left;margin: 3px 8px 0 0;">
+                                Giờ hiển thị trên vé là giờ sân bay địa phương
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="padding: 0 6px">
+                        <div style="border-top:1px solid #E3EBF3;margin-top:10px;margin-bottom:2px"></div>
+                    </div>
+                    </br>
+                    <table role="presentation" border="0" width="100%">
+                        <tr>
+                            <td>
+                                No.
+                                <div style="color: #698096;font-size: 12px">Số</div>
+                            </td>
+                            <td>
+                                Passenger(s)
+                                <div style="color: #698096;font-size: 12px">Tên hành khách</div>
+                            </td>
+                            <td>
+                                Route
+                                <div style="color: #698096;font-size: 12px">Chặng</div>
+                            </td>
+                            <td>
+                                Flight Facilities
+                                <div style="color: #698096;font-size: 12px">Tiện nghi chuyến bay</div>
+                            </td>
+                        </tr>
+                        {{passengerList}}
+                        <!--<tr>
+                            <td>1</td>
+                            <td><strong>Cô THI HANG NGA DAO</strong> (Người lớn)</td>
+                            <td>
+                                <span style="display: inline-block;background: #E3EBF3;
+                                        border-radius: 36px;padding:3px 10px;font-size: 12px;color: #698096;">HAN - PQC</span>
+                            </td>
+                            <td>
+                                <img alt="" src="https://static-image.adavigo.com/uploads/images/email/vali.png" style="float: left;margin: 2px 4px 0 0;">20 kg
+                            </td>
+                        </tr>-->
+                    </table>
+                    <div style="padding: 0 6px">
+                        <div style="border-top:3px solid #E3EBF3;margin-top:100px;margin-bottom:7px"></div>
+                    </div>
+                    <table role="presentation" border="0" width="100%">
+                        <tr>
+                            <td>
+                                <div style="color: #698096;">NẾU CÓ BẤT KỲ CÂU HỎI NÀO, VUI LÒNG LIÊN HỆ HOTLINE</div>
+                                <div><strong>0936 191 192</strong></div>
+                            </td>
+                            <td>
+                                <div style="color: #698096;">Mã đặt chỗ</div>
+                                <div><strong>{{bookingCode}}</strong></div><!--690821082-->
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+            </td>
+
+        </tr>
+    </table>
+</body>
+
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>
+</title>
+    <style>
+        .ListQr {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            height: 100vh;
+            width:600px;
+        }
+    
+        .ticket {
+            width: auto;
+            height: 100vh;
+        }
+    
+        .qr {
+            position: absolute;
+            top: 15.3vh;
+            left: 6.3%;
+            transform: translateX(-50%);
+            height: 19.4vh;
+        }
+          
+        .serviceNameTxt{
+            position: absolute;
+            top: 45.3vh;
+            left: 6.3%;
+            transform: translateX(-50%);
+            height: 19.4vh;
+            font-size: 2.0vh;
+            text-align: center;
+            max-width: 40vh;
+        }
+
+        .cardText{
+            position: absolute;
+            top: 34.3vh;
+            left: 6.3%;
+            transform: translateX(-50%);
+            height: 19.4vh;
+            font-size: 3.0vh;
+            text-align: center;
+        }
+
+        .tkText {
+            position: absolute;
+            top: 51.3vh;
+            left: 6.3%;
+            transform: translateX(-50%);
+            height: 19.4vh;
+            font-size: 4.0vh;
+            text-align: center;
+        }
+
+        .tkTextUsingDate {
+            position: absolute;
+            top: 56.3vh;
+            left: 6.3%;
+            transform: translateX(-50%);
+            height: 19.4vh;
+            font-size: 2.0vh;
+            text-align: center;
+        }
+    </style>
+</head>
+    
+<body>
+    <div class="ListQr">
+        <img class="ticket" src="{ticket}">
+        <img class="qr" src="{qr}">
+        <div class="cardText">{cardText}</div>
+        <div class="serviceNameTxt">{serviceNameTxt}</div>
+        <div class="tkText">{tkText}</div>
+        <div class="tkTextUsingDate">{tkTextUsingDate}</div>
+    </div>
+</body></html>
