@@ -240,7 +240,7 @@ namespace API_CORE.Controllers.VOUCHER
                        
                 };
                 var data_product = JsonConvert.SerializeObject(j_param);
-               // token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                // token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
                 #endregion
 
 
@@ -259,7 +259,7 @@ namespace API_CORE.Controllers.VOUCHER
 
                     long account_client_id = Convert.ToInt64(objParr[0]["user_id"].ToString()); // thông tin user_id login ngoài hệ thống b2c
                     string service_id = objParr[0]["service_id"].ToString(); //hotel id được áp mã
-                    
+
                     double total_order_amount_before = Convert.ToDouble(objParr[0]["total_order_amount_before"].ToString()); // tổng giá trị đơn hàng trước giảm
                     double total_order_amount_after = 0; // tổng giá trị đơn hàng sau giảm
                     double total_discount = 0; // Số tiền được giảm
@@ -269,7 +269,7 @@ namespace API_CORE.Controllers.VOUCHER
 
                     #region VALIDATION
 
-                    
+
 
                     ////1. Check hợp lệ
                     if (voucher_name.Length < 3 /*&& email_user_current.IndexOf("@") == -1*/)
@@ -279,7 +279,7 @@ namespace API_CORE.Controllers.VOUCHER
 
                     //2. Check null
                     var voucher = await voucherRepository.getDetailVoucher(voucher_name);
-                    if (voucher==null || voucher.Id<=0)
+                    if (voucher == null || voucher.Id <= 0)
                     {
                         return Ok(new { status = (int)ResponseType.FAILED, msg = "Mã " + voucher_name + " không hợp lệ. Vui lòng liên hệ với bộ phận CSKH để được hỗ trợ" });
                     }
@@ -416,9 +416,9 @@ namespace API_CORE.Controllers.VOUCHER
                         total_order_amount_before = total_order_amount_before,
                         discount = Math.Round(total_discount),
                         total_order_amount_after = total_order_amount_after,
-                        value= Convert.ToDouble(voucher.PriceSales),
-                        type=voucher.Unit
-                        
+                        value = Convert.ToDouble(voucher.PriceSales),
+                        type = voucher.Unit
+
                     });
                 }
             }
@@ -427,6 +427,58 @@ namespace API_CORE.Controllers.VOUCHER
                 LogHelper.InsertLogTelegram("[API] VoucherController - ApplyVoucher ex =  " + ex.ToString() + " token=" + token.ToString());
                 return Ok(new { status = (int)ResponseType.ERROR, msg = "Token invalid !!!" });
             }
+        }
+        [HttpPost("b2b/get-list")]
+        public async Task<IActionResult> GetListVoucherB2B(string token)
+        {
+            JArray objParr = null;
+            
+            try
+            {
+                #region Giả lập test
+                var j_param = new Dictionary<string, string>
+                {
+                        {"hotel_id", ""}, // mã voucher: truyền động từ fe
+                        {"user_id","173" }, // user_id login ngoài hệ thống b2b
+                };
+                var data_product = JsonConvert.SerializeObject(j_param);
+               //  token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                #endregion
+
+
+                if (!CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
+                {
+                    LogHelper.InsertLogTelegram("[API] VoucherController - GetListVoucherB2B Token invalid!!! => token= " + token.ToString() + " voucher name = " + objParr.ToString());
+                    return Ok(new { status = (int)ResponseType.FAILED, msg = "Token invalid !!!" });
+                }
+                else
+                {
+                    long account_client_id = Convert.ToInt64(objParr[0]["user_id"].ToString()); // thông tin user_id login ngoài hệ thống b2c
+                    string hotel_id = objParr[0]["hotel_id"].ToString(); // tên voucher
+                    if (hotel_id ==null || hotel_id.Trim()=="" || account_client_id<=0)
+                    {
+                        return Ok(new { status = (int)ResponseType.FAILED, msg = "Dữ liệu gửi lên không chính xác, vui lòng thử lại" });
+                    }
+                    var list = await voucherRepository.GetVoucherList(0, hotel_id);
+                    if (list != null && list.Count > 0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "success",
+                            data = list
+                        });
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("[API] VoucherController - ApplyVoucher ex =  " + ex.ToString() + " token=" + token.ToString());
+                return Ok(new { status = (int)ResponseType.ERROR, msg = "Token invalid !!!" });
+            }
+            return Ok(new { status = (int)ResponseType.FAILED, msg = "Không tìm thấy dữ liệu" });
+
         }
     }
 }

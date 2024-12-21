@@ -4,14 +4,23 @@ using ENTITIES.Models;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Utilities;
+using System.Data;
+using System.Data.SqlClient;
+using DAL.StoreProcedure;
+using Utilities.Contants;
 
 namespace DAL
 {
     public class VoucherDAL : GenericService<Voucher>
     {
+        private static DbWorker _DbWorker;
+
         public VoucherDAL(string connection) : base(connection)
         {
+            _DbWorker = new DbWorker(connection);
+
         }
+
 
         public async Task<Voucher> FindByVoucherCode(string voucherCode)
         {
@@ -65,14 +74,41 @@ namespace DAL
             {
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
-                    
-                     var Voucher= await _DbContext.Voucher.FirstOrDefaultAsync(s => s.Id == voucherId);
+
+                    var Voucher = await _DbContext.Voucher.FirstOrDefaultAsync(s => s.Id == voucherId);
                     return Voucher.Code;
                 }
             }
             catch (Exception ex)
             {
                 LogHelper.InsertLogTelegram("FindByVoucherCode - VoucherDAL: " + ex.ToString());
+                return null;
+            }
+        }
+        public async Task<DataTable> GetVoucherList(long account_client_id, string hotel_id)
+        {
+            try
+            {
+
+                SqlParameter[] input = new SqlParameter[]
+                {
+                    new SqlParameter("@HotelId", hotel_id.ToString()),
+                    new SqlParameter("@AccountClientId", account_client_id.ToString()),
+
+                };
+                if(hotel_id==null || hotel_id.Trim() == "")
+                {
+                    input[0] = new SqlParameter("@HotelId", DBNull.Value);
+                }
+                if (account_client_id<=0)
+                {
+                    input[1] = new SqlParameter("@AccountClientId", DBNull.Value);
+                }
+                return _DbWorker.GetDataTable(StoreProceduresName.GetListVoucher, input);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetContractPayByOrderId - ContractPayDAL. " + ex);
                 return null;
             }
         }

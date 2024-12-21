@@ -1,9 +1,12 @@
 ﻿using DAL;
 using Entities.ConfigModels;
 using ENTITIES.Models;
+using ENTITIES.ViewModels.Voucher;
 using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using Utilities;
 
@@ -43,6 +46,24 @@ namespace REPOSITORIES.Repositories
                 LogHelper.InsertLogTelegram("getDetailVoucherbyId - VoucherRepository" + ex);
                 return null;
             }
+        }
+        public async Task<List<VoucherFEModel>> GetVoucherList(long account_client_id, string hotel_id)
+        {
+            try
+            {
+
+                DataTable data = await _VoucherDAL.GetVoucherList(account_client_id, hotel_id);
+                var listData = data.ToList<VoucherFEModel>();
+                if (listData.Count > 0)
+                {
+                    return listData;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetContractPayByOrderId - ContractPayDAL. " + ex);
+            }
+            return null;
         }
     }
 }
