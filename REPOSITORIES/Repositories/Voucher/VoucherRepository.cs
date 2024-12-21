@@ -3,6 +3,7 @@ using Entities.ConfigModels;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Voucher;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using REPOSITORIES.IRepositories;
 using System;
 using System.Collections.Generic;
@@ -53,10 +54,11 @@ namespace REPOSITORIES.Repositories
             {
 
                 DataTable data = await _VoucherDAL.GetVoucherList(account_client_id, hotel_id);
-                var listData = data.ToList<VoucherFEModel>();
+                var listData = data.ToList<dynamic>();
+                string json = JsonConvert.SerializeObject(listData);
                 if (listData.Count > 0)
                 {
-                    return listData;
+                    return JsonConvert.DeserializeObject<List<VoucherFEModel>>(JsonConvert.SerializeObject(listData));
                 }
             }
             catch (Exception ex)
