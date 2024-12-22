@@ -54,12 +54,8 @@ namespace REPOSITORIES.Repositories
             {
 
                 DataTable data = await _VoucherDAL.GetVoucherList(account_client_id, hotel_id);
-                var listData = data.ToList<dynamic>();
-                string json = JsonConvert.SerializeObject(listData);
-                if (listData.Count > 0)
-                {
-                    return JsonConvert.DeserializeObject<List<VoucherFEModel>>(JsonConvert.SerializeObject(listData));
-                }
+                return data.ToList<VoucherFEModel>();
+              
             }
             catch (Exception ex)
             {

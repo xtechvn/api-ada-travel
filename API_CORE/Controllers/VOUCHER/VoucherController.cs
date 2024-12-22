@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using Caching.RedisWorker;
+using ENTITIES.Models;
+using ENTITIES.ViewModels.Hotel;
+using ENTITIES.ViewModels.Voucher;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Nest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using REPOSITORIES.IRepositories;
@@ -21,12 +26,15 @@ namespace API_CORE.Controllers.VOUCHER
         private readonly IVoucherRepository voucherRepository;
         private readonly IOrderRepository orderRepository;
         private readonly IAccountRepository userRepository;
-        public VoucherController(IConfiguration _Configuration, IVoucherRepository _VoucherRepository, IOrderRepository _orderRepository, IAccountRepository _userRepository)
+        private readonly RedisConn redisService;
+
+        public VoucherController(IConfiguration _Configuration, IVoucherRepository _VoucherRepository, IOrderRepository _orderRepository, IAccountRepository _userRepository, RedisConn _redisService)
         {
             configuration = _Configuration;
             voucherRepository = _VoucherRepository;
             orderRepository = _orderRepository;
             userRepository = _userRepository;
+            redisService=_redisService;
         }
 
         /// <summary>
@@ -459,14 +467,29 @@ namespace API_CORE.Controllers.VOUCHER
                     {
                         return Ok(new { status = (int)ResponseType.FAILED, msg = "Dữ liệu gửi lên không chính xác, vui lòng thử lại" });
                     }
-                    var list = await voucherRepository.GetVoucherList(0, hotel_id);
-                    if (list != null && list.Count > 0)
+                    // -- Read from Cache:
+                    string cache_name = CacheName.B2B_HOTEL_VOUCHER + hotel_id + account_client_id;
+                    var str = redisService.Get(cache_name, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+                    if (str != null && str.Trim() != "")
                     {
+                        List<VoucherFEModel> list = JsonConvert.DeserializeObject<List<VoucherFEModel>>(str);
                         return Ok(new
                         {
                             status = (int)ResponseType.SUCCESS,
                             msg = "success",
                             data = list
+                        });
+                    }
+                    var data = await voucherRepository.GetVoucherList(0, hotel_id);
+                    if (data != null && data.Count > 0)
+                    {
+                        int db_index = Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"].ToString());
+                        redisService.Set(cache_name, JsonConvert.SerializeObject(data), DateTime.Now.AddMinutes(15), db_index);
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "success",
+                            data = data
                         });
                     }
 
