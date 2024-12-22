@@ -8,24 +8,21 @@ namespace ENTITIES.ViewModels.Voucher
     public class VoucherFEModel
     {
         public int Id { get; set; }
-        public string Code { get; set; }
-        public DateTime? Cdate { get; set; }
-        public DateTime? Udate { get; set; }
-        public DateTime? EDate { get; set; }
-        public int LimitUse { get; set; }
-        public decimal? PriceSales { get; set; }
-        public string Unit { get; set; }
-        public int? RuleType { get; set; }
-        public string GroupUserPriority { get; set; }
+        public string code { get; set; }
+        public DateTime? cdate { get; set; }
+        public DateTime? udate { get; set; }
+        public DateTime? eDate { get; set; }
+        public int limitUse { get; set; }
+        public decimal? price_sales { get; set; }
+        public string unit { get; set; }
+        public int? rule_type { get; set; }
         public bool? IsPublic { get; set; }
-        public string Description { get; set; }
-        public bool? IsLimitVoucher { get; set; }
-        public double? LimitTotalDiscount { get; set; }
-        public string StoreApply { get; set; }
-        public bool? IsMaxPriceProduct { get; set; }
+        public string description { get; set; }
+        public bool? is_limit_voucher { get; set; }
+        public double? limit_total_discount { get; set; }
         public double? MinTotalAmount { get; set; }
-        public int? CampaignId { get; set; }
-        public short? ProjectType { get; set; }
+        public int? campaign_id { get; set; }
+        public short? project_type { get; set; }
         public int TotalRow { get; set; }
     }
 }
