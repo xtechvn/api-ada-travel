@@ -206,6 +206,18 @@ namespace API_CORE.Controllers
                                     }
                                 }
                                 break;
+                            case 3:
+                                {
+                                    var hotel = await hotelDetailRepository.GetByType(true);
+                                    if (hotel != null && hotel.Count > 0)
+                                    {
+                                        hotel = hotel.Where(x => x.State != null && x.State.Trim() != "" && CommonHelper.RemoveUnicode(x.State).ToLower().Contains(CommonHelper.RemoveUnicode(hotelName).ToLower())).ToList();
+                                        list_vin_hotel_hotel_id = hotel.Select(x => x.HotelId).ToList();
+                                        list_vin_hotel_id = hotel.Select(x => x.Id.ToString()).ToList();
+
+                                    }
+                                }
+                                break;
                         }
 
                         hotelID = JsonConvert.SerializeObject(list_vin_hotel_hotel_id);

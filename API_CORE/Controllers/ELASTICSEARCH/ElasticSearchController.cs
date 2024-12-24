@@ -3,6 +3,7 @@ using Caching.Elasticsearch;
 using Caching.RedisWorker;
 using ENTITIES.ViewModels.ElasticSearch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -105,8 +106,9 @@ namespace API_CORE.Controllers.ELASTICSEARCH
                     //    });
                     //}
                     var hotel_list = await _hotelESRepository.GetListProduct(txtsearch, search_type=="1"?true:false);
-                    var province_list = await _hotelESRepository.GetListAddress(txtsearch, search_type=="1"?true:false);
-                    var data = province_list.Where(x => x.city != null && x.city.Trim() != "" && CommonHelper.RemoveUnicode(x.city).ToLower().Contains(CommonHelper.RemoveUnicode(txtsearch).ToLower())).GroupBy(x => x.city).Select(x => x.First()).Select(x => new
+                    var city_list = await _hotelESRepository.GetListCity(txtsearch, search_type=="1"?true:false);
+
+                    var data = city_list.Select(x => new
                     {
                         x.city,
                         imagethumb = "",
@@ -123,6 +125,7 @@ namespace API_CORE.Controllers.ELASTICSEARCH
                         product_type = 2
 
                     }).ToList();
+                 
                     data.AddRange(hotel_list.Select(x => new
                     {
                         x.city,

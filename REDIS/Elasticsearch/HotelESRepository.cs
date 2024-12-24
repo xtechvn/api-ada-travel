@@ -64,7 +64,7 @@ namespace Caching.Elasticsearch
             }
 
         }
-        public async Task<List<HotelESViewModel>> GetListAddress(string txtsearch, bool isvinhotel, string index_name = "hotel_store", string Type = "product")
+        public async Task<List<HotelESViewModel>> GetListCity(string txtsearch, bool isvinhotel, string index_name = "hotel_store", string Type = "product")
         {
             List<HotelESViewModel> result = new List<HotelESViewModel>();
             try
@@ -87,6 +87,10 @@ namespace Caching.Elasticsearch
                                      sh => sh.QueryString(m => m
                                      .DefaultField(f => f.street)
                                      .Query("*" + txtsearch + "*"))
+                                     ,
+                                     sh => sh.QueryString(m => m
+                                     .DefaultField(f => f.city)
+                                     .Query("*" + txtsearch + "*"))
 
                                  )
                              )
@@ -107,6 +111,66 @@ namespace Caching.Elasticsearch
                 {
                     result = search_response.Documents as List<HotelESViewModel>;
                     result = result.GroupBy(x => new { x.street, x.state, x.city }).Select(x => x.First()).ToList();
+                    result = result.Where(x => x.city != null && x.city.Trim() != "").GroupBy(x => x.city.Trim()).Select(x => x.First()).ToList();
+                    result = result.Where(x => CommonHelper.RemoveUnicode(x.city).ToLower().Contains(CommonHelper.RemoveUnicode(txtsearch).ToLower())).ToList();
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+        }
+        public async Task<List<HotelESViewModel>> GetListState(string txtsearch, bool isvinhotel, string index_name = "hotel_store", string Type = "product")
+        {
+            List<HotelESViewModel> result = new List<HotelESViewModel>();
+            try
+            {
+                int top = 4000;
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(Type);
+                var elasticClient = new ElasticClient(connectionSettings);
+                if (txtsearch == null) txtsearch = "";
+                ISearchResponse<HotelESViewModel> search_response;
+                search_response = elasticClient.Search<HotelESViewModel>(s => s
+                           .Index(index_name)
+                           .Query(q =>
+                             q.Bool(
+                                 qb => qb.Should(
+                                     sh => sh.QueryString(m => m
+                                     .DefaultField(f => f.name)
+                                     .Query("*" + txtsearch + "*")),
+                                     sh => sh.QueryString(m => m
+                                     .DefaultField(f => f.street)
+                                     .Query("*" + txtsearch + "*"))
+                                       ,
+                                     sh => sh.QueryString(m => m
+                                     .DefaultField(f => f.state)
+                                     .Query("*" + txtsearch + "*"))
+
+                                 )
+                             )
+                             ).Source(sf => sf
+                            .Includes(i => i
+                                .Fields(
+                                    f => f.city,
+                                    f => f.state,
+                                    f => f.street
+                                )
+                            ))
+                           );
+                if (!search_response.IsValid)
+                {
+                    return result;
+                }
+                else
+                {
+                    result = search_response.Documents as List<HotelESViewModel>;
+                    result = result.GroupBy(x => new { x.street, x.state, x.city }).Select(x => x.First()).ToList();
+                    result = result.Where(x => x.state != null && x.state.Trim() != "").GroupBy(x => x.state.Trim()).Select(x => x.First()).ToList();
+                    result = result.Where(x => CommonHelper.RemoveUnicode(x.city).ToLower().Contains(CommonHelper.RemoveUnicode(txtsearch).ToLower())).ToList();
                     return result;
                 }
             }

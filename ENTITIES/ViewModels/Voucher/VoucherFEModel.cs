@@ -15,6 +15,7 @@ namespace ENTITIES.ViewModels.Voucher
         public int limitUse { get; set; }
         public decimal? price_sales { get; set; }
         public string unit { get; set; }
+        public string store_apply { get; set; }
         public int? rule_type { get; set; }
         public bool? IsPublic { get; set; }
         public string description { get; set; }

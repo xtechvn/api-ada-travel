@@ -2,6 +2,7 @@
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Hotel;
 using ENTITIES.ViewModels.Voucher;
+using iTextSharp.text;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -473,6 +474,8 @@ namespace API_CORE.Controllers.VOUCHER
                     if (str != null && str.Trim() != "")
                     {
                         List<VoucherFEModel> list = JsonConvert.DeserializeObject<List<VoucherFEModel>>(str);
+                        list = list.Where(x => x.store_apply.Trim().StartsWith(hotel_id + ",") || x.store_apply.Trim().EndsWith(","+hotel_id)
+                        || x.store_apply.Trim().Contains("," + hotel_id+ ",")|| x.store_apply.Trim()== hotel_id).ToList();
                         return Ok(new
                         {
                             status = (int)ResponseType.SUCCESS,
@@ -483,6 +486,8 @@ namespace API_CORE.Controllers.VOUCHER
                     var data = await voucherRepository.GetVoucherList(0, hotel_id);
                     if (data != null && data.Count > 0)
                     {
+                        data = data.Where(x => x.store_apply.Trim().StartsWith(hotel_id + ",") || x.store_apply.Trim().EndsWith("," + hotel_id)
+                      || x.store_apply.Trim().Contains("," + hotel_id + ",") || x.store_apply.Trim() == hotel_id).ToList();
                         int db_index = Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"].ToString());
                         redisService.Set(cache_name, JsonConvert.SerializeObject(data), DateTime.Now.AddMinutes(15), db_index);
                         return Ok(new
