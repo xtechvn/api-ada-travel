@@ -45,6 +45,21 @@ namespace Utilities
                 
             }
         }
+        public static int InsertLogTelegramRequest(string message, string botToken_Request, string group_Id_Request)
+        {
+            var rs = 1;
+            try
+            {
+                LoadConfig();
+                TelegramBotClient alertMsgBot = new TelegramBotClient(botToken_Request);
+                var rs_push = alertMsgBot.SendTextMessageAsync(group_Id_Request, "[" + enviromment + "] - " + message).Result;
+            }
+            catch (Exception)
+            {
+                rs = -1;
+            }
+            return rs;
+        }
         /*
         /// <summary>
         /// function ghi log vao telegram
