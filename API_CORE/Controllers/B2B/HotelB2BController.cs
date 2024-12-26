@@ -1,4 +1,5 @@
-﻿using API_CORE.Service.Price;
+﻿using API_CORE.Service.Log;
+using API_CORE.Service.Price;
 using API_CORE.Service.Vin;
 using Caching.Elasticsearch;
 using Caching.RedisWorker;
@@ -47,13 +48,11 @@ namespace API_CORE.Controllers.B2B
         private IRequestRepository _requestRepository;
         private IIdentifierServiceRepository _identifierServiceRepository;
         private IVoucherRepository _voucherRepository;
-        private IClientRepository _clientRepository;
 
         public HotelB2BController(IConfiguration _configuration, IHotelBookingMongoRepository _hotelBookingMongoRepository,
             IElasticsearchDataRepository _elasticsearchDataRepository, IHotelDetailRepository hotelDetailRepository,
             RedisConn _redisService, IContractPayRepository _contractPayRepository, IUserRepository userRepository, IAccountRepository accountRepository,
-            IHotelBookingRepositories hotelBookingRepositories, IRequestRepository requestRepository, IIdentifierServiceRepository identifierServiceRepository, 
-            IVoucherRepository voucherRepository, IClientRepository clientRepository)
+            IHotelBookingRepositories hotelBookingRepositories, IRequestRepository requestRepository, IIdentifierServiceRepository identifierServiceRepository, IVoucherRepository voucherRepository)
         {
             configuration = _configuration;
             hotelBookingMongoRepository = _hotelBookingMongoRepository;
@@ -69,7 +68,6 @@ namespace API_CORE.Controllers.B2B
             _requestRepository = requestRepository;
             _identifierServiceRepository = identifierServiceRepository;
             _voucherRepository = voucherRepository;
-            _clientRepository = clientRepository;
         }
         [HttpPost("save-booking.json")]
         public async Task<ActionResult> PushBookingToMongo(string token)
@@ -1901,16 +1899,6 @@ namespace API_CORE.Controllers.B2B
                     var request = await _requestRepository.InsertRequest(mode);
                     if (request > 0)
                     {
-                        var Request_token = configuration["BotSetting:Request_token"];
-                        var Request_group_id = configuration["BotSetting:Request_group_id"];
-                        var user = _userRepository.GetDetail((long)UserId);
-                        var client = _clientRepository.GetDetail((long)account_client.ClientId);
-                        string log = "Request " + mode.RequestNo + " đã tạo mới thành công " +
-                            "\n Khách hàng: "+ client.Email + " - "+ client.ClientName+ "" +
-                            "\n Sale phụ trách: " + user.Email + " - " + user.FullName + "" +
-                            "\n Số tiền : " +((double)mode.Price).ToString("N0")+ " đ" +
-                      "\n Vào lúc: " + ((DateTime.Now).ToString("dd/MM/yyyy HH:mm"));
-                        LogHelper.InsertLogTelegramRequest(log, Request_token, Request_group_id);
                         return Ok(new
                         {
                             status = (int)ResponseType.SUCCESS,
@@ -2179,6 +2167,92 @@ namespace API_CORE.Controllers.B2B
 
                 return Ok(new { status = (int)ResponseType.ERROR, msg = "error: " + ex.ToString() });
             }
+        }
+        [HttpPost("get-surcharge.json")]
+        public async Task<ActionResult> GetHotelSurcharge(string token)
+        {
+            try
+            {
+                #region Test
+
+                //var j_param = new Dictionary<string, string>
+                //{
+             
+                //};
+                //var data_product = JsonConvert.SerializeObject(j_param);
+                //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                #endregion.
+
+
+                JArray objParr = null;
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
+                {
+
+                    string hotelID = objParr[0]["hotelID"].ToString();
+                    if(hotelID==null || hotelID.Trim() == "")
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = "Data invalid!"
+                        });
+                    }
+
+                    var hotel = await _hotelDetailRepository.GetByHotelId(hotelID);
+                    if(hotel==null|| hotel.Id <= 0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = "Data invalid!"
+                        });
+                    }
+                    //-- Đọc từ cache, nếu có trả kết quả:
+                    string cache_name = CacheName.B2B_HOTEL_SURCHARGE + hotelID;
+                    var str = redisService.Get(cache_name, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+                    if (str != null && str.Trim() != "")
+                    {
+
+                        IEnumerable<HotelSurchargeGridModel> model = JsonConvert.DeserializeObject<IEnumerable<HotelSurchargeGridModel>>(str);
+                        //-- Trả kết quả
+                        return Ok(new
+                        {
+                            status = ((int)ResponseType.SUCCESS).ToString(),
+                            msg = "Get Data From Cache Success",
+                            data = model,
+                        });
+                    }
+                    var surchage = _hotelDetailRepository.GetHotelSurchargeList(hotel.Id, 1, 200);
+                    if(surchage!=null && surchage.Count() > 0)
+                    {
+                        surchage = surchage.Where(x => x.Status == 0);
+                        //-- Cache kết quả:
+                        int db_index = Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"].ToString());
+                        redisService.Set(cache_name, JsonConvert.SerializeObject(surchage), DateTime.Now.AddHours(1), db_index);
+                    }
+                    return Ok(new
+                    {
+                        status = ((int)ResponseType.SUCCESS).ToString(),
+                        msg = "Get Data Success",
+                        data = surchage
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "Key không hợp lệ"
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("HotelB2BController - GetHotelSurcharge: " + ex.ToString());
+                return Ok(new { status = ((int)ResponseType.ERROR).ToString(), msg = "error: " + ex.ToString() });
+            }
+
         }
     }
 }

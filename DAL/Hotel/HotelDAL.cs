@@ -734,5 +734,25 @@ namespace DAL.Hotel
                 return null;
             }
         }
+
+
+        public DataTable GetHotelSurchargeDataTable(int hotel_id, int page_index, int page_size)
+        {
+            try
+            {
+                SqlParameter[] objParam = new SqlParameter[]
+                {
+                    new SqlParameter("@HotelId", hotel_id),
+                    new SqlParameter("@PageIndex", page_index),
+                    new SqlParameter("@PageSize", page_size)
+                };
+
+                return _DbWorker.GetDataTable(StoreProceduresName.SP_GetListHotelSurchargeByHotelId, objParam);
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 }

@@ -31,5 +31,6 @@ namespace REPOSITORIES.IRepositories.Hotel
         Task<List<ProgramsExpiredViewModel>> GetListProgramsPackageExpired();
         List<HotelFEDataModel> GetFEHotelDetailPosition(string name, bool? is_commit_fund, string province_id, int page_index, int page_size);
         List<HotelFEDataModel> GetFEHotelListPosition(HotelFESearchModel model);
+        IEnumerable<HotelSurchargeGridModel> GetHotelSurchargeList(int hotel_id, int page_index, int page_size);
     }
 }

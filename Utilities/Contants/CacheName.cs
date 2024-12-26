@@ -57,7 +57,7 @@ namespace Utilities.Contants
         public const string B2B_VIN_ROOM_DETAIL = "B2B_VIN_ROOM_DETAIL_";
         public const string B2B_ORDER_TOUR_DETAIL_ID = "B2B_ORDER_TOUR_DETAIL_ID_";
         public const string B2B_ORDER_TOUR_ACCOUNTID = "B2B_ORDER_TOUR_ACCOUNTID_";
-        public const string B2B_HOTEL_VOUCHER = "B2B_HOTEL_VOUCHER_";
+        public const string B2B_HOTEL_SURCHARGE = "B2B_HOTEL_SURCHARGE_";
 
     }
 

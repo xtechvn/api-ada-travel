@@ -1,4 +1,5 @@
-﻿using Entities.ConfigModels;
+﻿using DAL.Hotel;
+using Entities.ConfigModels;
 using ENTITIES.APPModels.PushHotel;
 using ENTITIES.ViewModels.Hotel;
 using ENTITIES.ViewModels.Programs;
@@ -344,6 +345,18 @@ namespace REPOSITORIES.Repositories.Hotel
                 LogHelper.InsertLogTelegram("GetListProgramsPackageExpired - HotelDetailRepository. " + ex);
             }
             return null;
+        }
+        public IEnumerable<HotelSurchargeGridModel> GetHotelSurchargeList(int hotel_id, int page_index, int page_size)
+        {
+            try
+            {
+                var dataTable = _hotelDAL.GetHotelSurchargeDataTable(hotel_id, page_index, page_size);
+                return dataTable.ToList<HotelSurchargeGridModel>();
+            }
+            catch
+            {
+                throw;
+            }
         }
     }
 }

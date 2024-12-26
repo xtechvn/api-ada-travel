@@ -820,8 +820,7 @@ namespace API_CORE.Controllers.B2C
                     string startpoint = objParr[0]["startpoint"].ToString();
                     int tourtype = Convert.ToInt32(objParr[0]["tourtype"].ToString());
                     int db_index = Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_core"]);
-                    string transport = objParr[0]["transport"].ToString();
-
+                    string transport = objParr[0]["transport"]==null? "": objParr[0]["transport"].ToString();
                     //var cache_name = CacheName.B2C_TOUR_Search + startpoint + endpoint+ pageindex+pagesize;
                     var cache_name = CacheName.B2C_TOUR_Search+"_"+ tourtype+"_"+ startpoint + endpoint+ transport + pageindex+pagesize;
                     //-- Đọc từ cache, nếu có trả kết quả:
