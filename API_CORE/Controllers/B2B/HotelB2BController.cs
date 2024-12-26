@@ -1906,9 +1906,9 @@ namespace API_CORE.Controllers.B2B
                         var user = _userRepository.GetDetail((long)UserId);
                         var client = _clientRepository.GetDetail((long)account_client.ClientId);
                         string log = "Request " + mode.RequestNo + " đã tạo mới thành công " +
-                            "\n Khách hàng:"+ client.Email + " - "+ client.ClientName+ "" +
-                            "\n Sale phụ trách:" + user.Email + " - " + user.FullName + "" +
-                            "\n Số tiền :" +((double)mode.Price).ToString("N0")+ "" +
+                            "\n Khách hàng: "+ client.Email + " - "+ client.ClientName+ "" +
+                            "\n Sale phụ trách: " + user.Email + " - " + user.FullName + "" +
+                            "\n Số tiền : " +((double)mode.Price).ToString("N0")+ " đ" +
                       "\n Vào lúc: " + ((DateTime.Now).ToString("dd/MM/yyyy HH:mm"));
                         LogHelper.InsertLogTelegramRequest(log, Request_token, Request_group_id);
                         return Ok(new
