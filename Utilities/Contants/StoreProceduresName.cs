@@ -187,6 +187,7 @@ namespace Utilities.Contants
         public static string sp_GetDetailRequest = "sp_GetDetailRequest";
         public static string SP_GetListHotelBookingRoomsExtraPackageByBookingId = "SP_GetListHotelBookingRoomsExtraPackageByBookingId";
         public static string SP_GetListHotelSurchargeByHotelId = "SP_GetListHotelSurchargeByHotelId";
+        public static string GetListVoucher = "SP_GetListVoucher";
 
     }
 
