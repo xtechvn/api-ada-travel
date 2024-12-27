@@ -48,11 +48,13 @@ namespace API_CORE.Controllers.B2B
         private IRequestRepository _requestRepository;
         private IIdentifierServiceRepository _identifierServiceRepository;
         private IVoucherRepository _voucherRepository;
+        private IClientRepository _clientRepository;
 
         public HotelB2BController(IConfiguration _configuration, IHotelBookingMongoRepository _hotelBookingMongoRepository,
             IElasticsearchDataRepository _elasticsearchDataRepository, IHotelDetailRepository hotelDetailRepository,
             RedisConn _redisService, IContractPayRepository _contractPayRepository, IUserRepository userRepository, IAccountRepository accountRepository,
-            IHotelBookingRepositories hotelBookingRepositories, IRequestRepository requestRepository, IIdentifierServiceRepository identifierServiceRepository, IVoucherRepository voucherRepository)
+            IHotelBookingRepositories hotelBookingRepositories, IRequestRepository requestRepository, IIdentifierServiceRepository identifierServiceRepository,
+            IVoucherRepository voucherRepository, IClientRepository clientRepository)
         {
             configuration = _configuration;
             hotelBookingMongoRepository = _hotelBookingMongoRepository;
@@ -68,6 +70,7 @@ namespace API_CORE.Controllers.B2B
             _requestRepository = requestRepository;
             _identifierServiceRepository = identifierServiceRepository;
             _voucherRepository = voucherRepository;
+            _clientRepository = clientRepository;
         }
         [HttpPost("save-booking.json")]
         public async Task<ActionResult> PushBookingToMongo(string token)
@@ -1899,6 +1902,16 @@ namespace API_CORE.Controllers.B2B
                     var request = await _requestRepository.InsertRequest(mode);
                     if (request > 0)
                     {
+                        var Request_token = configuration["BotSetting:Request_token"];
+                        var Request_group_id = configuration["BotSetting:Request_group_id"];
+                        var user = _userRepository.GetDetail((long)UserId);
+                        var client = _clientRepository.GetDetail((long)account_client.ClientId);
+                        string log = "Request " + mode.RequestNo + " đã tạo mới thành công " +
+                            "\n Khách hàng:" + client.Email + " - " + client.ClientName + "" +
+                            "\n Sale phụ trách:" + user.Email + " - " + user.FullName + "" +
+                            "\n Số tiền :" + ((double)mode.Price).ToString("N0") + "" +
+                      "\n Vào lúc: " + ((DateTime.Now).ToString("dd/MM/yyyy HH:mm"));
+                        LogHelper.InsertLogTelegramRequest(log, Request_token, Request_group_id);
                         return Ok(new
                         {
                             status = (int)ResponseType.SUCCESS,
