@@ -446,9 +446,9 @@ namespace API_CORE.Controllers.B2B
 
                         });
                     }
-                    if(detail.extrapackages!=null && detail.extrapackages.Count > 0)
+                    if (detail.extrapackages != null && detail.extrapackages.Count > 0)
                     {
-                        total_amount_booking += detail.extrapackages.Sum(s=>(double)s.Amount);
+                        total_amount_booking += detail.extrapackages.Sum(s => (double)s.Amount);
                     }
                     model.booking_b2b_data = detail;
                     model.total_amount = total_amount_booking;
@@ -518,7 +518,7 @@ namespace API_CORE.Controllers.B2B
                     int? client_type = Convert.ToInt32(objParr[0]["client_type"].ToString());
                     DateTime fromdate = Convert.ToDateTime(objParr[0]["fromdate"].ToString());
                     DateTime todate = Convert.ToDateTime(objParr[0]["todate"].ToString());
-                    bool isVinHotel = Convert.ToBoolean(objParr[0]["isVinHotel"]==null? "false":objParr[0]["isVinHotel"].ToString());
+                    bool isVinHotel = Convert.ToBoolean(objParr[0]["isVinHotel"] == null ? "false" : objParr[0]["isVinHotel"].ToString());
                     string name = objParr[0]["name"].ToString();
                     int total_nights = (todate - fromdate).Days;
                     if (id == null || type == null || id <= 0 || type < 0)
@@ -547,7 +547,7 @@ namespace API_CORE.Controllers.B2B
                         //-- Trả kết quả
                         return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = model, cache_id = string.Empty });
                     }
-                   // LogHelper.InsertLogTelegram("ListByLocation - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
+                    // LogHelper.InsertLogTelegram("ListByLocation - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
 
                     List<HotelSearchEntities> result = new List<HotelSearchEntities>();
                     var hotel_datas = _hotelDetailRepository.GetFEHotelList(new HotelFESearchModel
@@ -661,7 +661,7 @@ namespace API_CORE.Controllers.B2B
 
                         }
                     }
-                   // LogHelper.InsertLogTelegram("ListByLocationDetail - HotelB2BController: Cannot get from Redis [" + cache_name_detail + "] - token: " + token);
+                    // LogHelper.InsertLogTelegram("ListByLocationDetail - HotelB2BController: Cannot get from Redis [" + cache_name_detail + "] - token: " + token);
 
                     if (!is_cached && is_vin_hotel != null && is_vin_hotel == true)
                     {
@@ -1057,7 +1057,7 @@ namespace API_CORE.Controllers.B2B
                         //--Trả kết quả
                         return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = model, cache_id = string.Empty });
                     }
-                   // LogHelper.InsertLogTelegram("HotelCommitLocation - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
+                    // LogHelper.InsertLogTelegram("HotelCommitLocation - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
 
                     var hotel_datas = _hotelDetailRepository.GetFEHotelDetails(null, true, null, 1, 1000);
 
@@ -1153,7 +1153,7 @@ namespace API_CORE.Controllers.B2B
                         //-- Trả kết quả
                         return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = model, cache_id = string.Empty });
                     }
-                   // LogHelper.InsertLogTelegram("HotelCommit - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
+                    // LogHelper.InsertLogTelegram("HotelCommit - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
 
                     List<HotelSearchEntities> result = new List<HotelSearchEntities>();
                     var hotel_datas = _hotelDetailRepository.GetFEHotelDetails(null, true, null, 1, 1000);
@@ -1266,7 +1266,7 @@ namespace API_CORE.Controllers.B2B
 
                         }
                     }
-                   // LogHelper.InsertLogTelegram("HotelCommitDetail - HotelB2BController: Cannot get from Redis [" + cache_name_detail + "] - token: " + token);
+                    // LogHelper.InsertLogTelegram("HotelCommitDetail - HotelB2BController: Cannot get from Redis [" + cache_name_detail + "] - token: " + token);
 
                     if (!is_cached && is_vin_hotel != null && is_vin_hotel == true)
                     {
@@ -1436,7 +1436,7 @@ namespace API_CORE.Controllers.B2B
                                 {
                                     var room_packages = _hotelDetailRepository.GetFERoomPackageListByRoomId(r.Id, fromdate, todate);
                                     var room_packages_daily = _hotelDetailRepository.GetFERoomPackageDaiLyListByRoomId(r.Id, fromdate, todate);
-                                    rooms_list.Add(PricePolicyService.GetRoomDetail(r.Id.ToString(), fromdate, todate, total_nights, room_packages_daily, room_packages, profit_list, hotel_detail, null,(int)client_type));
+                                    rooms_list.Add(PricePolicyService.GetRoomDetail(r.Id.ToString(), fromdate, todate, total_nights, room_packages_daily, room_packages, profit_list, hotel_detail, null, (int)client_type));
                                 }
                                 var min_price = rooms_list.Where(x => x.min_price > 0).OrderBy(x => x.min_price).FirstOrDefault();
                                 var min_price_value = min_price == null ? 0 : min_price.min_price;
@@ -1675,7 +1675,7 @@ namespace API_CORE.Controllers.B2B
                         //-- Trả kết quả
                         return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = model, cache_id = string.Empty });
                     }
-                   // LogHelper.InsertLogTelegram("ListByLocation - HotelB2CController: Cannot get from Redis [" + cache_name + "] - token: " + token);
+                    // LogHelper.InsertLogTelegram("ListByLocation - HotelB2CController: Cannot get from Redis [" + cache_name + "] - token: " + token);
 
                     List<HotelSearchEntities> result = new List<HotelSearchEntities>();
                     var hotel_datas = _hotelDetailRepository.GetFEHotelListPosition(new HotelFESearchModel
@@ -1783,7 +1783,7 @@ namespace API_CORE.Controllers.B2B
                     Hotel_Booking.TotalDiscount = 0;
                     Hotel_Booking.TotalOthersAmount = 0;
                     Hotel_Booking.BookingId = await _identifierServiceRepository.buildServiceNo(1);
-          
+
                     if (detail.search != null)
                     {
                         var hotel_sql = await _hotelDetailRepository.GetByHotelId(detail.search.hotelID);
@@ -1878,7 +1878,7 @@ namespace API_CORE.Controllers.B2B
                         }
 
                     }
-                    var hotel =await _hotelDetailRepository.GetByHotelId(Hotel_Booking.PropertyId);
+                    var hotel = await _hotelDetailRepository.GetByHotelId(Hotel_Booking.PropertyId);
                     var mode = new Request();
                     mode.BookingId = HotelBookingId;
                     mode.FromDate = Hotel_Booking.ArrivalDate;
@@ -1886,19 +1886,19 @@ namespace API_CORE.Controllers.B2B
                     mode.SalerId = Hotel_Booking.CreatedBy;
                     mode.CreatedBy = Hotel_Booking.CreatedBy;
                     mode.Status = (int?)RequestStatus.TAO_MOI;
-                    mode.HotelId = hotel == null? 0: hotel.Id;
+                    mode.HotelId = hotel == null ? 0 : hotel.Id;
                     mode.ClientId = (int?)account_client.ClientId;
                     mode.RequestNo = await _identifierServiceRepository.buildRequest();
                     mode.Price = Hotel_Booking.TotalAmount;
                     mode.Amount = Hotel_Booking.TotalAmount;
-                    if (detail.voucher!=null && detail.voucher.id > 0)
+                    if (detail.voucher != null && detail.voucher.id > 0)
                     {
                         mode.Discount = detail.voucher.discount;
                         mode.VoucherId = detail.voucher.id;
                         mode.VoucherName = detail.voucher.code;
                         mode.Amount = Hotel_Booking.TotalAmount - detail.voucher.discount;
                     }
-                   
+
                     var request = await _requestRepository.InsertRequest(mode);
                     if (request > 0)
                     {
@@ -1906,9 +1906,10 @@ namespace API_CORE.Controllers.B2B
                         var Request_group_id = configuration["BotSetting:Request_group_id"];
                         var user = _userRepository.GetDetail((long)UserId);
                         var client = _clientRepository.GetDetail((long)account_client.ClientId);
+                        var log2 = user.NickName != null && user.NickName != "" ? user.NickName : "";
                         string log = "Request " + mode.RequestNo + " đã tạo mới thành công " +
                             "\n Khách hàng : " + client.Email + " - " + client.ClientName + "" +
-                            "\n Sale phụ trách : " + user.Email + " - " + user.FullName + "" +
+                            "\n Sale phụ trách : " + log2 + "  " + user.Email + " - " + user.FullName + "" +
                             "\n Số tiền : " + ((double)mode.Price).ToString("N0") + "" +
                       "\n Vào lúc : " + ((DateTime.Now).ToString("dd/MM/yyyy HH:mm"));
                         LogHelper.InsertLogTelegramRequest(log, Request_token, Request_group_id);
@@ -1925,10 +1926,10 @@ namespace API_CORE.Controllers.B2B
                         {
                             status = (int)ResponseType.ERROR,
                             msg = "Thất bại!",
-                          
+
                         });
                     }
-                 
+
                 }
                 else
                 {
@@ -2015,7 +2016,7 @@ namespace API_CORE.Controllers.B2B
 
                     var booking = await _requestRepository.GetDetailByBookingId(id);
                     var Hotelbooking = await _hotelBookingRepositories.GetDetailHotelBookingByID(id);
-                   
+
                     if (booking != null && booking.BookingId > 0)
                     {
                         var requestDetail = await _requestRepository.GetDetailRequestByRequestId(booking.RequestId);
@@ -2033,7 +2034,7 @@ namespace API_CORE.Controllers.B2B
                         var packages = await _hotelBookingRepositories.GetHotelBookingRoomRatesByBookingRoomsRateByHotelBookingID(id);
                         var ExtraPackages = await _hotelBookingRepositories.GetListHotelBookingRoomsExtraPackageByBookingId(id);
                         detail.voucher = new HotelOrderDataVoucher();
-                        if (booking.VoucherId!=null && booking.VoucherId > 0)
+                        if (booking.VoucherId != null && booking.VoucherId > 0)
                         {
                             detail.voucher = new HotelOrderDataVoucher()
                             {
@@ -2190,7 +2191,7 @@ namespace API_CORE.Controllers.B2B
 
                 //var j_param = new Dictionary<string, string>
                 //{
-             
+
                 //};
                 //var data_product = JsonConvert.SerializeObject(j_param);
                 //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
@@ -2202,7 +2203,7 @@ namespace API_CORE.Controllers.B2B
                 {
 
                     string hotelID = objParr[0]["hotelID"].ToString();
-                    if(hotelID==null || hotelID.Trim() == "")
+                    if (hotelID == null || hotelID.Trim() == "")
                     {
                         return Ok(new
                         {
@@ -2212,7 +2213,7 @@ namespace API_CORE.Controllers.B2B
                     }
 
                     var hotel = await _hotelDetailRepository.GetByHotelId(hotelID);
-                    if(hotel==null|| hotel.Id <= 0)
+                    if (hotel == null || hotel.Id <= 0)
                     {
                         return Ok(new
                         {
@@ -2236,7 +2237,7 @@ namespace API_CORE.Controllers.B2B
                         });
                     }
                     var surchage = _hotelDetailRepository.GetHotelSurchargeList(hotel.Id, 1, 200);
-                    if(surchage!=null && surchage.Count() > 0)
+                    if (surchage != null && surchage.Count() > 0)
                     {
                         surchage = surchage.Where(x => x.Status == 0);
                         //-- Cache kết quả:

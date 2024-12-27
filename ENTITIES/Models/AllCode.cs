@@ -18,5 +18,6 @@ namespace ENTITIES.Models
         public DateTime? CreateDate { get; set; }
         public int? UpdatedBy { get; set; }
         public DateTime? UpdateTime { get; set; }
+        public short? Status { get; set; }
     }
 }

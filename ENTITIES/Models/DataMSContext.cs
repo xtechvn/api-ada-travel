@@ -159,7 +159,7 @@ namespace ENTITIES.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Data Source=103.163.216.41;Initial Catalog=adavigo;Persist Security Info=True;User ID=us;Password=us@585668");
+                optionsBuilder.UseSqlServer("Data Source=103.163.216.41;Initial Catalog=adavigo;Persist Security Info=True;User ID=us;Password=us@585668;TrustServerCertificate=True");
             }
         }
 
@@ -2181,7 +2181,7 @@ namespace ENTITIES.Models
             {
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.Description).HasMaxLength(1000);
 
                 entity.Property(e => e.EndDate).HasColumnType("datetime");
 
@@ -2703,6 +2703,8 @@ namespace ENTITIES.Models
                 entity.Property(e => e.FullName).HasMaxLength(500);
 
                 entity.Property(e => e.ModifiedOn).HasColumnType("datetime");
+
+                entity.Property(e => e.NickName).HasMaxLength(200);
 
                 entity.Property(e => e.Note).HasMaxLength(2500);
 
