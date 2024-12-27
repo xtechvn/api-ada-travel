@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Nest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Repositories.IRepositories;
 using REPOSITORIES.IRepositories;
 using REPOSITORIES.IRepositories.Elasticsearch;
 using REPOSITORIES.IRepositories.Hotel;
@@ -45,6 +46,7 @@ namespace API_CORE.Controllers.B2B
         private IUserRepository _userRepository;
         private IAccountRepository _accountRepository;
         private IHotelBookingRepositories _hotelBookingRepositories;
+        private IHotelBookingRoomExtraPackageRepository _hotelBookingRoomExtraPackage;
         private IRequestRepository _requestRepository;
         private IIdentifierServiceRepository _identifierServiceRepository;
         private IVoucherRepository _voucherRepository;
@@ -54,7 +56,7 @@ namespace API_CORE.Controllers.B2B
             IElasticsearchDataRepository _elasticsearchDataRepository, IHotelDetailRepository hotelDetailRepository,
             RedisConn _redisService, IContractPayRepository _contractPayRepository, IUserRepository userRepository, IAccountRepository accountRepository,
             IHotelBookingRepositories hotelBookingRepositories, IRequestRepository requestRepository, IIdentifierServiceRepository identifierServiceRepository,
-            IVoucherRepository voucherRepository, IClientRepository clientRepository)
+            IVoucherRepository voucherRepository, IClientRepository clientRepository, IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackage)
         {
             configuration = _configuration;
             hotelBookingMongoRepository = _hotelBookingMongoRepository;
@@ -71,6 +73,7 @@ namespace API_CORE.Controllers.B2B
             _identifierServiceRepository = identifierServiceRepository;
             _voucherRepository = voucherRepository;
             _clientRepository = clientRepository;
+            _hotelBookingRoomExtraPackage = hotelBookingRoomExtraPackage;
         }
         [HttpPost("save-booking.json")]
         public async Task<ActionResult> PushBookingToMongo(string token)
@@ -454,6 +457,7 @@ namespace API_CORE.Controllers.B2B
                     model.total_amount = total_amount_booking;
                     //--Voucher:
                     model.voucher_code = detail.voucher_code;
+                    model.extrapackages = detail.extrapackages;
                     string id = await hotelBookingMongoRepository.saveBooking(model, detail.booking_id);
                     if (id != null)
                     {
@@ -1897,6 +1901,22 @@ namespace API_CORE.Controllers.B2B
                         mode.VoucherId = detail.voucher.id;
                         mode.VoucherName = detail.voucher.code;
                         mode.Amount = Hotel_Booking.TotalAmount - detail.voucher.discount;
+                    }
+
+                    if(detail.extrapackages!=null && detail.extrapackages.Count > 0)
+                    {
+                        foreach(var extra in detail.extrapackages)
+                        {
+                            extra.HotelBookingId = HotelBookingId;
+                            extra.CreatedBy = 0;
+                            extra.CreatedDate = DateTime.Now;
+                            extra.UpdatedBy = 0;
+                            extra.UpdatedDate = DateTime.Now;
+                            extra.Profit =0;
+                            extra.UnitPrice = extra.Amount;
+                            extra.PackageCompanyId = 0;
+                            var id =  _hotelBookingRoomExtraPackage.CreateHotelBookingRoomExtraPackages(extra);
+                        }
                     }
 
                     var request = await _requestRepository.InsertRequest(mode);
