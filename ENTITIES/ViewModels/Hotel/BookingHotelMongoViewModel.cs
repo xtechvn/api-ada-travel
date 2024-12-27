@@ -17,6 +17,8 @@ namespace ENTITIES.ViewModels.Hotel
         public MongoBookingData booking_data { get; set; }
         public HotelMongoBookingOrder booking_order { get; set; }
         public BookingHotelB2BViewModel booking_b2b_data { get; set; }
+        public List<HotelBookingRoomExtraPackages> extrapackages { get; set; }
+
         public string? voucher_code { get; set; }
 
         public void GenID()
