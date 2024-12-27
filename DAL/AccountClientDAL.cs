@@ -70,6 +70,7 @@ namespace DAL
             {
                 AccountClient accountClient = new AccountClient();
                 Client client = new Client();
+                UserAgent User_Agent = new UserAgent();
 
                 accountClient.UserName = accountB2.Email;
                 accountClient.ClientType = (byte?)ClientType.CUSTOMER;
@@ -94,6 +95,10 @@ namespace DAL
                 client.Note = "Khách hàng được khởi tạo từ hệ thống B2C";
                 client.ClientCode = accountB2.ClientCode;
                 client.ParentId = -1;
+         
+                User_Agent.CreateDate = DateTime.Now;
+                User_Agent.VerifyStatus = 0;
+                User_Agent.MainFollow = 2;
 
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
@@ -106,6 +111,11 @@ namespace DAL
                     var a = data2.FirstOrDefault(s => s.Email.Equals(accountB2.Email));
                     accountClient.ClientId = a.Id;
                     var data3 = _DbContext.AccountClient.Add(accountClient);
+                    await _DbContext.SaveChangesAsync();
+                    User_Agent.ClientId = a.Id;
+                    User_Agent.UserId = i.Id;
+                    User_Agent.CreatedBy = i.Id;
+                    var data4 = _DbContext.UserAgent.Add(User_Agent);
                     await _DbContext.SaveChangesAsync();
                     return 0;
 
