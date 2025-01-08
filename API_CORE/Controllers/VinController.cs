@@ -1545,7 +1545,7 @@ namespace API_CORE.Controllers
                     var departure_date = DateTime.Parse(departureDate);
                     int nights = Convert.ToInt32((departure_date - arrival_date).TotalDays < 1 ? 1 : (departure_date - arrival_date).TotalDays);
                     // -- Read from Cache:
-                    string cache_name= CacheName.ClientHotelSearchResult + product_type + arrivalDate + departureDate + numberOfRoom + numberOfChild + numberOfAdult + numberOfInfant + EncodeHelpers.MD5Hash(hotelID) + client_type_string;
+                    string cache_name= CacheName.ClientHotelSearchResult + product_type + arrivalDate + departureDate + numberOfRoom + numberOfChild + numberOfAdult + numberOfInfant + EncodeHelpers.MD5Hash(hotelID+ hotelName) + client_type_string;
                     var str = redisService.Get(cache_name, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
                     if (str != null && str.Trim() != "")
                     {
