@@ -192,10 +192,9 @@ namespace DAL
         {
             try
             {
-                var list_b2b = new List<int>() { (int)ClientType.AGENT, (int)ClientType.TIER_1_AGENT, (int)ClientType.TIER_2_AGENT, (int)ClientType.TIER_3_AGENT , (int)ClientType.SALE , (int)ClientType.COLLABORATORS , (int)ClientType.ENTERPRISE };
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
-                    return _DbContext.AccountClient.AsNoTracking().FirstOrDefault(s => s.Id == account_client_id && list_b2b.Contains((int)s.ClientType));
+                    return _DbContext.AccountClient.AsNoTracking().FirstOrDefault(s => s.Id == account_client_id && s.ClientType != (int)ClientType.CUSTOMER);
                 }
             }
             catch (Exception ex)

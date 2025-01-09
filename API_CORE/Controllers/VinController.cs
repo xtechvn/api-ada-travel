@@ -460,7 +460,8 @@ namespace API_CORE.Controllers
                         //-- Lấy chính sách giá
                         //var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(string.Join(",", hotel_list), "", fromdate, todate, "");
                         var profit_vin = hotelDetailRepository.GetHotelRoomPricePolicy(string.Join(",", hotel_list), client_type_string);
-                        //LogService.InsertLog("VinController - GetSearchResultMinPrice HotelVIN: Profit List ["+ string.Join(",", hotel_list) + client_type_string + "] count= " + profit_vin.Count);
+                        //LogService.InsertLog("VinController - GetSearchResultMinPrice HotelVIN: Profit List ["+ string.Join(",", hotel_list) + client_type_string + "]: " 
+                          //  + (profit_vin.Count > 0 ?JsonConvert.SerializeObject(profit_vin[0]):"NULL Data"));
 
                         //-- Tính giá về tay
                         var input_api_vin = JObject.Parse(model.input_api_vin);
@@ -476,7 +477,8 @@ namespace API_CORE.Controllers
                                 }
                                 else
                                 {
-                                    var profit = profit_vin.Where(x => x.HotelCode == r.hotel_id && x.RoomTypeCode == r.id && x.PackageName == rate.rate_plan_id).ToList();
+                                    var profit = profit_vin.Where(x => x.HotelCode.ToLower().Trim() == r.hotel_id.ToLower().Trim() && x.RoomCode.ToLower().Trim() == r.code.ToLower().Trim() && x.PackageCode.ToLower().Trim() == rate.rate_plan_code.ToLower().Trim()).ToList();
+
                                     if (profit != null && profit.Count > 0)
                                     {
                                         rate.total_profit = PricePolicyService.CalucateMinProfit(profit, rate.amount, fromdate, todate);

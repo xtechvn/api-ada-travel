@@ -60,92 +60,53 @@ namespace REPOSITORIES.Repositories
 
         public async Task<PaymentSuccessDataViewModel> UpdateOrderBankTransferPayment(BankMessageDetail detail, string contract_pay_code)
         {
-            List<string> order_no_start_with = new List<string>() { "CVB", "BKS", "O", "CVW", "KS", "VB", "TR", "VW", "A", "P" };
             try
             {
 
-                //switch (detail.BankTransferType)
-                //{
-                //    case (int)BankMessageTransferType.CANNOT_DETECT:
-                //        {
-                //            var words = detail.TransferDescription.Split(" ");
-                //            foreach (var w in words)
-                //            {
-                //                List<string> order_no_start_with = new List<string>() { "CVB", "BKS", "O", "CVW", "KS", "VB", "TR", "VW", "A", "P" };
-                //                if (w == null || w.Trim() == "") { continue; }
-                //                //---- Check nếu từ giống với mã đơn
-                //                bool is_like_order = false;
-                //                foreach (var start_word in order_no_start_with)
-                //                {
-                //                    if (w.ToUpper().Trim().StartsWith(start_word))
-                //                    {
-                //                        is_like_order = true;
-                //                        break;
-                //                    }
-                //                }
-                //                if (!is_like_order) { continue; }
-                //                var order =  orderDAL.GetOrderByOrderNo(w);
-                //                if (order != null && order.OrderId > 0)
-                //                {
-                //                    detail.OrderNo = order.OrderNo;
-                //                    detail.OrderId = order.OrderId;
-                //                    detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
-                //                    return await UpdateOrderPayment(detail, contract_pay_code);
-                //                }
-
-                //                var deposit = await depositHistoryDAL.GetDepositHistoryByTransNo(w);
-                //                if (deposit != null && deposit.Id > 0)
-                //                {
-                //                    detail.OrderNo = deposit.TransNo;
-                //                    detail.OrderId = deposit.Id;
-                //                    detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
-                //                    return await UpdateDepositTransfer(detail, contract_pay_code);
-                //                }
-                //            }
-
-                //        }break;
-                //    case (int)BankMessageTransferType.ORDER_PAYMENT:
-                //        {
-                //            return await UpdateOrderPayment(detail, contract_pay_code);
-                //        }
-                //    case (int)BankMessageTransferType.DEPOSIT_PAYMENT:
-                //        {
-                //            return await UpdateDepositTransfer(detail, contract_pay_code);
-                //        }
-                //}
-                var words = detail.TransferDescription.Split(" ");
-                foreach (var w in words)
+                switch (detail.BankTransferType)
                 {
-                    if (w == null || w.Trim() == "") { continue; }
-                    //---- Check nếu từ giống với mã đơn
-                    bool is_like_order = false;
-                    foreach (var start_word in order_no_start_with)
-                    {
-                        if (w.ToUpper().Trim().StartsWith(start_word))
+                    case (int)BankMessageTransferType.ORDER_PAYMENT:
                         {
-                            is_like_order = true;
-                            break;
+                            return await UpdateOrderPayment(detail, contract_pay_code);
                         }
-                    }
-                    if (!is_like_order) { continue; }
-                    var order = orderDAL.GetOrderByOrderNo(w);
-                    if (order != null && order.OrderId > 0)
-                    {
-                        detail.OrderNo = order.OrderNo;
-                        detail.OrderId = order.OrderId;
-                        detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
-                        return await UpdateOrderPayment(detail, contract_pay_code);
-                    }
-
-                    var deposit = await depositHistoryDAL.GetDepositHistoryByTransNo(w);
-                    if (deposit != null && deposit.Id > 0)
-                    {
-                        detail.OrderNo = deposit.TransNo;
-                        detail.OrderId = deposit.Id;
-                        detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
-                        return await UpdateDepositTransfer(detail, contract_pay_code);
-                    }
+                    case (int)BankMessageTransferType.DEPOSIT_PAYMENT:
+                        {
+                            return await UpdateDepositTransfer(detail, contract_pay_code);
+                        }
                 }
+                //var words = detail.TransferDescription.Split(" ");
+                //foreach (var w in words)
+                //{
+                //    if (w == null || w.Trim() == "") { continue; }
+                //    //---- Check nếu từ giống với mã đơn
+                //    bool is_like_order = false;
+                //    foreach (var start_word in order_no_start_with)
+                //    {
+                //        if (w.ToUpper().Trim().StartsWith(start_word))
+                //        {
+                //            is_like_order = true;
+                //            break;
+                //        }
+                //    }
+                //    if (!is_like_order) { continue; }
+                //    var order = orderDAL.GetOrderByOrderNo(w);
+                //    if (order != null && order.OrderId > 0)
+                //    {
+                //        detail.OrderNo = order.OrderNo;
+                //        detail.OrderId = order.OrderId;
+                //        detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
+                //        return await UpdateOrderPayment(detail, contract_pay_code);
+                //    }
+
+                //    var deposit = await depositHistoryDAL.GetDepositHistoryByTransNo(w);
+                //    if (deposit != null && deposit.Id > 0)
+                //    {
+                //        detail.OrderNo = deposit.TransNo;
+                //        detail.OrderId = deposit.Id;
+                //        detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
+                //        return await UpdateDepositTransfer(detail, contract_pay_code);
+                //    }
+                //}
 
             }
             catch (Exception ex)
@@ -170,9 +131,47 @@ namespace REPOSITORIES.Repositories
                 db_data.order = orderDAL.GetDetail(detail.OrderId);
                 if (db_data.order == null || db_data.order.OrderId <= 0)
                 {
+                    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
+                                       + "CANNOT get by OrderID [" + detail.OrderId + "] . Get by [" + detail.OrderNo + "]");
                     db_data.order = orderDAL.GetOrderByOrderNo(detail.OrderNo);
                 }
-                if (db_data.order == null || db_data.order.OrderId <= 0) return null;
+               
+                if (db_data.order == null || db_data.order.OrderId <= 0)
+                {
+                    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
+                                      + "Get by OrderNo [" + detail.OrderNo + "] return NULL. Get in message");
+                    var words = detail.TransferDescription.Split(" ");
+                    foreach (var w in words)
+                    {
+                        List<string> order_no_start_with = new List<string>() { "CVB", "BKS", "O", "CVW", "KS", "VB", "TR", "VW", "A", "P" };
+
+                        if (w == null || w.Trim() == "") { continue; }
+                        //---- Check nếu từ giống với mã đơn
+                        bool is_like_order = false;
+                        foreach (var start_word in order_no_start_with)
+                        {
+                            if (w.ToUpper().Trim().StartsWith(start_word))
+                            {
+                                is_like_order = true;
+                                break;
+                            }
+                        }
+                        if (!is_like_order) { continue; }
+                        db_data.order = orderDAL.GetOrderByOrderNo(w);
+                        if (db_data.order != null && db_data.order.OrderId > 0)
+                        {
+                            LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
+                                      + "Match [" + w + "] -> [" + db_data.order.OrderId + "]");
+                            break;
+                        }
+                    }
+                }
+                if (db_data.order == null || db_data.order.OrderId <= 0) {
+                    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
+                                         + "Not Match Either [" + detail.OrderId + "]  [" + detail.OrderNo + "] [" + detail.TransferDescription + "]");
+                    return null;
+                } 
+                    
                 //-- Get Previous ContractPay:
                 db_data.payment = orderDAL.GetContractPayByOrderID(db_data.order.OrderId);
                 var previous_amount = db_data.payment.Sum(x => x.Amount == null ? 0 : Convert.ToDouble(x.Amount));
