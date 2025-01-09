@@ -60,21 +60,93 @@ namespace REPOSITORIES.Repositories
 
         public async Task<PaymentSuccessDataViewModel> UpdateOrderBankTransferPayment(BankMessageDetail detail, string contract_pay_code)
         {
+            List<string> order_no_start_with = new List<string>() { "CVB", "BKS", "O", "CVW", "KS", "VB", "TR", "VW", "A", "P" };
             try
             {
 
-                switch (detail.BankTransferType)
+                //switch (detail.BankTransferType)
+                //{
+                //    case (int)BankMessageTransferType.CANNOT_DETECT:
+                //        {
+                //            var words = detail.TransferDescription.Split(" ");
+                //            foreach (var w in words)
+                //            {
+                //                List<string> order_no_start_with = new List<string>() { "CVB", "BKS", "O", "CVW", "KS", "VB", "TR", "VW", "A", "P" };
+                //                if (w == null || w.Trim() == "") { continue; }
+                //                //---- Check nếu từ giống với mã đơn
+                //                bool is_like_order = false;
+                //                foreach (var start_word in order_no_start_with)
+                //                {
+                //                    if (w.ToUpper().Trim().StartsWith(start_word))
+                //                    {
+                //                        is_like_order = true;
+                //                        break;
+                //                    }
+                //                }
+                //                if (!is_like_order) { continue; }
+                //                var order =  orderDAL.GetOrderByOrderNo(w);
+                //                if (order != null && order.OrderId > 0)
+                //                {
+                //                    detail.OrderNo = order.OrderNo;
+                //                    detail.OrderId = order.OrderId;
+                //                    detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
+                //                    return await UpdateOrderPayment(detail, contract_pay_code);
+                //                }
+
+                //                var deposit = await depositHistoryDAL.GetDepositHistoryByTransNo(w);
+                //                if (deposit != null && deposit.Id > 0)
+                //                {
+                //                    detail.OrderNo = deposit.TransNo;
+                //                    detail.OrderId = deposit.Id;
+                //                    detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
+                //                    return await UpdateDepositTransfer(detail, contract_pay_code);
+                //                }
+                //            }
+
+                //        }break;
+                //    case (int)BankMessageTransferType.ORDER_PAYMENT:
+                //        {
+                //            return await UpdateOrderPayment(detail, contract_pay_code);
+                //        }
+                //    case (int)BankMessageTransferType.DEPOSIT_PAYMENT:
+                //        {
+                //            return await UpdateDepositTransfer(detail, contract_pay_code);
+                //        }
+                //}
+                var words = detail.TransferDescription.Split(" ");
+                foreach (var w in words)
                 {
-                    case (int)BankMessageTransferType.ORDER_PAYMENT:
+                    if (w == null || w.Trim() == "") { continue; }
+                    //---- Check nếu từ giống với mã đơn
+                    bool is_like_order = false;
+                    foreach (var start_word in order_no_start_with)
+                    {
+                        if (w.ToUpper().Trim().StartsWith(start_word))
                         {
-                            return await UpdateOrderPayment(detail, contract_pay_code);
+                            is_like_order = true;
+                            break;
                         }
-                    case (int)BankMessageTransferType.DEPOSIT_PAYMENT:
-                        {
-                            return await UpdateDepositTransfer(detail, contract_pay_code);
-                        }
+                    }
+                    if (!is_like_order) { continue; }
+                    var order = orderDAL.GetOrderByOrderNo(w);
+                    if (order != null && order.OrderId > 0)
+                    {
+                        detail.OrderNo = order.OrderNo;
+                        detail.OrderId = order.OrderId;
+                        detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
+                        return await UpdateOrderPayment(detail, contract_pay_code);
+                    }
+
+                    var deposit = await depositHistoryDAL.GetDepositHistoryByTransNo(w);
+                    if (deposit != null && deposit.Id > 0)
+                    {
+                        detail.OrderNo = deposit.TransNo;
+                        detail.OrderId = deposit.Id;
+                        detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
+                        return await UpdateDepositTransfer(detail, contract_pay_code);
+                    }
                 }
-            
+
             }
             catch (Exception ex)
             {

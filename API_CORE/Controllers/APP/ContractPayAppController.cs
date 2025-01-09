@@ -34,7 +34,6 @@ namespace API_CORE.Controllers.APP
         private IIdentifierServiceRepository identifierServiceRepository;
         private IOrderRepository orderRepository;
         private IDepositHistoryRepository iDepositHistoryRepository;
-        private List<string> order_no_start_with = new List<string>() { "CVB", "BKS", "O", "CVW", "KS", "VB", "TR", "VW","A","P" };
         private MailService _mail_service;
         private readonly VinWonderBookingService _vinWonderBookingService;
         private readonly IVinWonderBookingRepository _vinWonderBookingRepository;
@@ -110,68 +109,68 @@ namespace API_CORE.Controllers.APP
                     switch (detail.BankTransferType)
                     {
                         case (int)BankMessageTransferType.CANNOT_DETECT:
-                            {
-                                var words = detail.TransferDescription.Split(" ");
-                                foreach (var w in words)
-                                {
-                                    if (w == null || w.Trim() == "") { continue; }
-                                    //---- Check nếu từ giống với mã đơn
-                                    bool is_like_order = false;
-                                    foreach (var start_word in order_no_start_with)
-                                    {
-                                        if (w.ToUpper().Trim().StartsWith(start_word))
-                                        {
-                                            is_like_order = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!is_like_order) { continue; }
-                                    var order = await orderRepository.GetOrderByOrderNo(w);
-                                    if (order != null && order.OrderId > 0)
-                                    {
-                                        detail.OrderNo = order.OrderNo;
-                                        detail.OrderId = order.OrderId;
-                                        detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
-                                        break;
-                                    }
-                                    var deposit = await iDepositHistoryRepository.GetDepositHistoryByTransNo(w);
-                                    if (deposit != null && deposit.Id > 0)
-                                    {
-                                        detail.OrderNo = deposit.TransNo;
-                                        detail.OrderId = deposit.Id;
-                                        detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
-                                        break;
+                            //{
+                            //    var words = detail.TransferDescription.Split(" ");
+                            //    foreach (var w in words)
+                            //    {
+                            //        if (w == null || w.Trim() == "") { continue; }
+                            //        //---- Check nếu từ giống với mã đơn
+                            //        bool is_like_order = false;
+                            //        foreach (var start_word in order_no_start_with)
+                            //        {
+                            //            if (w.ToUpper().Trim().StartsWith(start_word))
+                            //            {
+                            //                is_like_order = true;
+                            //                break;
+                            //            }
+                            //        }
+                            //        if (!is_like_order) { continue; }
+                            //        var order = await orderRepository.GetOrderByOrderNo(w);
+                            //        if (order != null && order.OrderId > 0)
+                            //        {
+                            //            detail.OrderNo = order.OrderNo;
+                            //            detail.OrderId = order.OrderId;
+                            //            detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
+                            //            break;
+                            //        }
+                            //        var deposit = await iDepositHistoryRepository.GetDepositHistoryByTransNo(w);
+                            //        if (deposit != null && deposit.Id > 0)
+                            //        {
+                            //            detail.OrderNo = deposit.TransNo;
+                            //            detail.OrderId = deposit.Id;
+                            //            detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
+                            //            break;
 
-                                    }
-                                }
-                                if (detail.BankTransferType == (int)BankMessageTransferType.CANNOT_DETECT)
-                                {
-                                    return Ok(new
-                                    {
-                                        status = (int)ResponseType.FAILED,
-                                        msg = "Cập nhật Payment thất bại. Content: " + detail.TransferDescription
-                                    });
-                                }
-                                var contract_pay_code = await identifierServiceRepository.buildContractPay();
-                                var payment_detail = await _contractPayRepository.UpdateOrderBankTransferPayment(detail, contract_pay_code);
-                                if (payment_detail != null && payment_detail.OrderId > 0)
-                                {
-                                    return Ok(new
-                                    {
-                                        status = (int)ResponseType.SUCCESS,
-                                        msg = "Cập nhật Payment thành công",
-                                        data = payment_detail
-                                    });
-                                }
-                                else
-                                {
-                                    return Ok(new
-                                    {
-                                        status = (int)ResponseType.FAILED,
-                                        msg = "Cập nhật Payment thất bại. Code: " + detail.OrderNo
-                                    });
-                                }
-                            }
+                            //        }
+                            //    }
+                            //    if (detail.BankTransferType == (int)BankMessageTransferType.CANNOT_DETECT)
+                            //    {
+                            //        return Ok(new
+                            //        {
+                            //            status = (int)ResponseType.FAILED,
+                            //            msg = "Cập nhật Payment thất bại. Content: " + detail.TransferDescription
+                            //        });
+                            //    }
+                            //    var contract_pay_code = await identifierServiceRepository.buildContractPay();
+                            //    var payment_detail = await _contractPayRepository.UpdateOrderBankTransferPayment(detail, contract_pay_code);
+                            //    if (payment_detail != null && payment_detail.OrderId > 0)
+                            //    {
+                            //        return Ok(new
+                            //        {
+                            //            status = (int)ResponseType.SUCCESS,
+                            //            msg = "Cập nhật Payment thành công",
+                            //            data = payment_detail
+                            //        });
+                            //    }
+                            //    else
+                            //    {
+                            //        return Ok(new
+                            //        {
+                            //            status = (int)ResponseType.FAILED,
+                            //            msg = "Cập nhật Payment thất bại. Code: " + detail.OrderNo
+                            //        });
+                            //    }
+                            //}
                         case (int)BankMessageTransferType.ORDER_PAYMENT:
                         case (int)BankMessageTransferType.DEPOSIT_PAYMENT:
                             {
