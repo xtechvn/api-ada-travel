@@ -459,7 +459,7 @@ namespace API_CORE.Controllers
                         _r_list = _r_list.Distinct().ToList();
                         //-- Lấy chính sách giá
                         //var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(string.Join(",", hotel_list), "", fromdate, todate, "");
-                        var profit_vin = hotelDetailRepository.GetHotelRoomPricePolicy(string.Join(",", hotel_list), client_type_string);
+                        var profit_vin = hotelDetailRepository.GetHotelRoomPricePolicy(string.Join(",", hotel_list), client_type_string,true);
                         //LogService.InsertLog("VinController - GetSearchResultMinPrice HotelVIN: Profit List ["+ string.Join(",", hotel_list) + client_type_string + "]: " 
                           //  + (profit_vin.Count > 0 ?JsonConvert.SerializeObject(profit_vin[0]):"NULL Data"));
 
@@ -1223,13 +1223,12 @@ namespace API_CORE.Controllers
                         DateTime todate = DateTime.ParseExact(departureDate, "yyyy-M-d", null);
                         //-- Tính giá về tay thông qua chính sách giá
 
-                        var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(hotelID,  client_type_string);
-                       // LogService.InsertLog("VinController - getHotelRoomsAvailability HotelVIN: Profit List [" + hotelID+"|" + client_type_string + "] count= " + profit_list.Count);
+                        var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(hotelID,  client_type_string,true);
+                        // LogService.InsertLog("VinController - getHotelRoomsAvailability HotelVIN: Profit List [" + hotelID+"|" + client_type_string + "] count= " + profit_list.Count);
 
-                        foreach (var r in result.rooms)
+                        foreach (var room_detail in result.rooms)
                         {
-                            var r_id = r.id;
-                            foreach (var rate in r.rates)
+                            foreach (var rate in room_detail.rates)
                             {
                                 if (client_type == (int)ClientType.STAFF)
                                 {
@@ -1239,7 +1238,13 @@ namespace API_CORE.Controllers
                                 }
                                 else
                                 {
-                                    var profit = profit_list.Where(x => x.HotelCode == result.hotel_id && x.RoomTypeCode == r_id && x.PackageName == rate.id).ToList();
+                                    //var profit = profit_list.Where(x => x.HotelCode == result.hotel_id && x.RoomTypeCode == r_id && x.PackageName == rate.id).ToList();
+                                    var profit = profit_list.Where(x => 
+                                    x.RoomCode.ToLower().Trim() == room_detail.code.ToLower().Trim() 
+                                    && x.PackageCode.ToLower().Trim() == rate.code.ToLower().Trim()
+                                    
+                                    ).ToList();
+
                                     if (profit != null && profit.Count > 0)
                                     {
                                         rate.total_profit = PricePolicyService.CalucateMinProfit(profit, rate.amount, fromdate, todate);
@@ -1252,7 +1257,7 @@ namespace API_CORE.Controllers
                                         rate.total_price = 0;
                                     }
                                 }
-                                r.min_price = r.min_price <= 0 ? rate.total_price : ((rate.total_price > 0 && r.min_price > rate.total_price) ? rate.total_price : r.min_price);
+                                room_detail.min_price = room_detail.min_price <= 0 ? rate.total_price : ((rate.total_price > 0 && room_detail.min_price > rate.total_price) ? rate.total_price : room_detail.min_price);
 
                             }
                         }

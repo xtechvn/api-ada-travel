@@ -175,7 +175,7 @@ namespace REPOSITORIES.Repositories.Hotel
             return await _hotelDAL.GetById(id);
 
         }
-        public List<HotelPricePolicyViewModel> GetHotelRoomPricePolicy(string hotel_id, string client_types/*, DateTime arrival_date, DateTime departure_date*/)
+        public List<HotelPricePolicyViewModel> GetHotelRoomPricePolicy(string hotel_id, string client_types, bool get_all = false/*, DateTime arrival_date, DateTime departure_date*/)
         {
             try
             {
@@ -183,6 +183,16 @@ namespace REPOSITORIES.Repositories.Hotel
                 if (dataTable == null || dataTable.Rows.Count <= 0)
                 {
                     dataTable = _hotelDAL.GetHotelPricePolicy(hotel_id,  client_types/*,  arrival_date,  departure_date*/);
+                }
+                if (get_all)
+                {
+                    var list= dataTable.ToList<HotelPricePolicyViewModel>();
+                    var data_table_special= _hotelDAL.GetHotelPricePolicy(hotel_id, client_types/*,  arrival_date,  departure_date*/);
+                    if (data_table_special != null && data_table_special.Rows.Count > 0)
+                    {
+                        list.AddRange(data_table_special.ToList<HotelPricePolicyViewModel>());
+                    }
+                    return list;
                 }
                 return dataTable.ToList<HotelPricePolicyViewModel>();
             }
