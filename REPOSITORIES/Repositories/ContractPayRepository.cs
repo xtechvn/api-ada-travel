@@ -131,15 +131,15 @@ namespace REPOSITORIES.Repositories
                 db_data.order = orderDAL.GetDetail(detail.OrderId);
                 if (db_data.order == null || db_data.order.OrderId <= 0)
                 {
-                    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
-                                       + "CANNOT get by OrderID [" + detail.OrderId + "] . Get by [" + detail.OrderNo + "]");
+                //    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
+                //                       + "CANNOT get by OrderID [" + detail.OrderId + "] . Get by [" + detail.OrderNo + "]");
                     db_data.order = orderDAL.GetOrderByOrderNo(detail.OrderNo);
                 }
                
                 if (db_data.order == null || db_data.order.OrderId <= 0)
                 {
-                    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
-                                      + "Get by OrderNo [" + detail.OrderNo + "] return NULL. Get in message");
+                //    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
+                //                      + "Get by OrderNo [" + detail.OrderNo + "] return NULL. Get in message");
                     var words = detail.TransferDescription.Split(" ");
                     foreach (var w in words)
                     {
@@ -160,15 +160,15 @@ namespace REPOSITORIES.Repositories
                         db_data.order = orderDAL.GetOrderByOrderNo(w);
                         if (db_data.order != null && db_data.order.OrderId > 0)
                         {
-                            LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
-                                      + "Match [" + w + "] -> [" + db_data.order.OrderId + "]");
+                            //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
+                            //          + "Match [" + w + "] -> [" + db_data.order.OrderId + "]");
                             break;
                         }
                     }
                 }
                 if (db_data.order == null || db_data.order.OrderId <= 0) {
-                    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
-                                         + "Not Match Either [" + detail.OrderId + "]  [" + detail.OrderNo + "] [" + detail.TransferDescription + "]");
+                    //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
+                    //                     + "Not Match Either [" + detail.OrderId + "]  [" + detail.OrderNo + "] [" + detail.TransferDescription + "]");
                     return null;
                 } 
                     

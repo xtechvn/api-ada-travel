@@ -134,8 +134,8 @@ namespace API_CORE.Controllers.APP
                                         detail.OrderNo = order.OrderNo;
                                         detail.OrderId = order.OrderId;
                                         detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
-                                        LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
-                                            +"with ["+ detail.MessageContent + "] belong to Order ["+detail.OrderNo+"-"+detail.OrderId+"]");
+                                        //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
+                                        //    +"with ["+ detail.MessageContent + "] belong to Order ["+detail.OrderNo+"-"+detail.OrderId+"]");
 
                                         break;
                                     }
@@ -145,8 +145,8 @@ namespace API_CORE.Controllers.APP
                                         detail.OrderNo = deposit.TransNo;
                                         detail.OrderId = deposit.Id;
                                         detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
-                                        LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
-                                           + "with [" + detail.MessageContent + "] belong to Transaction [" + detail.OrderNo + "-" + detail.OrderId + "]");
+                                        //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
+                                        //   + "with [" + detail.MessageContent + "] belong to Transaction [" + detail.OrderNo + "-" + detail.OrderId + "]");
                                         break;
 
                                     }
@@ -184,8 +184,8 @@ namespace API_CORE.Controllers.APP
                         case (int)BankMessageTransferType.ORDER_PAYMENT:
                         case (int)BankMessageTransferType.DEPOSIT_PAYMENT:
                             {
-                                LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
-                                         + "EXISTS [" + detail.MessageContent + "] [" + detail.BankTransferType + "][" + detail.OrderId + "][" + detail.OrderNo + "]");
+                                //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
+                                //         + "EXISTS [" + detail.MessageContent + "] [" + detail.BankTransferType + "][" + detail.OrderId + "][" + detail.OrderNo + "]");
                                 var contract_pay_code = await identifierServiceRepository.buildContractPay();
                                 var payment_detail = await _contractPayRepository.UpdateOrderBankTransferPayment(detail, contract_pay_code);
                                 //var is_checkout = await iDepositHistoryRepository.BotVerifyTrans(detail.OrderNo);
