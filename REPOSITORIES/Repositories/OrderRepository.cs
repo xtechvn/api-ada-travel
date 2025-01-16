@@ -6,10 +6,8 @@ using DAL.MongoDB.Flight;
 using DAL.Orders;
 using Entities.ConfigModels;
 using Entities.ViewModels;
-using ENTITIES.APPModels.ReadBankMessages;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.APP.ContractPay;
-using ENTITIES.ViewModels.APP.ReadBankMessages;
 using ENTITIES.ViewModels.Order;
 using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories;
@@ -18,11 +16,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Utilities;
 using Utilities.Contants;
-using Utilities.Helpers;
 
 namespace REPOSITORIES.Repositories
 {
@@ -371,6 +367,23 @@ namespace REPOSITORIES.Repositories
                 LogHelper.InsertLogTelegram("GetOrrderbyUtmSource - OrderRepository: " + ex);
             }
             return model;
+        }
+        public async Task<List<GetListOrdersResponseModel>> GetListOrder(long clientId, DateTime fromDate, DateTime toDate, string OrderStatus = "")
+        {
+            try
+            {
+                DataTable dt =  orderDAL.GetListOrder(clientId,fromDate,toDate,OrderStatus);
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    var listData = dt.ToList<GetListOrdersResponseModel>();
+                    return listData;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("UpdateOrderAmount - OrderRepository: " + ex);
+            }
+            return null;
         }
     }
 }

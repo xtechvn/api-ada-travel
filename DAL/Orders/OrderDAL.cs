@@ -5,6 +5,7 @@ using ENTITIES.Models;
 using ENTITIES.ViewModels.APP.ReadBankMessages;
 using ENTITIES.ViewModels.Order;
 using Microsoft.EntityFrameworkCore;
+using Nest;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -984,7 +985,6 @@ namespace DAL.Orders
                 {
                     objParam[5] = new SqlParameter("@EndDate", end_date);
                 }
-
                 DataTable tb = new DataTable();
                 _DbWorker.Fill(tb, StoreProceduresName.SP_GetHotelOrderByAccountClientId, objParam);
 
@@ -1423,6 +1423,59 @@ namespace DAL.Orders
             catch (Exception ex)
             {
                 LogHelper.InsertLogTelegram("GetPagingList - OrderDal: " + ex);
+            }
+            return null;
+        }
+        public DataTable GetListOrder(long clientId, DateTime fromDate, DateTime toDate,string OrderStatus="")
+        {
+            try
+            {
+                SqlParameter[] objParam = new SqlParameter[13];
+                objParam[0] = new SqlParameter("@StartDateFrom", DBNull.Value);
+                objParam[1] = new SqlParameter("@StartDateTo", DBNull.Value);
+                objParam[2] = new SqlParameter("@EndDateFrom", DBNull.Value);
+                objParam[3] = new SqlParameter("@EndDateTo", DBNull.Value);
+                if (fromDate == null || fromDate<new DateTime(2020,01,01))
+                {
+                    objParam[4] = new SqlParameter("@CreateDateFrom", DBNull.Value);
+
+                }
+                else
+                {
+                    objParam[4] = new SqlParameter("@CreateDateFrom", fromDate);
+
+                }
+                if (toDate == null || toDate < new DateTime(2020, 01, 01))
+                {
+                    objParam[5] = new SqlParameter("@CreateDateTo", DBNull.Value);
+
+                }
+                else
+                {
+                    objParam[5] = new SqlParameter("@CreateDateTo", toDate);
+
+                }
+                objParam[6] = new SqlParameter("@ClientId", clientId);
+                objParam[7] = new SqlParameter("@SupplierId", DBNull.Value);
+                objParam[8] = new SqlParameter("@OrderId", DBNull.Value);
+                if (OrderStatus == null || OrderStatus.Trim()=="")
+                {
+                    objParam[9] = new SqlParameter("@OrderStatus", DBNull.Value);
+
+                }
+                else
+                {
+                    objParam[9] = new SqlParameter("@OrderStatus", OrderStatus);
+
+                }
+                objParam[10] = new SqlParameter("@Module", DBNull.Value);
+                objParam[11] = new SqlParameter("@PageIndex", 1);
+                objParam[12] = new SqlParameter("@PageSize", 1000);
+                return _DbWorker.GetDataTable(StoreProceduresName.SP_GetListOrder, objParam);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetOrderListByClientId - DebtStatisticDAL: " + ex);
             }
             return null;
         }

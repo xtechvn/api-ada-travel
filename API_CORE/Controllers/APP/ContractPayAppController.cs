@@ -107,8 +107,8 @@ namespace API_CORE.Controllers.APP
                             msg = "Data không hợp lệ"
                         });
                     }
-                    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
-                                        + "Received [" + detail.MessageContent + "]  [" + detail.BankTransferType + "]");
+                    //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
+                    //                    + "Received [" + detail.MessageContent + "]  [" + detail.BankTransferType + "]");
                     switch (detail.BankTransferType)
                     {
                         case (int)BankMessageTransferType.CANNOT_DETECT:
@@ -153,8 +153,8 @@ namespace API_CORE.Controllers.APP
                                 }
                                 if (detail.BankTransferType == (int)BankMessageTransferType.CANNOT_DETECT)
                                 {
-                                    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
-                                          + "with [" + detail.MessageContent + "] CANNOT DETECT PAYMENT []");
+                                    //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
+                                    //      + "with [" + detail.MessageContent + "] CANNOT DETECT PAYMENT []");
                                     return Ok(new
                                     {
                                         status = (int)ResponseType.FAILED,

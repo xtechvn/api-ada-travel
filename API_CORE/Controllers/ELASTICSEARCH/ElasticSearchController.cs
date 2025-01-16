@@ -380,8 +380,8 @@ namespace API_CORE.Controllers.ELASTICSEARCH
                     string index_name = configuration["DataBaseConfig:Elastic:index_product_order"];
                     IESRepository<OrderElasticsearchViewModel> _ESRepository = new ESRepository<OrderElasticsearchViewModel>(configuration["DataBaseConfig:Elastic:Host"]);
 
-                    var result = _ESRepository.DeleteOrderID(data.OrderId.ToString(), index_name, Type);
-                    if (data.OrderId > 0)
+                    var result = _ESRepository.DeleteOrderID(data.id.ToString(), index_name, Type);
+                    if (data.id > 0)
                     {
                         var id = _ESRepository.UpSert(data, index_name, Type);
                         if (id == 1)
@@ -403,7 +403,7 @@ namespace API_CORE.Controllers.ELASTICSEARCH
                     }
                     else
                     {
-                        LogHelper.InsertLogTelegram("insertDataProduct - ElasticSearchController:insert Datakhông thành công OrderNo= " + data.OrderNo);
+                        LogHelper.InsertLogTelegram("insertDataProduct - ElasticSearchController:insert Datakhông thành công OrderNo= " + data.orderno);
                         return Ok(new
                         {
                             status = (int)ResponseType.ERROR,
@@ -451,7 +451,7 @@ namespace API_CORE.Controllers.ELASTICSEARCH
                     string index_name = configuration["DataBaseConfig:Elastic:index_product_order"];
 
                     var result = await elasticsearchDataRepository.GetElasticsearchOrder(index_name, txtsearch, Type);
-                    var data = result.GroupBy(x => x.OrderId).Select(y => y.First()).ToList();
+                    var data = result.GroupBy(x => x.id).Select(y => y.First()).ToList();
                     if (result != null && result.Count > 0)
                     {
                         return Ok(new

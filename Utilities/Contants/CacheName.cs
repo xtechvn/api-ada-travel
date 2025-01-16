@@ -59,6 +59,7 @@ namespace Utilities.Contants
         public const string B2B_ORDER_TOUR_ACCOUNTID = "B2B_ORDER_TOUR_ACCOUNTID_";
         public const string B2B_HOTEL_SURCHARGE = "B2B_HOTEL_SURCHARGE_";
         public const string B2B_HOTEL_VOUCHER = "B2B_HOTEL_VOUCHER_";
+        public const string B2B_SUMMARY = "B2B_SUMMARY_";
 
     }
 
