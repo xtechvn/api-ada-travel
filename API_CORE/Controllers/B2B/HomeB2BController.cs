@@ -107,9 +107,9 @@ namespace API_CORE.Controllers.B2B
                     var toDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59); // Replace with your actual to date
                     var order_status = new List<int>() { 0, 1, 2, 3, 4, 5, 6 };
                     var payment_status = new List<int>() { 0, 1, 2,3 };
-                    var total_order_in_day = await _orderESRepository.GetListOrder((long)account_client.ClientId, order_status, payment_status, fromDate, toDate);
-                   
-                    if(total_order_in_day!=null && total_order_in_day.Count > 0)
+                    var total_order_in_day = await _orderESRepository.GetListOrder(account_client_id, order_status, payment_status, fromDate, toDate);
+
+                    if (total_order_in_day!=null && total_order_in_day.Count > 0)
                     {
                         result.list_order = total_order_in_day;
                         result.list_order_waiting_payment = total_order_in_day.Where(x => x.paymentstatus == null || x.paymentstatus == 0).ToList();
@@ -130,9 +130,13 @@ namespace API_CORE.Controllers.B2B
                     //    result.total_order_waiting_payment = order_payment_in_day.Count(x => x.PaymentStatus == null || x.PaymentStatus == 0);
                     //}
                   
-                    var order_checkin = await _orderESRepository.GetListOrderCheckinNow((long)account_client.ClientId, order_status, fromDate, toDate);
-                    var order_checkout = await _orderESRepository.GetListOrderCheckoutNow((long)account_client.ClientId, order_status, fromDate, toDate);
-                    if(order_checkin!= null && order_checkin.Count > 0)
+                    var order_checkin = await _orderESRepository.GetListOrderCheckinNow(account_client_id, order_status, fromDate, toDate);
+                   // LogHelper.InsertLogTelegram("HomeB2BController- HomeSummary - GetListOrderCheckinNow: " + account_client_id + " - Count: " + (order_checkin != null ? order_checkin.Count.ToString() : "0"));
+
+                    var order_checkout = await _orderESRepository.GetListOrderCheckoutNow(account_client_id, order_status, fromDate, toDate);
+                   // LogHelper.InsertLogTelegram("HomeB2BController- HomeSummary - GetListOrderCheckinNow: " + account_client_id + " - Count: " + (order_checkout != null ? order_checkout.Count.ToString() : "0"));
+
+                    if (order_checkin!= null && order_checkin.Count > 0)
                     {
                         result.total_order_checkin = order_checkin.Count;
                         result.list_order_checkin = order_checkin;

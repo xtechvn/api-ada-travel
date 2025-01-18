@@ -1,8 +1,10 @@
 ﻿using Elasticsearch.Net;
+using ENTITIES.Models;
 using ENTITIES.ViewModels.ElasticSearch;
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Utilities;
 using Utilities.Contants;
@@ -46,7 +48,7 @@ namespace Caching.Elasticsearch
             return null;
 
         }
-        public async Task<List<OrderElasticsearchViewModel>> GetListOrder(long client_id, List<int> order_status,List<int> payment_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
+        public async Task<List<OrderElasticsearchViewModel>> GetListOrder(long accountclientid, List<int> order_status,List<int> payment_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
         {
             try
             {
@@ -61,17 +63,9 @@ namespace Caching.Elasticsearch
                          .Bool(b => b
                              .Must(mu => mu
                                  .Term(t => t
-                                     .Field("clientid")
-                                     .Value(client_id)
+                                     .Field(x=>x.accountclientid)
+                                     .Value(accountclientid)
                                  )
-                                 &  mu.Terms(t => t
-                                        .Field("status") // Replace with your status field name
-                                        .Terms(order_status)
-                                    )
-                                  & mu.Terms(t => t
-                                        .Field("paymentstatus") // Replace with your status field name
-                                        .Terms(payment_status)
-                                    )
 
                              )
                               .Filter(f => f
@@ -88,8 +82,12 @@ namespace Caching.Elasticsearch
                 );
                 if (search_response.IsValid)
                 {
-                    return search_response.Documents as List<OrderElasticsearchViewModel>;
-
+                    var data= search_response.Documents as List<OrderElasticsearchViewModel>;
+                    if(data != null && data.Count > 0)
+                    {
+                        data = data.Where(x => order_status.Contains((int)x.orderstatus) && (payment_status == null || payment_status.Contains((int)x.paymentstatus))).ToList();
+                    }
+                    return data;
                 }
             }
             catch (Exception ex)
@@ -99,7 +97,7 @@ namespace Caching.Elasticsearch
             return null;
 
         }
-        public async Task<List<OrderElasticsearchViewModel>> GetListOrderCheckinNow(long client_id, List<int> order_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
+        public async Task<List<OrderElasticsearchViewModel>> GetListOrderCheckinNow(long accountclientid, List<int> order_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
         {
             try
             {
@@ -114,13 +112,9 @@ namespace Caching.Elasticsearch
                          .Bool(b => b
                              .Must(mu => mu
                                  .Term(t => t
-                                     .Field("clientid")
-                                     .Value(client_id)
+                                     .Field(x => x.accountclientid)
+                                     .Value(accountclientid)
                                  )
-                                 & mu.Terms(t => t
-                                        .Field("status") // Replace with your status field name
-                                        .Terms(order_status)
-                                    )
 
                              )
                               .Filter(f => f
@@ -137,7 +131,12 @@ namespace Caching.Elasticsearch
                 );
                 if (search_response.IsValid)
                 {
-                    return search_response.Documents as List<OrderElasticsearchViewModel>;
+                    var data = search_response.Documents as List<OrderElasticsearchViewModel>;
+                    if (data != null && data.Count > 0)
+                    {
+                        data = data.Where(x => order_status.Contains((int)x.orderstatus)).ToList();
+                    }
+                    return data;
 
                 }
             }
@@ -148,7 +147,7 @@ namespace Caching.Elasticsearch
             return null;
 
         }
-        public async Task<List<OrderElasticsearchViewModel>> GetListOrderCheckoutNow(long client_id, List<int> order_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
+        public async Task<List<OrderElasticsearchViewModel>> GetListOrderCheckoutNow(long accountclientid, List<int> order_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
         {
             try
             {
@@ -163,8 +162,8 @@ namespace Caching.Elasticsearch
                          .Bool(b => b
                              .Must(mu => mu
                                  .Term(t => t
-                                     .Field("clientid")
-                                     .Value(client_id)
+                                      .Field(x => x.accountclientid)
+                                     .Value(accountclientid)
                                  )
                                  & mu.Terms(t => t
                                         .Field("status") // Replace with your status field name
