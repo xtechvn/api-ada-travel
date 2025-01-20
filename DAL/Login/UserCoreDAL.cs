@@ -140,7 +140,40 @@ namespace DAL.Login
                 return -1;
             }
         }
-        
+        public async Task<long> upsertUserPQvsTravel(UserMasterViewModel model)
+        {
+            try
+            {
+                var objParam = new SqlParameter[17];
+                objParam[0] = new SqlParameter("@UserId", model.Id);
+                objParam[1] = new SqlParameter("@UserName", model.UserName);
+                objParam[2] = new SqlParameter("@FullName", model.FullName);
+                objParam[3] = new SqlParameter("@Password", model.Id > 0 ? "" : model.Password);
+                objParam[4] = new SqlParameter("@ResetPassword", model.Id > 0 ? "" : model.ResetPassword);
+                objParam[3] = new SqlParameter("@Password", model.Id < 0 ? "" : model.Password);
+                objParam[4] = new SqlParameter("@ResetPassword", model.Id < 0 ? "" : model.ResetPassword);
+                objParam[5] = new SqlParameter("@Phone", model.Phone);
+                objParam[6] = new SqlParameter("@BirthDay", model.BirthDay);
+                objParam[7] = new SqlParameter("@Gender", model.Gender);
+                objParam[8] = new SqlParameter("@Email", model.Email);
+                objParam[9] = new SqlParameter("@Avata", model.Avata);
+                objParam[10] = new SqlParameter("@Address", model.Address);
+                objParam[11] = new SqlParameter("@Status", model.Status);
+                objParam[12] = new SqlParameter("@Note", model.Note == null ? "" : model.Note);
+                objParam[13] = new SqlParameter("@CreatedBy", model.CreatedBy);
+                objParam[14] = new SqlParameter("@CreatedOn", DateTime.Now);
+                objParam[15] = new SqlParameter("@ModifiedBy", model.ModifiedBy);
+                objParam[16] = new SqlParameter("@ModifiedOn", DateTime.Now);
+
+                var id = _DbWorker.ExecuteNonQuery("sp_UpsertUser", objParam);
+                return id;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("upsertUser - UserDAL: " + ex);
+                return -1;
+            }
+        }
 
     }
 }

@@ -72,12 +72,12 @@ namespace REPOSITORIES.Repositories.Login
                             case "0":
                                 {
                                     UserCoreDAL userCoreDALTravel2 = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringTravel);
-                                    await userCoreDALTravel2.upsertUser(model);
+                                    await userCoreDALTravel2.upsertUserPQvsTravel(model);
                                 }break;
                             case "1":
                                 {
                                     UserCoreDAL userCoreDALPQ2 = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringPQ);
-                                    await userCoreDALPQ2.upsertUser(model);
+                                    await userCoreDALPQ2.upsertUserPQvsTravel(model);
 
                                 }
                                 break;
