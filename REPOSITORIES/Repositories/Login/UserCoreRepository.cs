@@ -57,8 +57,8 @@ namespace REPOSITORIES.Repositories.Login
         {
             try
             {
-
-                var id = await userDAL.upsertUser(model);
+                UserCoreDAL userDAL2 = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
+                var id = await userDAL2.upsertUser(model);
                 if(id <= 0)
                 {
                     return id;
@@ -71,11 +71,13 @@ namespace REPOSITORIES.Repositories.Login
                         switch (ct.Trim()){
                             case "0":
                                 {
-                                    await userCoreDALTravel.upsertUser(model);
+                                    UserCoreDAL userCoreDALTravel2 = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringTravel);
+                                    await userCoreDALTravel2.upsertUser(model);
                                 }break;
                             case "1":
                                 {
-                                    await userCoreDALPQ.upsertUser(model);
+                                    UserCoreDAL userCoreDALPQ2 = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringPQ);
+                                    await userCoreDALPQ2.upsertUser(model);
 
                                 }
                                 break;

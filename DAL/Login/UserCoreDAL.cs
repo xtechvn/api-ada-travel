@@ -80,8 +80,8 @@ namespace DAL.Login
                 objParam[0] = new SqlParameter("@UserId", model.Id);
                 objParam[1] = new SqlParameter("@UserName", model.UserName);
                 objParam[2] = new SqlParameter("@FullName", model.FullName);
-                objParam[3] = new SqlParameter("@Password", model.Id > 0 ? "" : model.Password);
-                objParam[4] = new SqlParameter("@ResetPassword", model.Id > 0 ? "" : model.ResetPassword);
+                objParam[3] = new SqlParameter("@Password", model.Id < 0 ? "" : model.Password);
+                objParam[4] = new SqlParameter("@ResetPassword", model.Id < 0 ? "" : model.ResetPassword);
                 objParam[5] = new SqlParameter("@Phone", model.Phone);
                 objParam[6] = new SqlParameter("@BirthDay", model.BirthDay);
                 objParam[7] = new SqlParameter("@Gender", model.Gender);
