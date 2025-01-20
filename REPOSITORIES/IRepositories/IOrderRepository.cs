@@ -1,7 +1,5 @@
 ﻿using Entities.ViewModels;
-using ENTITIES.APPModels.ReadBankMessages;
 using ENTITIES.Models;
-using ENTITIES.ViewModels.APP.ReadBankMessages;
 using ENTITIES.ViewModels.Order;
 using System;
 using System.Collections.Generic;
@@ -30,6 +28,7 @@ namespace REPOSITORIES.IRepositories
         Task<List<OrderVinWonderDetailViewModel>> getOrderVinWonderDetail(long order_id, long client_id);
         Task<List<OrderServiceViewModel>> GetAllServiceByOrderId(long OrderId);
         Task<GenericViewModel<OrderaffViewModel>> GetListOrrderbyUtmSource(OrderViewSearchModel searchModel, int currentPage, int pageSize);
+        Task<List<GetListOrdersResponseModel>> GetListOrder(long clientId, DateTime fromDate, DateTime toDate, string OrderStatus = "");
 
     }
 }

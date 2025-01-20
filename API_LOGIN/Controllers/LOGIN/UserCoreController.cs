@@ -155,7 +155,7 @@ namespace API_LOGIN.Controllers
 
                     return Ok(new
                     {
-                        status = user_detail.Count > 0 ? ((int)ResponseType.SUCCESS) : (int)ResponseType.EMPTY,
+                        status = (user_detail!=null &&user_detail.Count > 0) ? ((int)ResponseType.SUCCESS) : (int)ResponseType.EMPTY,
                         data = user_detail
                     });
                 }

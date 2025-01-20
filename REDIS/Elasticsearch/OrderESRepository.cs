@@ -1,10 +1,13 @@
 ﻿using Elasticsearch.Net;
+using ENTITIES.Models;
 using ENTITIES.ViewModels.ElasticSearch;
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Utilities;
+using Utilities.Contants;
 
 namespace Caching.Elasticsearch
 {
@@ -45,6 +48,153 @@ namespace Caching.Elasticsearch
             return null;
 
         }
+        public async Task<List<OrderElasticsearchViewModel>> GetListOrder(long accountclientid, List<int> order_status,List<int> payment_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
+        {
+            try
+            {
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(index_name);
+                var elasticClient = new ElasticClient(connectionSettings);
 
+                var search_response =  elasticClient.Search<OrderElasticsearchViewModel>(s => s
+                     .Index(index_name) // Replace with your index name
+                     .Query(q => q
+                         .Bool(b => b
+                             .Must(mu => mu
+                                 .Term(t => t
+                                     .Field(x=>x.accountclientid)
+                                     .Value(accountclientid)
+                                 )
+
+                             )
+                              .Filter(f => f
+                                    .DateRange(dr => dr
+                                        .Field("createtime") // Replace with your date field name
+                                        .GreaterThanOrEquals(fromDate)
+                                        .LessThanOrEquals(toDate)
+                                    )
+                                  
+                                )
+                             
+                         )
+                     )
+                );
+                if (search_response.IsValid)
+                {
+                    var data= search_response.Documents as List<OrderElasticsearchViewModel>;
+                    if(data != null && data.Count > 0)
+                    {
+                        data = data.Where(x => order_status.Contains((int)x.orderstatus) && (payment_status == null || payment_status.Contains((int)x.paymentstatus))).ToList();
+                    }
+                    return data;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetByClientId - OrderESRepository. " + ex);
+            }
+            return null;
+
+        }
+        public async Task<List<OrderElasticsearchViewModel>> GetListOrderCheckinNow(long accountclientid, List<int> order_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
+        {
+            try
+            {
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(index_name);
+                var elasticClient = new ElasticClient(connectionSettings);
+
+                var search_response = elasticClient.Search<OrderElasticsearchViewModel>(s => s
+                     .Index(index_name) // Replace with your index name
+                     .Query(q => q
+                         .Bool(b => b
+                             .Must(mu => mu
+                                 .Term(t => t
+                                     .Field(x => x.accountclientid)
+                                     .Value(accountclientid)
+                                 )
+
+                             )
+                              .Filter(f => f
+                                    .DateRange(dr => dr
+                                        .Field("startdate") // Replace with your date field name
+                                        .GreaterThanOrEquals(fromDate)
+                                        .LessThanOrEquals(toDate)
+                                    )
+
+                                )
+
+                         )
+                     )
+                );
+                if (search_response.IsValid)
+                {
+                    var data = search_response.Documents as List<OrderElasticsearchViewModel>;
+                    if (data != null && data.Count > 0)
+                    {
+                        data = data.Where(x => order_status.Contains((int)x.orderstatus)).ToList();
+                    }
+                    return data;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetByClientId - OrderESRepository. " + ex);
+            }
+            return null;
+
+        }
+        public async Task<List<OrderElasticsearchViewModel>> GetListOrderCheckoutNow(long accountclientid, List<int> order_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
+        {
+            try
+            {
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(index_name);
+                var elasticClient = new ElasticClient(connectionSettings);
+
+                var search_response = elasticClient.Search<OrderElasticsearchViewModel>(s => s
+                     .Index(index_name) // Replace with your index name
+                     .Query(q => q
+                         .Bool(b => b
+                             .Must(mu => mu
+                                 .Term(t => t
+                                      .Field(x => x.accountclientid)
+                                     .Value(accountclientid)
+                                 )
+                                 & mu.Terms(t => t
+                                        .Field("status") // Replace with your status field name
+                                        .Terms(order_status)
+                                    )
+
+                             )
+                              .Filter(f => f
+                                    .DateRange(dr => dr
+                                        .Field("enddate") // Replace with your date field name
+                                        .GreaterThanOrEquals(fromDate)
+                                        .LessThanOrEquals(toDate)
+                                    )
+
+                                )
+
+                         )
+                     )
+                );
+                if (search_response.IsValid)
+                {
+                    return search_response.Documents as List<OrderElasticsearchViewModel>;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetByClientId - OrderESRepository. " + ex);
+            }
+            return null;
+
+        }
     }
 }

@@ -21,7 +21,7 @@ namespace REPOSITORIES.IRepositories.Hotel
         List<HotelFERoomPackageDataModel> GetFERoomPackageListByRoomId(int room_id, DateTime fromDate, DateTime toDate);
         Task<ENTITIES.Models.Hotel> GetByHotelId(string hotel_id);
         Task<ENTITIES.Models.Hotel> GetById(int id);
-        public List<HotelPricePolicyViewModel> GetHotelRoomPricePolicy(string hotel_id,  string client_types/*, DateTime arrival_date, DateTime departure_date*/);
+        public List<HotelPricePolicyViewModel> GetHotelRoomPricePolicy(string hotel_id,  string client_types, bool get_all=false /*, DateTime arrival_date, DateTime departure_date*/);
         Task<int> SummitHotelDetail(HotelSummit model);
         Task<ENTITIES.Models.Hotel> GetHotelContainRoomid(int room_id);
         IEnumerable<HotelRoomGridModel> GetHotelRoomList(int hotel_id, int page_index, int page_size);
