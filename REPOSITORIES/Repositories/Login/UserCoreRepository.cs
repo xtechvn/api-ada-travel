@@ -31,6 +31,7 @@ namespace REPOSITORIES.Repositories.Login
         {
             try
             {
+                userDAL = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
                 return await userDAL.getDetail(user_id, username, password);
             }
             catch (Exception ex)
@@ -44,7 +45,8 @@ namespace REPOSITORIES.Repositories.Login
         {
             try
             {
-               return await userDAL.getAuthentUserInfo(username, password);
+                userDAL = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
+                return await userDAL.getAuthentUserInfo(username, password);
             }
             catch (Exception ex)
             {
@@ -57,8 +59,8 @@ namespace REPOSITORIES.Repositories.Login
         {
             try
             {
-                UserCoreDAL userDAL2 = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
-                var id = await userDAL2.upsertUser(model);
+                userDAL = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
+                var id = await userDAL.upsertUser(model);
                 if(id <= 0)
                 {
                     return id;
@@ -123,6 +125,7 @@ namespace REPOSITORIES.Repositories.Login
         {
             try
             {
+                userDAL = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
                 return await userDAL.updateActive2Fa(user_id);
 
             }
