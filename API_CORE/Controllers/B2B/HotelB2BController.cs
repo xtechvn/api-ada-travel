@@ -2248,13 +2248,17 @@ namespace API_CORE.Controllers.B2B
                     {
 
                         IEnumerable<HotelSurchargeGridModel> model = JsonConvert.DeserializeObject<IEnumerable<HotelSurchargeGridModel>>(str);
-                        //-- Trả kết quả
-                        return Ok(new
+                        if (model.Any())
                         {
-                            status = ((int)ResponseType.SUCCESS).ToString(),
-                            msg = "Get Data From Cache Success",
-                            data = model,
-                        });
+                            //-- Trả kết quả
+                            return Ok(new
+                            {
+                                status = ((int)ResponseType.SUCCESS).ToString(),
+                                msg = "Get Data From Cache Success",
+                                data = model,
+                            });
+                        }
+                        
                     }
                     var surchage = _hotelDetailRepository.GetHotelSurchargeList(hotel.Id, 1, 200);
                     if (surchage != null && surchage.Count() > 0)
