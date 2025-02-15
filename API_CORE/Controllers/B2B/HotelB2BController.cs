@@ -1821,6 +1821,10 @@ namespace API_CORE.Controllers.B2B
                         Hotel_Booking.ArrivalDate = detail.rooms.Max(s => s.rates.Min(x => (DateTime)DateUtil.Parse(x.arrivalDate.Replace('-', '/'))));
                         Hotel_Booking.DepartureDate = detail.rooms.Max(s => s.rates.Max(x => (DateTime)DateUtil.Parse(x.departureDate.Replace('-', '/'))));
                     }
+                    if (detail.extrapackages != null && detail.extrapackages.Count > 0)
+                    {
+                        Hotel_Booking.TotalAmount += detail.extrapackages.Sum(s => (double)s.Amount);
+                    }
                     var HotelBookingId = _hotelBookingRepositories.CreateHotelBooking(Hotel_Booking);
                     if (HotelBookingId < 0)
                     {
