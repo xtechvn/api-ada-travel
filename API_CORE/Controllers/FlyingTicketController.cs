@@ -106,7 +106,7 @@ namespace API_CORE.Controllers
 
                     }
                     //data = data.GroupBy(x => x.price).Select(x => x.First()).ToList();
-                    redisService.Set(cache_name, JsonConvert.SerializeObject(data), db_index);
+                    redisService.Set(cache_name, JsonConvert.SerializeObject(data),DateTime.Now.AddDays(1), db_index);
 
                     return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), msg = "Success", data = data });
                 }

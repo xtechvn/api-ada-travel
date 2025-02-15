@@ -75,7 +75,7 @@ namespace API_CORE.Controllers.VOUCHER
                 else
                 {
                     string voucher_name = objParr[0]["voucher_name"].ToString(); // tên voucher
-                    if (string.IsNullOrEmpty(voucher_name))
+                    if (string.IsNullOrEmpty(voucher_name) || voucher_name.Trim()=="")
                     {
                         return Ok(new { status = (int)ResponseType.EMPTY, msg = "Mã voucher không được để trống" });
                     }
@@ -98,7 +98,10 @@ namespace API_CORE.Controllers.VOUCHER
 
                     //2. Check null
                     var voucher = await voucherRepository.getDetailVoucher(voucher_name);
-
+                    if (voucher==null || voucher.Id<=0 || voucher.ProjectType <= 0)
+                    {
+                        return Ok(new { status = (int)ResponseType.EMPTY, msg = "Mã voucher không tồn tại trong hệ thống. Vui lòng liên hệ với bộ phận CSKH để được hỗ trợ" });
+                    }
                     //3. Check hệ thống
                     if (Convert.ToInt16(SourcePaymentType.b2c) != voucher.ProjectType)
                     {
