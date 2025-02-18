@@ -371,5 +371,37 @@ namespace DAL.Hotel
                 return null;
             }
         }
+        public async Task<DataTable> GetHotelBookingRoomsOptionalByBookingId(long hotelbookingid)
+        {
+            try
+            {
+
+                SqlParameter[] objParam = new SqlParameter[1];
+                objParam[0] = new SqlParameter("@HotelBookingId", hotelbookingid);
+
+                return _DbWorker.GetDataTable(StoreProceduresName.GetListHotelBookingRoomsOptionalByBookingId, objParam);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetHotelBookingRoomsOptionalByBookingId - ContractDAL: " + ex.ToString());
+            }
+            return null;
+        }
+        public async Task<DataTable> GetHotelBookingRoomRatesOptionalByBookingId(long hotelbookingid)
+        {
+            try
+            {
+
+                SqlParameter[] objParam = new SqlParameter[1];
+                objParam[0] = new SqlParameter("@HotelBookingId", hotelbookingid);
+
+                return _DbWorker.GetDataTable(StoreProceduresName.GetListHotelBookingRoomRatesOptionalByBookingId, objParam);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetPagingList - ContractDAL: " + ex);
+            }
+            return null;
+        }
     }
 }

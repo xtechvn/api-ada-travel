@@ -4,199 +4,172 @@
 <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Email Order Notify</title>
+    <title>Simple Email</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             -webkit-box-sizing: border-box;
             box-sizing: border-box;
+            color: #000 !important;
         }
 
-        th {
-            color: black
-        }
 
-        td {
-            color: black
+        table td {
+            padding: 6px;
+            vertical-align: middle;
         }
     </style>
 </head>
 
-<body class="" style="background-color: #ffffff !important; font-family: sans-serif; -webkit-font-smoothing: antialiased; font-size: 16px; line-height: 27px; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+<body style="background-color: #f6f6f6; font-family:Times New Roman; -webkit-font-smoothing: antialiased; font-size: 12px;color: #00264D; line-height: 1.4;max-width: 800px; margin: 0 auto; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
 
-    <div style="width: 800px; max-width: 100%;margin: 20px auto;color: #00264D;font-size:16px;background: #fff">
-        <table cellspacing="0" cellpadding="0" width="100%" style="background: #F1F5F9;border-top: 3px solid #070BA0;padding:5px 15px;">
-            <tr>
-                <td><img alt="" src="https://static-image.adavigo.com/uploads/images/logo.png"></td>
-                <td style="text-align: right"><img alt="" src="https://static-image.adavigo.com/uploads/images/hotline.png"></td>
-            </tr>
-        </table>
-        <div style="padding: 15px;">
-            <body style="background-color: #f6f6f6; font-family:Arial; -webkit-font-smoothing: antialiased; font-size: 14px;color: #00264D; line-height: 1.4;max-width: 800px; margin: 0 auto; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
-                <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; visibility: hidden; width: 0;">
-                    This
-                    is preheader text. Some clients will show this text as a preview.
-                </span>
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%;">
-                    <tr>
-                        <td class="container" style="padding: 0;background: #fff  no-repeat right 0 top 0;">
-                            <div class="content" style="margin: 0 auto; max-width: 800px;box-sizing: border-box; display: block; padding: 15px 20px;">
-                                <table role="presentation" border="0" width="100%">
-                                    <tr>
-                                        <td>
-                                            <div>
-                                                <div style="margin-bottom: 10px;">Kính gửi Anh/chị <b>{{userName}}</b>,</div>
-                                                <div style="margin-bottom: 10px;">Adavigo gửi tới Anh/chị {{userName}} thông tin xác nhận đặt dịch vụ như sau:</div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </table>
-                                <table style="border: 0; border-spacing: 0; text-indent: 0; border-collapse: collapse; font-size: 13px; width: 100%; margin-bottom: 15px;;" data-mce-style="border: 0; border-spacing: 0; text-indent: 0; border-collapse: collapse; font-size: 13px; width: 100%; margin-bottom: 15px;"
-                                       class="mce-item-table" data-mce-selected="1">
-                                    <tbody>
-                                        <tr style="font-weight: 600;" data-mce-style="font-weight: 600;">
-                                            <td style="border: 1px solid #999; padding: 5px; width: 30%; ">
-                                                <img width="120" src="https://static-image.adavigo.com/uploads/images/logo.png">
-                                            </td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;font-weight: 400;">
-                                                <div style="font-size: 15px;margin-bottom: 15px;font-weight: bold;">CÔNG TY CỔ PHẦN THƯƠNG MẠI VÀ DỊCH VỤ QUỐC TẾ ĐẠI VIỆT</div>
-                                                <div>VPGD Hà Nội : 289A, Khuất Duy Tiến, Thanh Xuân, Hà Nội</div>
-                                                <div>VPGD Hồ Chí Minh : 51 Võ Văn Tần, P.Võ Thị Sáu, Q.3,Hồ Chí Minh</div>
-                                                <div>VPGD Phú Quốc : 72 Trần Hưng Đạo, P. Dương Đông, Phú Quốc</div>
-                                                </br>
-                                                <div>Website: Adavigo.com </div>
-                                                <div>Hotline : 0936 191 192</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+           style="border-collapse: separate; width: 100%;">
+        <tr>
+            <td class="container"
+                style="padding: 0;background: #fff url(images/graphics/mask-email.jpg) no-repeat center;">
+                <div class="content"
+                     style="margin: 0 auto; max-width: 800px;box-sizing: border-box; display: block; padding: 15px 20px;">
+                    <table role="presentation" border="0" width="100%">
+                        <tr>
+                            <td style="width:30%">
+                                <div style="text-align: center;font-size: 11px;margin-bottom: 5px;">
+                                    <img src="https://static-image.adavigo.com/uploads/images/logo.png" width="100" alt="" />
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <div style="font-size: 15px;"><b>CÔNG TY CỔ PHẦN ADAVIGO</b>,</div>
+                                    <div style="font-size: 14px;">
+                                        VPGD Hà Nội: 289A, Khuất Duy Tiến, Thanh Xuân, Hà Nội
+                                    </div>
+                                    <div style="font-size: 14px; ">
+                                        VPGD Hồ Chí Minh: Số 1 Hoàng Việt, Phường 4, Quận Tân Bình, TP. HCM
+                                    </div>
+                                    <div style="font-size: 14px; ">
+                                        VPGD Phú Quốc : 72 Trần Hưng Đạo, P. Dương Đông, Phú
+                                        Quốc
+                                    </div>
+                                    <div style="font-size: 14px; ">Website: Adavigo.com</div>
+                                    <div style="font-size: 14px; ">Hotline : 0936 191 192</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="margin-bottom: 15px;font-size: 18px;text-align: center;font-weight: bold;">{{TileEmail}}</div>
+                    <table style="border: 1px solid #E3EBF3;color: #465869; border-spacing: 0; text-indent: 0; border-collapse: collapse; font-size: 14px; width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="padding: 2px 8px; font-weight: bold">
+                                    Tên khách hàng
+                                </td>
+                                <td style="padding: 2px 8px ;">
+                                    {{userName}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 8px; font-weight: bold">
+                                    Số điện thoại
+                                </td>
+                                <td style="padding:2px 8px ;">
+                                    {{userPhone}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 8px; font-weight: bold">
+                                    Email
+                                </td>
+                                <td style="padding:2px 8px ;">
+                                    <span style="color:#1890FF;text-decoration: underline;">{{userEmail}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px 8px; border: 1px solid #E3EBF3; font-weight: bold">
+                                    Mã đơn hàng
+                                </td>
+                                <td style="padding: 4px;border: 1px solid #E3EBF3">
+                                    <span style="color:#070BA0;font-weight: bold;">{{orderNo}}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table style="border: 1px solid #E3EBF3;color: #465869; border-spacing: 0; text-indent: 0; border-collapse: collapse; font-size: 14px; width: 100%;">
 
-                                            <td colspan="4" style="border: 1px solid #999; padding: 5px;font-weight: bold;text-align:center;">{{TileEmail}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px;font-weight: bold;">Tên khách hàng</td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{userName}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px;font-weight: bold;">Số điện thoại </td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{userPhone}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px;font-weight: bold;">Email </td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{userEmail}}</td>
-                                        </tr>
+                        <tbody>
+                            <tr>
+                                <td colspan="4"> {{OrderPackages}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                                        <tr>
-                                            <td colspan="2" style="border: 1px solid #999; padding: 5px;text-align: center;font-weight: bold;">Mã đơn hàng:</td>
-                                            <td colspan="2" style="border: 1px solid #999; padding: 5px;text-align: center;font-weight: bold;">{{orderNo}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="4" style="border: 1px solid #999;padding: 0px;"> {{OrderPackages}}</td>
-                                        </tr>
+                    <table style="border: 1px solid #E3EBF3; color: #465869; border-spacing: 0; text-indent: 0; border-collapse: collapse; font-size: 14px; width: 100%; ">
+                        <tbody>
 
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px; font-weight: bold;">Tổng tiền:</td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{OrderAmount}}</td>
-                                        </tr>
+                            <tr>
+                                <td width="80" style="padding: 4px; border: 1px solid #E3EBF3; font-weight: bold">
+                                    Tổng tiền
+                                </td>
+                                <td style="padding: 4px;border: 1px solid #E3EBF3">
+                                    {{OrderAmount}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="80" style="padding: 4px; border: 1px solid #E3EBF3; font-weight: bold">
+                                    ND chuyển khoản
+                                </td>
+                                <td style="padding: 4px;border: 1px solid #E3EBF3">
+                                    {{NDChuyenKhoan}}
 
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px;font-weight: bold;">Nội dung chuyển khoản:</td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{NDChuyenKhoan}} </td>
-                                        </tr>
-                                      
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px;font-weight: bold;">Thông báo thanh toán:</td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{payment_notification}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px;font-weight: bold;">Nhân viên tư vấn:</td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{SalerName}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px;font-weight: bold;">SĐT Liên hệ:</td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{SalerPhone}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #999; padding: 5px;font-weight: bold;">Email:</td>
-                                            <td colspan="3" style="border: 1px solid #999; padding: 5px;">{{SalerEmail}}</td>
-                                        </tr>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="80" style="padding: 4px; border: 1px solid #E3EBF3; font-weight: bold">
+                                    Ghi chú
+                                </td>
+                                <td style="padding: 4px;border: 1px solid #E3EBF3">
+                                    {{TTNote}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="80" style="padding: 4px; border: 1px solid #E3EBF3; font-weight: bold">
+                                    Thông báo thanh toán
+                                </td>
+                                <td style="padding: 4px;border: 1px solid #E3EBF3">
+                                    {{payment_notification}}
 
-                                    </tbody>
-                                </table>
-                                <table role="presentation" border="0" width="100%">
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <div style="margin-bottom: 10px;">Anh/chị kiểm tra lại thông tin và thanh toán để Adavigo tiến hành đặt dịch vụ</div>
-                                                <div style="margin-bottom: 10px;">Anh/chị cần hỗ trợ thêm thông tin vui lòng liên hệ với nhân viên tư vấn.</div>
-                                                <div style="margin-bottom: 10px;">Adavigo cảm ơn Quý Khách hàng</div>
-                                                <div style="margin-bottom: 10px;">Trân trọng!</div>
-                                            </td>
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-
-
-
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </body>
-
-            <div style="width: 100%;;margin-top: 20px;">
-
-
-                <table cellspacing="0" cellpadding="0" width="100%">
-                    <tr>
-                        <td style="text-align: center">
-                            <div><img alt="" src="https://static-image.adavigo.com/uploads/images/email/phone.png"></div>
-                            <div style="color: #698096;">Hỗ trợ khách hàng 24/7  Hotline:0936.191.192</div>
-                        </td>
-                        <td style="text-align: center">
-                            <div><img alt="" src="https://static-image.adavigo.com/uploads/images/email/car.png"></div>
-                            <div style="color: #698096;">Ứng dụng tiện lợi, thanh toán dễ dàng</div>
-                        </td>
-                        <td style="text-align: center">
-                            <div><img alt="" src="https://static-image.adavigo.com/uploads/images/email/plane.png"></div>
-                            <div style="color: #698096;">Giá tốt sát ngày, Nhiều ưu đãi hấp dẫn</div>
-                        </td>
-                    </tr>
-                </table>
-
-            </div>
-        </div>
-        <table role="presentation" border="0" width="100%" style="background: #0159a1;color: #fff;">
-            <tbody>
-                <tr>
-                    <td style="padding: 15px; color:white;">
-                        <div style="float: left;margin-bottom: 20px;">
-                            <img width="80" src="https://old.adavigo.com/images/logo/logo-adavigo.png" alt="" style="background: #fff;border-radius: 5px;float: left;">
-                            <span style="font-weight: bold;
-                                        margin: 10px 0 0 10px;
-                                        display: inline-block;">CÔNG TY CỔ PHẦN THƯƠNG MẠI &amp; DỊCH VỤ QUỐC TẾ ĐẠI VIỆT</span>
-                        </div>
-                        <div style="float: left;">
-                            <div><b>Trụ sở chính:</b> Tầng 6, tòa nhà Sannam, số 78 phố Duy Tân, P. Dịch Vọng Hậu, Q. Cầu Giấy, TP. Hà Nội</div>
-                            <div><b>Tổng đài kinh doanh</b>: 0936.191.192</div>
-                            <div><b>Tổng đài chăm sóc khách hàng</b>: 0326.333.333</div>
-                            <div><b>Tổng đài văn phòng Phú Quốc</b>: 0902.161.162</div>
-                            <br>
-                            <div><b>VĂN PHÒNG GIAO DỊCH:</b></div>
-                            <div><img width="12" src="https://static-image.adavigo.com/uploads/images/email/email-location.png" style="margin: 0 4px 0 10px;"><b>Hà Nội:</b> Số 289A Khuất Duy Tiến, Cầu Giấy, Hà Nội</div>
-                            <div><img width="12" src="https://static-image.adavigo.com/uploads/images/email/email-location.png" style="margin: 0 4px 0 10px;"><b>Phú Quốc CS1:</b> ShopHouse số 89 đường An Phúc, Grandworld Phú Quốc</div>
-                            <div><img width="12" src="https://static-image.adavigo.com/uploads/images/email/email-location.png" style="margin: 0 4px 0 10px;"><b>Phú Quốc CS2:</b> Số 72 Trần Hưng Đạo, Phường Dương Đông, Thành Phố Phú Quốc</div>
-                            <div><img width="12" src="https://static-image.adavigo.com/uploads/images/email/email-location.png" style="margin: 0 4px 0 10px;"><b>Hồ Chí Minh:</b> Số 51 Võ Văn Tần, P.Võ Thị Sáu, Q3</div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-
-    </div>
-
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="80" style="padding: 4px; border: 1px solid #E3EBF3; font-weight: bold">
+                                    Nhân viên tư vấn
+                                </td>
+                                <td style="padding: 4px;border: 1px solid #E3EBF3">
+                                    {{SalerName}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="80" style="padding: 4px; border: 1px solid #E3EBF3; font-weight: bold">
+                                    SDT liên hệ
+                                </td>
+                                <td style="padding: 4px;border: 1px solid #E3EBF3">
+                                    {{SalerPhone}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="80" style="padding: 4px; border: 1px solid #E3EBF3; font-weight: bold">
+                                    Email
+                                </td>
+                                <td style="padding: 4px;border: 1px solid #E3EBF3">
+                                    <span style="color:#1890FF;text-decoration: underline;">	{{SalerEmail}}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>

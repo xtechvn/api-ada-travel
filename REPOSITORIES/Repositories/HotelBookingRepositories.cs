@@ -1,12 +1,11 @@
 ﻿using Caching.Elasticsearch;
 using DAL;
 using DAL.Hotel;
-using DAL.StoreProcedure;
 using Entities.ConfigModels;
-using Entities.ViewModels;
 using ENTITIES.Models;
 using ENTITIES.ViewModels;
 using ENTITIES.ViewModels.HotelBooking;
+using ENTITIES.ViewModels.HotelBookingRoom;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories;
@@ -212,6 +211,26 @@ namespace Repositories.Repositories
                 LogHelper.InsertLogTelegram("GetHotelBookingRoomRatesByBookingRoomsRateByHotelBookingID - HotelBookingRepository: " + ex);
             }
             return null;
+        }
+        public async Task<List<HotelBookingsRoomOptionalViewModel>> GetHotelBookingOptionalListByHotelBookingId(long hotelBookingId)
+        {
+            var model = new List<HotelBookingsRoomOptionalViewModel>();
+            try
+            {
+
+                DataTable dt = await _hotelBookingDAL.GetHotelBookingRoomsOptionalByBookingId(hotelBookingId);
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    model = dt.ToList<HotelBookingsRoomOptionalViewModel>();
+                    return model;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetHotelBookingOptionalListByHotelBookingId - HotelBookingRepository: " + ex);
+                return null;
+            }
         }
     }
 }

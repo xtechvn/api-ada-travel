@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <Folder Include="DLL\" />
+    <Folder Include="ViewModels\HotelBooking\" />
   </ItemGroup>
 
 </Project>

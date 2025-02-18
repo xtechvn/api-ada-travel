@@ -47,7 +47,7 @@ namespace API_CORE.Controllers.APP
             IClientRepository _clientRepository, IFlyBookingDetailRepository _flyBookingDetailRepository, IFlightSegmentRepository _flightSegmentRepository, IOrderRepository _orderRepository, IPassengerRepository _passengerRepository, IBagageRepository _bagageRepository,
              IAirPortCodeRepository _airPortCodeRepository, IWebHostEnvironment _webHostEnvironment, IAirlinesRepository _airlinesRepository, IAccountClientRepository _accountClientRepository,
            IHotelBookingRepositories _hotelBookingRepositories, IOtherBookingRepository otherBookingRepository, ITourRepository tourRepository, IAllCodeRepository allCodeRepository, IUserRepository userRepository,
-           IVinWonderBookingRepository vinWonderBookingRepository, IContactClientRepository contactClientRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository, IClientRepository clientRepository)
+           IVinWonderBookingRepository vinWonderBookingRepository, IContactClientRepository contactClientRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository, IClientRepository clientRepository,IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository,IHotelBookingRoomRepository hotelBookingRoomRepository)
         {
             _configuration = configuration;
             _contractPayRepository = contractPayRepository;
@@ -57,7 +57,7 @@ namespace API_CORE.Controllers.APP
             orderRepository = _orderRepository;
             _mail_service = new MailService(configuration, contactClientRepository, vinWonderBookingRepository, _clientRepository, _flyBookingDetailRepository,
                        _flightSegmentRepository, _orderRepository, _passengerRepository, _bagageRepository, _airPortCodeRepository, _webHostEnvironment, _airlinesRepository, _hotelBookingRepositories,
-                       otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository, _voucherRepository, _notifyRepository);
+                       otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository, _voucherRepository, _notifyRepository,hotelBookingRoomExtraPackageRepository,hotelBookingRoomRepository);
             _vinWonderBookingService = new VinWonderBookingService(configuration, _vinWonderBookingRepository);
             _vinWonderBookingRepository = vinWonderBookingRepository;
             _contactClientRepository = contactClientRepository;

@@ -53,7 +53,8 @@ namespace API_CORE.Controllers.B2C
              IFlightSegmentRepository _flightSegmentRepository, IOrderRepository _orderRepository,
              IPassengerRepository _passengerRepository, IBagageRepository _bagageRepository,IContractPayRepository contractPayRepository,
              IAirPortCodeRepository _airPortCodeRepository, IWebHostEnvironment _webHostEnvironment, IAirlinesRepository _airlinesRepository,
-              IHotelBookingRepositories _hotelBookingRepositories, IOtherBookingRepository otherBookingRepository, ITourRepository tourRepository, IAllCodeRepository allCodeRepository, IUserRepository userRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository
+              IHotelBookingRepositories _hotelBookingRepositories, IOtherBookingRepository otherBookingRepository, ITourRepository tourRepository, IAllCodeRepository allCodeRepository, 
+              IUserRepository userRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository,IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository,IHotelBookingRoomRepository hotelBookingRoomRepository
             )
         {
             configuration = _configuration;
@@ -73,7 +74,7 @@ namespace API_CORE.Controllers.B2C
             identifierServiceRepository = _identifierServiceRepository;
             _mail_service = new API_CORE.Controllers.MAIL.Base.MailService(configuration, _contactClientRepository,vinWonderBookingRepository ,_clientRepository, _flyBookingDetailRepository,
                       _flightSegmentRepository, _orderRepository, _passengerRepository, _bagageRepository, _airPortCodeRepository, _webHostEnvironment, _airlinesRepository, _hotelBookingRepositories,
-                      otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository,_voucherRepository, _notifyRepository);
+                      otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository,_voucherRepository, _notifyRepository,hotelBookingRoomExtraPackageRepository,hotelBookingRoomRepository);
             _workQueueClient = new WorkQueueClient(configuration);
         }
         [EnableCors("MyApi")]

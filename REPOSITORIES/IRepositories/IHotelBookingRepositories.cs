@@ -1,7 +1,7 @@
-﻿using Entities.ViewModels;
-using ENTITIES.Models;
+﻿using ENTITIES.Models;
 using ENTITIES.ViewModels;
 using ENTITIES.ViewModels.HotelBooking;
+using ENTITIES.ViewModels.HotelBookingRoom;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -21,5 +21,6 @@ namespace REPOSITORIES.IRepositories
         Task<List<HotelBookingRoomExtraPackages>> GetListHotelBookingRoomsExtraPackageByBookingId(long HotelBookingId);
         Task<List<HotelBookingRooms>> GetHotelBookingRoomsByHotelBookingID(long HotelBookingId);
         Task<List<HotelBookingRoomRates>> GetHotelBookingRoomRatesByBookingRoomsRateByHotelBookingID(long HotelBookingId);
+        Task<List<HotelBookingsRoomOptionalViewModel>> GetHotelBookingOptionalListByHotelBookingId(long hotelBookingId);
     }
 }

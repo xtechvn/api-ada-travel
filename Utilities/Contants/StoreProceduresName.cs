@@ -189,7 +189,8 @@ namespace Utilities.Contants
         public static string SP_GetListHotelSurchargeByHotelId = "SP_GetListHotelSurchargeByHotelId";
         public static string GetListVoucher = "SP_GetListVoucher";
         public const string SP_GetListOrder = "SP_GetListOrder";
-
+        public static string GetListHotelBookingRoomsOptionalByBookingId = "SP_GetListHotelBookingRoomsOptionalByBookingId";
+        public static string GetListHotelBookingRoomRatesOptionalByBookingId = "SP_GetListHotelBookingRoomRatesOptionalByBookingId";
     }
 
 }
