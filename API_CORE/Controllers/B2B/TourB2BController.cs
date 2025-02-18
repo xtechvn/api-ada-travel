@@ -1172,5 +1172,77 @@ namespace API_CORE.Controllers.B2B
             }
 
         }
+        [HttpPost("get-booking-payment")]
+        public async Task<ActionResult> GetBookingPaymentById(string token)
+        {
+            #region Test
+            //var j_param = new Dictionary<string, object>
+            //    {
+            //        {"booking_id", "55"},
+            //    };
+            //var data_product = JsonConvert.SerializeObject(j_param);
+            //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+            #endregion
+            try
+            {
+                JArray objParr = null;
+
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
+                {
+                    var id = objParr[0]["booking_id"].ToString();
+                    if (id ==null || id.Trim()=="")
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = "Data invalid!"
+
+                        });
+                    }
+                    var booking = await _TourRepository.getBookingByID(new string[] { id });
+                    if(booking!=null && booking.Count > 0)
+                    {
+                        var exists = booking[0];
+                        TourPaymentModel model = new TourPaymentModel()
+                        {
+                            address = "",
+                            bookingId = exists._id,
+                            country = "",
+                            email = exists.contact.email,
+                            firstName = exists.contact.firstName,
+                            numberOfAdult = exists.guest.adult,
+                            note = "",
+                            numberOfChild = exists.guest.child,
+                            packageId = exists.packages.Id,
+                            startDate = ((DateTime)exists.packages.FromDate).ToString("N0"),
+                            totalAmount = (exists.guest.adult * (exists.packages.AdultPrice == null ? 0 : (double)exists.packages.AdultPrice)) * (exists.guest.child * (exists.packages.ChildPrice == null ? 0 : (double)exists.packages.ChildPrice)),
+                            totalNights = 1,
+                            tourId = exists.tour_product.Id,
+                            phoneNumber = exists.contact.phoneNumber,
+                            tourName = exists.tour_product.TourName,
+                            voucherName = ""
+                        };
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "Success",
+                            data = model
+                        });
+                    }
+
+                }
+                return Ok(new
+                {
+                    status = (int)ResponseType.FAILED,
+                    msg = "Data invalid!"
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("SaveBooking - TourB2CController - [" + token + "] : " + ex.ToString());
+                return Ok(new { status = (int)ResponseType.ERROR, msg = "error: " + ex.ToString() });
+            }
+
+        }
     }
 }

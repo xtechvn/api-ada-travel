@@ -183,5 +183,28 @@ namespace ENTITIES.ViewModels.Tour
        public List<ListTourProductViewModel> data { get; set; }
        public List<string> listimages { get; set; }
     }
+    public class TourPaymentModel
+    {
+        public long orderId { get; set; }
+        public long tourId { get; set; }
+        public string tourName { get; set; }
+        public double totalAmount { get; set; }
+
+        public int totalNights { get; set; }
+        public int numberOfAdult { get; set; }
+        public int numberOfChild { get; set; }
+        public string firstName { get; set; }
+        public string email { get; set; }
+        public string phoneNumber { get; set; }
+        public string country { get; set; }
+        public string address { get; set; }
+        public string note { get; set; }
+        public string startDate { get; set; }
+        public string voucherName { get; set; }
+        public long packageId { get; set; }
+        public string bookingId { get; set; }
+
+
+    }
 }
 
