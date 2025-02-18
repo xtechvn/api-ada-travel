@@ -275,7 +275,7 @@ namespace Caching.Elasticsearch
                     case 1:
                         {
                             search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                .Index("hotel_store")
+                                .Index(index_hotel)
                                      .From(0)
                                      .Size(top)
                                  .Query(q =>
@@ -296,7 +296,7 @@ namespace Caching.Elasticsearch
                     default:
                         {
                             search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                .Index("hotel_store")
+                                .Index(index_hotel)
                                      .From(0)
                                      .Size(top)
                                  .Query(q =>
@@ -350,7 +350,7 @@ namespace Caching.Elasticsearch
                 var elasticClient = new ElasticClient(connectionSettings);
                 ISearchResponse<HotelESViewModel> search_response;
                 search_response = elasticClient.Search<HotelESViewModel>(s => s
-                           .Index("hotel_store")
+                           .Index(index_hotel)
                            .From(0)
                            .Size(top)
                            );

@@ -188,9 +188,9 @@ namespace DAL.Hotel
                 {
                     objParam_order[22] = new SqlParameter("@SalerId", DBNull.Value);
                 }
-                objParam_order[23] = new SqlParameter("@CreatedBy", booking.CreatedBy);
-                objParam_order[24] = new SqlParameter("@CreatedDate", DateTime.Now);
-                if (booking.ServiceCode != null && booking.ServiceCode.Trim() != "")
+                objParam_order[23] = new SqlParameter("@CreatedBy", booking.CreatedBy!=null && booking.CreatedBy>0 ? (int)booking.CreatedBy: (int)2052);
+                objParam_order[24] = new SqlParameter("@CreatedDate", booking.CreatedDate);
+                if (booking.ServiceCode != null)
                 {
                     objParam_order[25] = new SqlParameter("@ServiceCode", booking.ServiceCode);
                 }
@@ -206,7 +206,6 @@ namespace DAL.Hotel
                 else
                 {
                     objParam_order[27] = new SqlParameter("@SupplierId", DBNull.Value);
-
                 }
                 if (booking.Note != null)
                 {
