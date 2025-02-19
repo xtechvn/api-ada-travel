@@ -15,6 +15,7 @@ namespace ENTITIES.ViewModels.Tour
         {
             _id = ObjectId.GenerateNewId(DateTime.Now).ToString();
         }
+        public long? order_id { get; set; } = -1;
         public TourProduct tour_product { get; set; }
         public TourProgramPackages packages { get; set; }
     }
