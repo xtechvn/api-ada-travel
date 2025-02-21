@@ -41,13 +41,15 @@ namespace API_CORE.Controllers.APP
         private readonly IVoucherRepository voucherRepository;
         private readonly INotifyRepository notifyRepository;
         private readonly IClientRepository _clientRepository;
+        private readonly IDebtGuaranteeRepository _debtGuaranteeRepository;
 
         public ContractPayAppController(IConfiguration configuration, IContractPayRepository contractPayRepository, IIdentifierServiceRepository _identifierServiceRepository, IOrderRepository _ordersRepository,
              IDepositHistoryRepository _iDepositHistoryRepository,
             IClientRepository _clientRepository, IFlyBookingDetailRepository _flyBookingDetailRepository, IFlightSegmentRepository _flightSegmentRepository, IOrderRepository _orderRepository, IPassengerRepository _passengerRepository, IBagageRepository _bagageRepository,
              IAirPortCodeRepository _airPortCodeRepository, IWebHostEnvironment _webHostEnvironment, IAirlinesRepository _airlinesRepository, IAccountClientRepository _accountClientRepository,
            IHotelBookingRepositories _hotelBookingRepositories, IOtherBookingRepository otherBookingRepository, ITourRepository tourRepository, IAllCodeRepository allCodeRepository, IUserRepository userRepository,
-           IVinWonderBookingRepository vinWonderBookingRepository, IContactClientRepository contactClientRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository, IClientRepository clientRepository,IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository,IHotelBookingRoomRepository hotelBookingRoomRepository)
+           IVinWonderBookingRepository vinWonderBookingRepository, IContactClientRepository contactClientRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository, IClientRepository clientRepository,
+           IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository,IHotelBookingRoomRepository hotelBookingRoomRepository, IDebtGuaranteeRepository debtGuaranteeRepository)
         {
             _configuration = configuration;
             _contractPayRepository = contractPayRepository;
@@ -57,12 +59,12 @@ namespace API_CORE.Controllers.APP
             orderRepository = _orderRepository;
             _mail_service = new MailService(configuration, contactClientRepository, vinWonderBookingRepository, _clientRepository, _flyBookingDetailRepository,
                        _flightSegmentRepository, _orderRepository, _passengerRepository, _bagageRepository, _airPortCodeRepository, _webHostEnvironment, _airlinesRepository, _hotelBookingRepositories,
-                       otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository, _voucherRepository, _notifyRepository,hotelBookingRoomExtraPackageRepository,hotelBookingRoomRepository);
+                       otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository, _voucherRepository, _notifyRepository, hotelBookingRoomExtraPackageRepository, hotelBookingRoomRepository);
             _vinWonderBookingService = new VinWonderBookingService(configuration, _vinWonderBookingRepository);
             _vinWonderBookingRepository = vinWonderBookingRepository;
             _contactClientRepository = contactClientRepository;
             _clientRepository = clientRepository;
-
+            _debtGuaranteeRepository = debtGuaranteeRepository;
         }
         [HttpPost("update-order-payment-bank-transfer.json")]
         public async Task<ActionResult> UpdateOrderBankTransferPayment(string token)
@@ -280,7 +282,12 @@ namespace API_CORE.Controllers.APP
                                 msg = success
                             });
                         }
-
+                      var DetailDebtGuarantee=  _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
+                        if(DetailDebtGuarantee!= null)
+                        {
+                            _debtGuaranteeRepository.UpdateDebtGuarantee(DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
+                        }
+                        
                     }
                     else
                     {
