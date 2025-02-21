@@ -1072,7 +1072,6 @@ namespace API_CORE.Controllers.B2B
                             });
                         }
                     }
-
                     string booking_id = await _TourRepository.saveBooking(request, "");
                     if (booking_id != null && booking_id.Trim() != "")
                     {
@@ -1220,7 +1219,9 @@ namespace API_CORE.Controllers.B2B
                             tourId = exists.tour_product.Id,
                             phoneNumber = exists.contact.phoneNumber,
                             tourName = exists.tour_product.TourName,
-                            voucherName = ""
+                            voucherName = "",
+                            orderId=exists.order_id==null? -1: (long)exists.order_id,
+                            
                         };
                         return Ok(new
                         {

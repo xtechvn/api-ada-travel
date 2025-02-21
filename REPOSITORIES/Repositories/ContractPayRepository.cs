@@ -239,7 +239,7 @@ namespace REPOSITORIES.Repositories
                     ClientType = (int)(db_data.account ==null || db_data.account.ClientType==null || db_data.account.ClientType<=0?5: db_data.account.ClientType),
                     CurrentAmount = detail.Amount,
                     OrderId = db_data.order.OrderId,
-                    OrderNo = detail.OrderNo,
+                    OrderNo = db_data.order.OrderNo,
                     Email = db_data.client.Email,
                     PaymentTime = detail.ReceiveTime,
                     TotalAmount = (double)db_data.order.Amount,
