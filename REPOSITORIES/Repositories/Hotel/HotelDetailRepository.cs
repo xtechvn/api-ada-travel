@@ -1,6 +1,7 @@
 ﻿using DAL.Hotel;
 using Entities.ConfigModels;
 using ENTITIES.APPModels.PushHotel;
+using ENTITIES.Models;
 using ENTITIES.ViewModels.Hotel;
 using ENTITIES.ViewModels.Programs;
 using Microsoft.Extensions.Options;
@@ -17,11 +18,13 @@ namespace REPOSITORIES.Repositories.Hotel
     {
         private readonly DAL.Hotel.HotelDAL _hotelDAL;
         private readonly DAL.Programs.ProgramsDAL _programsDAL;
+        private readonly HotelPositionDAL _hotelPositionDAL;
 
         public HotelDetailRepository(IOptions<DataBaseConfig> _dataBaseConfig)
         {
             _hotelDAL = new DAL.Hotel.HotelDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
             _programsDAL = new DAL.Programs.ProgramsDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
+            _hotelPositionDAL = new HotelPositionDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
         }
 
         /// <summary>
@@ -367,6 +370,10 @@ namespace REPOSITORIES.Repositories.Hotel
             {
                 throw;
             }
+        }
+        public async Task<List<HotelPosition>> GetByPositionType(int type)
+        {
+            return await _hotelPositionDAL.GetByPositionType(type);
         }
     }
 }

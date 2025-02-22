@@ -1,4 +1,5 @@
 ﻿using ENTITIES.APPModels.PushHotel;
+using ENTITIES.Models;
 using ENTITIES.ViewModels.Booking;
 using ENTITIES.ViewModels.Hotel;
 using ENTITIES.ViewModels.Programs;
@@ -32,5 +33,6 @@ namespace REPOSITORIES.IRepositories.Hotel
         List<HotelFEDataModel> GetFEHotelDetailPosition(string name, bool? is_commit_fund, string province_id, int page_index, int page_size);
         List<HotelFEDataModel> GetFEHotelListPosition(HotelFESearchModel model);
         IEnumerable<HotelSurchargeGridModel> GetHotelSurchargeList(int hotel_id, int page_index, int page_size);
+        Task<List<HotelPosition>> GetByPositionType(int type);
     }
 }

@@ -27,6 +27,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Utilities;
 using Utilities.Contants;
+using static iTextSharp.text.pdf.PdfDiv;
 using ClientType = Utilities.Contants.ClientType;
 
 namespace API_CORE.Controllers.B2B
@@ -2320,56 +2321,99 @@ namespace API_CORE.Controllers.B2B
                 {
                     int? type = Convert.ToInt32(objParr[0]["type"].ToString());
                     int? client_type = Convert.ToInt32(objParr[0]["client_type"].ToString());
+                    int? hotel_position = Convert.ToInt32(objParr[0]["hotel_position"].ToString());
                     DateTime fromdate = Convert.ToDateTime(objParr[0]["fromdate"].ToString());
                     DateTime todate = Convert.ToDateTime(objParr[0]["todate"].ToString());
-
+                    int? index = 1;
+                    int? size = 30;
+                    if (objParr[0]["index"]!=null)
+                        index = Convert.ToInt32(objParr[0]["index"].ToString());
+                    if (objParr[0]["size"] != null)
+                        size = Convert.ToInt32(objParr[0]["size"].ToString());
                     string name = objParr[0]["name"].ToString();
                     int total_nights = (todate - fromdate).Days;
+                    string cache_name = CacheName.HotelByLocation + type + fromdate.ToString("yyyyMMdd") + todate.ToString("yyyyMMdd") + "_" + name + "_" + client_type + "_" + type + "_" + (hotel_position == null ? "" : ((int)hotel_position).ToString()) + "_" + index + size;
 
-                    if (name == null || type == null || name.Trim()==""|| type < 0)
+                    if (name == null || type == null || hotel_position==null|| hotel_position<0)
                     {
                         return Ok(new
                         {
                             status = (int)ResponseType.FAILED
                         });
                     }
-                    var hotel_list = await _hotelESRepository.GetListByLocationName(name,(int)type);
-
-                    if (hotel_list == null || hotel_list.Count <= 0)
+                    string hotel_ids = "";
+                    if(hotel_position > 0)
                     {
-                        return Ok(new
+                        var hotel_list = await _hotelDetailRepository.GetByPositionType((int)hotel_position);
+
+                        if ((hotel_list == null || hotel_list.Count <= 0))
                         {
-                            status = (int)ResponseType.FAILED
-                        });
-                    }
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.FAILED
+                            });
+                        }
 
-                    string cache_name = CacheName.HotelByLocation + type + fromdate.ToString("yyyyMMdd") + todate.ToString("yyyyMMdd") + "_" + name + "_" + client_type;
-                    var str = redisService.Get(cache_name, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
-                    if (str != null && str.Trim() != "")
-                    {
-                        List<HotelSearchEntities> model = JsonConvert.DeserializeObject<List<HotelSearchEntities>>(str);
-                        //-- Trả kết quả
-                        return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = model, cache_id = string.Empty });
+                        var hotel_list_es = await _hotelESRepository.GetListByLocationName(name, (int)type);
+
+                        if ((hotel_list_es == null || hotel_list_es.Count <= 0))
+                        {
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.FAILED
+                            });
+                        }
+                        hotel_ids = string.Join(",", hotel_list_es.Select(x => x.hotelid));
+                        hotel_list_es = hotel_list_es.Where(x => hotel_ids.Contains(x.hotelid)).ToList();
+                        hotel_ids = string.Join(",", hotel_list_es.Select(x => x.hotelid));
+
                     }
-                    // LogHelper.InsertLogTelegram("ListByLocation - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
+                    else
+                    {
+                        var hotel_list_es = await _hotelESRepository.GetListByLocationName(name, (int)type);
+
+                        if ((hotel_list_es == null || hotel_list_es.Count <= 0))
+                        {
+                            hotel_ids = null;
+                        }
+                        else
+                        {
+                            hotel_ids = string.Join(",", hotel_list_es.Select(x => x.hotelid));
+                        }
+                    }
+                    try
+                    {
+                        var str = redisService.Get(cache_name, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+                        if (str != null && str.Trim() != "")
+                        {
+                            List<HotelSearchEntities> model = JsonConvert.DeserializeObject<List<HotelSearchEntities>>(str);
+                            //-- Trả kết quả
+                            return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = model, cache_id = string.Empty });
+                        }
+                        // LogHelper.InsertLogTelegram("ListByLocation - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
+                    }
+                    catch { }
 
                     List<HotelSearchEntities> result = new List<HotelSearchEntities>();
-                    var hotel_datas = _hotelDetailRepository.GetFEHotelList(new HotelFESearchModel
+                    List<HotelFEDataModel> hotel_datas = new List<HotelFEDataModel>();
+                    hotel_datas = _hotelDetailRepository.GetFEHotelList(new HotelFESearchModel
                     {
                         FromDate = fromdate,
                         ToDate = todate,
-                        HotelId = string.Join(",", hotel_list.Select(x => x.hotelid)),
+                        HotelId = hotel_ids,
                         HotelType = "",
                         PageIndex = 1,
-                        PageSize = 1000
+                        PageSize = 1000,
+
                     });
 
                     if (hotel_datas != null && hotel_datas.Any())
                     {
                         var data_results = hotel_datas.GroupBy(x => x.Id).Select(x => x.First()).ToList();
-
                         if (data_results != null && data_results.Any())
                         {
+                            data_results = data_results.Skip((index <= 1 ? 0 : ((int)index-1)) * (int)size).Take((int)size).ToList();
+                            
                             foreach (var hotel in data_results)
                             {
                                 result.Add(new HotelSearchEntities

@@ -1,5 +1,6 @@
 ﻿using Elasticsearch.Net;
 using Entities.ViewModels;
+using ENTITIES.Models;
 using ENTITIES.ViewModels.Hotel;
 using Nest;
 using Newtonsoft.Json;
@@ -270,51 +271,26 @@ namespace Caching.Elasticsearch
                 string typefalse = "false";
                 string typetrue = "true";
                 ISearchResponse<HotelESViewModel> search_response = null;
-                switch (type)
-                {
-                    case 1:
-                        {
-                            search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                .Index(index_hotel)
-                                     .From(0)
-                                     .Size(top)
-                                 .Query(q =>
-                                   q.Bool(
-                                       qb => qb.Must(
-                                           sh => sh.Term("isdisplaywebsite", typetrue)
+                search_response = elasticClient.Search<HotelESViewModel>(s => s
+                              .Index(index_hotel)
+                                   .From(0)
+                                   .Size(top)
+                               .Query(q =>
+                                 q.Bool(
+                                     qb => qb.Must(
+                                         sh => sh.Term("isdisplaywebsite", typetrue)
 
-                                         ).Should(
-                                          sh => sh.QueryString(m => m.DefaultField(f => f.city).Query("*" + name + "*")),
-                                          sh => sh.QueryString(m => m.DefaultField(f => f.city).Query("*" + CommonHelper.RemoveUnicode(name) + "*")),
-                                          sh => sh.QueryString(m => m.DefaultField(f => f.city).Query("*" + CommonHelper.RemoveUnicode(name).ToLower() + "*"))
+                                       ).Should(
+                                        sh => sh.QueryString(m => m.DefaultField(f => f.city).Query("*" + name + "*")),
+                                        sh => sh.QueryString(m => m.DefaultField(f => f.city).Query("*" + CommonHelper.RemoveUnicode(name) + "*")),
+                                        sh => sh.QueryString(m => m.DefaultField(f => f.city).Query("*" + CommonHelper.RemoveUnicode(name).ToLower() + "*")),
+                                         sh => sh.QueryString(m => m.DefaultField(f => f.state).Query("*" + name + "*")),
+                                        sh => sh.QueryString(m => m.DefaultField(f => f.state).Query("*" + CommonHelper.RemoveUnicode(name) + "*")),
+                                        sh => sh.QueryString(m => m.DefaultField(f => f.state).Query("*" + CommonHelper.RemoveUnicode(name).ToLower() + "*"))
 
-                                           )
-                                       )
-                                  ));
-                        }
-                        break;
-                    default:
-                        {
-                            search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                .Index(index_hotel)
-                                     .From(0)
-                                     .Size(top)
-                                 .Query(q =>
-                                   q.Bool(
-                                       qb => qb.Must(
-                                           sh => sh.Term("isdisplaywebsite", typetrue)
-                                         ).Should(
-                                          sh => sh.QueryString(m => m.DefaultField(f => f.state).Query("*" + name + "*")),
-                                          sh => sh.QueryString(m => m.DefaultField(f => f.state).Query("*" + CommonHelper.RemoveUnicode(name) + "*")),
-                                          sh => sh.QueryString(m => m.DefaultField(f => f.state).Query("*" + CommonHelper.RemoveUnicode(name).ToLower() + "*"))
-
-                                           )
-                                       )
-                                  ));
-                        }
-                        break;
-                }
-
+                                         )
+                                     )
+                                ));
 
                 if (search_response != null && !search_response.IsValid)
                 {
@@ -370,7 +346,7 @@ namespace Caching.Elasticsearch
             }
 
         }
-        public async Task<List<HotelESViewModel>> GetListByLocationName(string name,int type=0, string index_name = "adavigo_sp_gethotel", string Type = "product")
+        public async Task<List<HotelESViewModel>> GetListByLocationName(string name,int type=0, string Type = "product")
         {
             List<HotelESViewModel> result = new List<HotelESViewModel>();
             try
@@ -387,16 +363,26 @@ namespace Caching.Elasticsearch
                     case 1:
                         {
                             search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                                  .Index(index_name)
+                                                  .Index(index_hotel)
                                                .Size(4000)
                                                    .Query(q => q
                                  .Match(m => m.Field(y => y.state).Query("*" + name + "*")
                              )));
                         }break;
+                    case -1:
+                        {
+                            search_response = elasticClient.Search<HotelESViewModel>(s => s
+                                .Size(50)  // Get top 50 results
+                                .Sort(sort => sort
+                                    .Descending(f => f.id)  // Sort by CreatedDate descending (most recent first)
+                                )
+                            );
+                        }
+                        break;
                     default:
                         {
                             search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                                  .Index(index_name)
+                                                  .Index(index_hotel)
                                                .Size(4000)
                                                    .Query(q => q
                                  .Match(m => m.Field(y => y.city).Query("*" + name + "*")
@@ -415,6 +401,43 @@ namespace Caching.Elasticsearch
                     result = search_response.Documents as List<HotelESViewModel>;
                     result = result.Where(x => x.isdisplaywebsite == true).ToList();
 
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+        }
+        public async Task<List<HotelESViewModel>> GetByIds(List<int> hotel_ids)
+        {
+            List<HotelESViewModel> result = new List<HotelESViewModel>();
+            try
+            {
+                int top = 4000;
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("0");
+                var elasticClient = new ElasticClient(connectionSettings);
+  
+                ISearchResponse<HotelESViewModel>  search_response = elasticClient.Search<HotelESViewModel>(s => s
+                                                   .Index(index_hotel)
+                                                    .Size(4000)
+                                                    .Query(q => q
+                                                        .Terms(t => t
+                                                            .Field(f => f.hotelid)
+                                                            .Terms(hotel_ids)
+                                                        )
+                                                    ));
+
+                if (!search_response.IsValid)
+                {
+                    return result;
+                }
+                else
+                {
+                    result = search_response.Documents as List<HotelESViewModel>;
                     return result;
                 }
             }
