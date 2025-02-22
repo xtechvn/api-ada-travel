@@ -191,6 +191,10 @@ namespace Utilities.Contants
         public const string SP_GetListOrder = "SP_GetListOrder";
         public static string GetListHotelBookingRoomsOptionalByBookingId = "SP_GetListHotelBookingRoomsOptionalByBookingId";
         public static string GetListHotelBookingRoomRatesOptionalByBookingId = "SP_GetListHotelBookingRoomRatesOptionalByBookingId";
+
+        public static string SP_GetDetailDebtGuaranteeByOrderid = "SP_GetDetailDebtGuaranteeByOrderid";
+        public static string SP_GeDetailDebtGuarantee = "SP_GeDetailDebtGuarantee";
+        public static string sp_UpdateDebtGuarantee = "sp_UpdateDebtGuarantee";
     }
 
 }

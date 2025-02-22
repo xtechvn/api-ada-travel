@@ -111,6 +111,7 @@ namespace API_CORE
             services.AddSingleton<IRequestRepository, RequestRepository>();
             services.AddSingleton<IHotelBookingRoomExtraPackageRepository, HotelBookingRoomExtraPackageRepository>();
             services.AddSingleton<IHotelBookingRoomRepository, HotelBookingRoomsRepository>();
+            services.AddSingleton<IDebtGuaranteeRepository, DebtGuaranteeRepository>();
 
             services.AddSwaggerGen();
 
