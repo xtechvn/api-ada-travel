@@ -370,5 +370,59 @@ namespace Caching.Elasticsearch
             }
 
         }
+        public async Task<List<HotelESViewModel>> GetListByLocationName(string name,int type=0, string index_name = "adavigo_sp_gethotel", string Type = "product")
+        {
+            List<HotelESViewModel> result = new List<HotelESViewModel>();
+            try
+            {
+                int top = 4000;
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(Type);
+                var elasticClient = new ElasticClient(connectionSettings);
+
+                ISearchResponse<HotelESViewModel> search_response;
+                switch (type)
+                {
+                    case 1:
+                        {
+                            search_response = elasticClient.Search<HotelESViewModel>(s => s
+                                                  .Index(index_name)
+                                               .Size(4000)
+                                                   .Query(q => q
+                                 .Match(m => m.Field(y => y.state).Query("*" + name + "*")
+                             )));
+                        }break;
+                    default:
+                        {
+                            search_response = elasticClient.Search<HotelESViewModel>(s => s
+                                                  .Index(index_name)
+                                               .Size(4000)
+                                                   .Query(q => q
+                                 .Match(m => m.Field(y => y.city).Query("*" + name + "*")
+                             )));
+                        }
+                        break;
+                }
+               
+
+                if (!search_response.IsValid)
+                {
+                    return result;
+                }
+                else
+                {
+                    result = search_response.Documents as List<HotelESViewModel>;
+                    result = result.Where(x => x.isdisplaywebsite == true).ToList();
+
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+        }
     }
 }

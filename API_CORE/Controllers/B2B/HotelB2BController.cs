@@ -638,12 +638,12 @@ namespace API_CORE.Controllers.B2B
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
                 {
-                    int? id = Convert.ToInt32(objParr[0]["id"].ToString());
-                    int? type = Convert.ToInt32(objParr[0]["type"].ToString());
+                   // int? id = Convert.ToInt32(objParr[0]["id"].ToString());
+                   // int? type = Convert.ToInt32(objParr[0]["type"].ToString());
                     int? client_type = Convert.ToInt32(objParr[0]["client_type"].ToString());
                     DateTime fromdate = Convert.ToDateTime(objParr[0]["fromdate"].ToString());
                     DateTime todate = Convert.ToDateTime(objParr[0]["todate"].ToString());
-                    string name = objParr[0]["name"].ToString();
+                   // string name = objParr[0]["name"].ToString();
                     string hotelid = objParr[0]["hotelid"].ToString();
                     bool? is_vin_hotel = Convert.ToBoolean(objParr[0]["is_vin_hotel"] == null || objParr[0]["is_vin_hotel"].ToString().Trim() == "" ? "false" : objParr[0]["is_vin_hotel"].ToString());
                     int total_nights = (todate - fromdate).Days;
@@ -875,7 +875,7 @@ namespace API_CORE.Controllers.B2B
                         cache_data.client_type = (int)client_type;
                         cache_data.hotel_ids = hotelid;
                         int db_index = Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"].ToString());
-                        redisService.Set(cache_name_detail, JsonConvert.SerializeObject(cache_data), db_index);
+                        redisService.Set(cache_name_detail, JsonConvert.SerializeObject(cache_data),DateTime.Now.AddDays(1), db_index);
                     }
 
                     return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = result, cache_id = string.Empty });
@@ -2296,5 +2296,141 @@ namespace API_CORE.Controllers.B2B
             }
 
         }
+
+        #region V2:
+        [HttpPost("v2-list-by-location")]
+        public async Task<ActionResult> GetListHotelByLocation(string token)
+        {
+            try
+            {
+                #region Test
+                //var j_param = new Dictionary<string, string>
+                //{
+                //    {"type", "0"},
+                //    {"name", "Hà Nội"},
+                //    {"fromdate", DateTime.Now.ToString()},
+                //    {"todate", DateTime.Now.AddDays(1).ToString()},
+                //};
+                //var data_product = JsonConvert.SerializeObject(j_param);
+                //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                #endregion
+
+                JArray objParr = null;
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
+                {
+                    int? type = Convert.ToInt32(objParr[0]["type"].ToString());
+                    int? client_type = Convert.ToInt32(objParr[0]["client_type"].ToString());
+                    DateTime fromdate = Convert.ToDateTime(objParr[0]["fromdate"].ToString());
+                    DateTime todate = Convert.ToDateTime(objParr[0]["todate"].ToString());
+
+                    string name = objParr[0]["name"].ToString();
+                    int total_nights = (todate - fromdate).Days;
+
+                    if (name == null || type == null || name.Trim()==""|| type < 0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED
+                        });
+                    }
+                    var hotel_list = await _hotelESRepository.GetListByLocationName(name,(int)type);
+
+                    if (hotel_list == null || hotel_list.Count <= 0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED
+                        });
+                    }
+
+                    string cache_name = CacheName.HotelByLocation + type + fromdate.ToString("yyyyMMdd") + todate.ToString("yyyyMMdd") + "_" + name + "_" + client_type;
+                    var str = redisService.Get(cache_name, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+                    if (str != null && str.Trim() != "")
+                    {
+                        List<HotelSearchEntities> model = JsonConvert.DeserializeObject<List<HotelSearchEntities>>(str);
+                        //-- Trả kết quả
+                        return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = model, cache_id = string.Empty });
+                    }
+                    // LogHelper.InsertLogTelegram("ListByLocation - HotelB2BController: Cannot get from Redis [" + cache_name + "] - token: " + token);
+
+                    List<HotelSearchEntities> result = new List<HotelSearchEntities>();
+                    var hotel_datas = _hotelDetailRepository.GetFEHotelList(new HotelFESearchModel
+                    {
+                        FromDate = fromdate,
+                        ToDate = todate,
+                        HotelId = string.Join(",", hotel_list.Select(x => x.hotelid)),
+                        HotelType = "",
+                        PageIndex = 1,
+                        PageSize = 1000
+                    });
+
+                    if (hotel_datas != null && hotel_datas.Any())
+                    {
+                        var data_results = hotel_datas.GroupBy(x => x.Id).Select(x => x.First()).ToList();
+
+                        if (data_results != null && data_results.Any())
+                        {
+                            foreach (var hotel in data_results)
+                            {
+                                result.Add(new HotelSearchEntities
+                                {
+                                    hotel_id = hotel.Id.ToString(),
+                                    name = hotel.Name,
+                                    star = hotel.Star,
+                                    country = hotel.Country,
+                                    state = hotel.State,
+                                    street = hotel.Street,
+                                    hotel_type = hotel.HotelType,
+                                    review_point = 10,
+                                    review_count = hotel.ReviewCount ?? 0,
+                                    review_rate = "Tuyệt vời",
+                                    is_refundable = hotel.IsRefundable,
+                                    is_instantly_confirmed = hotel.IsInstantlyConfirmed,
+                                    confirmed_time = hotel.VerifyDate ?? 0,
+                                    is_vin_hotel = hotel.IsVinHotel,
+                                    //min_price = min_price == null ? 0 : min_price.min_price,
+                                    min_price = 0,
+                                    email = hotel.Email,
+                                    telephone = hotel.Telephone,
+                                    img_thumb = new List<string> { hotel.ImageThumb },
+                                    is_commit = hotel.IsCommitFund,
+
+                                });
+                            }
+                        }
+                        if (result.Count > 0)
+                        {
+                            redisService.Set(cache_name, JsonConvert.SerializeObject(result),DateTime.Now.AddDays(1), Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+                            return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = result, cache_id = string.Empty });
+                        }
+
+                    }
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "Key invalid!"
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("ListByLocation - HotelB2BController: " + ex);
+                return Ok(new { status = ResponseTypeString.Fail, msg = "error: " + ex.ToString() });
+            }
+        }
+        [HttpPost("v2-list-by-location-detail")]
+        public async Task<ActionResult> GetListHotelByLocationDetail(string token)
+        {
+            return await ListByLocationDetail(token);
+        }
+        #endregion
     }
 }

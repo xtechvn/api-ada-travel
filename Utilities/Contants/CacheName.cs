@@ -61,6 +61,10 @@ namespace Utilities.Contants
         public const string B2B_HOTEL_VOUCHER = "B2B_HOTEL_VOUCHER_";
         public const string B2B_SUMMARY = "B2B_SUMMARY_";
 
+        #region V2:
+        public const string HotelByLocation = "B2B_HOTEL_LOCATION_";
+
+        #endregion
     }
 
 }

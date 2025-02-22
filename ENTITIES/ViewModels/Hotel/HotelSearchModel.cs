@@ -96,6 +96,7 @@ namespace ENTITIES.ViewModels.Hotel
         public double? total_profit { get; set; }
         public bool? is_commit { get; set; }
         public string position { get; set; }
+        public string avatar { get; set; }
 
     }
 
