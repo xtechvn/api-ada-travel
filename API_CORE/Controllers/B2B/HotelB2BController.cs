@@ -688,7 +688,7 @@ namespace API_CORE.Controllers.B2B
                         // Đọc Json ra các Field để map với những trường cần lấy
 
                         #region Check Data Invalid
-                        if (data_hotel["isSuccess"].ToString().ToLower() == "false")
+                        if (data_hotel==null || data_hotel["isSuccess"] ==null|| data_hotel["isSuccess"].ToString().ToLower() == "false")
                         {
                             return Ok(new
                             {
