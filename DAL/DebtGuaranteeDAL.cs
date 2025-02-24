@@ -25,9 +25,9 @@ namespace DAL
             {
                 SqlParameter[] objParam = new SqlParameter[6];
                 objParam[0] = new SqlParameter("@Id", model.Id);
-                objParam[1] = new SqlParameter("@Code", model.Code == null ? DBNull.Value : model.Code);
-                objParam[2] = new SqlParameter("@Orderid", model.Orderid == null ? DBNull.Value : model.Orderid);
-                objParam[3] = new SqlParameter("@ClientId", model.ClientId == null ? DBNull.Value : model.ClientId);
+                objParam[1] = new SqlParameter("@Code",  model.Code);
+                objParam[2] = new SqlParameter("@Orderid", model.Orderid);
+                objParam[3] = new SqlParameter("@ClientId", model.ClientId);
                 objParam[4] = new SqlParameter("@Status", model.Status);
                 objParam[5] = new SqlParameter("@UpdatedBy", model.UpdatedBy);
                 return _dbWorker.ExecuteNonQuery(StoreProceduresName.sp_UpdateDebtGuarantee, objParam);

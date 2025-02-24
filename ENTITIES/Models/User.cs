@@ -39,6 +39,7 @@ namespace ENTITIES.Models
         public int? UserPositionId { get; set; }
         public int? CompanyType { get; set; }
         public string NickName { get; set; }
+        public double? DebtLimit { get; set; }
 
         public virtual ICollection<UserAgent> UserAgent { get; set; }
         public virtual ICollection<UserRole> UserRole { get; set; }

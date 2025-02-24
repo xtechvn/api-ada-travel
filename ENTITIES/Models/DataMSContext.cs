@@ -49,6 +49,7 @@ namespace ENTITIES.Models
         public virtual DbSet<ContractHistory> ContractHistory { get; set; }
         public virtual DbSet<ContractPay> ContractPay { get; set; }
         public virtual DbSet<ContractPayDetail> ContractPayDetail { get; set; }
+        public virtual DbSet<DebtGuarantee> DebtGuarantee { get; set; }
         public virtual DbSet<DebtStatistic> DebtStatistic { get; set; }
         public virtual DbSet<Department> Department { get; set; }
         public virtual DbSet<DepositHistory> DepositHistory { get; set; }
@@ -718,6 +719,17 @@ namespace ENTITIES.Models
                 entity.Property(e => e.ServiceCode)
                     .HasMaxLength(20)
                     .IsUnicode(false);
+
+                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<DebtGuarantee>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
             });
@@ -2983,7 +2995,6 @@ namespace ENTITIES.Models
 
                 entity.Property(e => e.StoreApply)
                     .HasColumnName("store_apply")
-                    .HasMaxLength(200)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Udate)

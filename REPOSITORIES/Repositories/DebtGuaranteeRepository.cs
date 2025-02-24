@@ -1,6 +1,7 @@
 ﻿using DAL;
 using Entities.ConfigModels;
 using Entities.ViewModels;
+using ENTITIES.Models;
 using ENTITIES.ViewModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
