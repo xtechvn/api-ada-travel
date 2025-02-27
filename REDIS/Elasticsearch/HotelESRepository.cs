@@ -360,15 +360,6 @@ namespace Caching.Elasticsearch
                 ISearchResponse<HotelESViewModel> search_response;
                 switch (type)
                 {
-                    case 1:
-                        {
-                            search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                                  .Index(index_hotel)
-                                               .Size(4000)
-                                                   .Query(q => q
-                                 .Match(m => m.Field(y => y.state).Query("*" + name + "*")
-                             )));
-                        }break;
                     case -1:
                         {
                             search_response = elasticClient.Search<HotelESViewModel>(s => s
@@ -382,11 +373,18 @@ namespace Caching.Elasticsearch
                     default:
                         {
                             search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                                  .Index(index_hotel)
-                                               .Size(4000)
-                                                   .Query(q => q
-                                 .Match(m => m.Field(y => y.city).Query("*" + name + "*")
-                             )));
+                                .Index(index_hotel)
+                                .Size(4000)
+                                .Query(q => q
+                                    .Bool(b => b
+                                        .Should(
+                                            sh => sh.Match(m => m.Field(f => f.state).Query(name)),  // Match state
+                                            sh => sh.Match(m => m.Field(f => f.city).Query(name))    // Match city
+                                        )
+                                        .MinimumShouldMatch(1) // Ensures at least one condition matches
+                                    )
+                                )
+                            );
                         }
                         break;
                 }
