@@ -1,8 +1,10 @@
 ﻿using DAL.Hotel;
+using DAL.MongoDB;
 using Entities.ConfigModels;
 using ENTITIES.APPModels.PushHotel;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Hotel;
+using ENTITIES.ViewModels.MongoDb;
 using ENTITIES.ViewModels.Programs;
 using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories.Hotel;
@@ -19,12 +21,15 @@ namespace REPOSITORIES.Repositories.Hotel
         private readonly DAL.Hotel.HotelDAL _hotelDAL;
         private readonly DAL.Programs.ProgramsDAL _programsDAL;
         private readonly HotelPositionDAL _hotelPositionDAL;
+        private readonly HotelPriceMongoDAL hotelPriceMongoDAL;
 
         public HotelDetailRepository(IOptions<DataBaseConfig> _dataBaseConfig)
         {
             _hotelDAL = new DAL.Hotel.HotelDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
             _programsDAL = new DAL.Programs.ProgramsDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
             _hotelPositionDAL = new HotelPositionDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
+            hotelPriceMongoDAL = new HotelPriceMongoDAL(_dataBaseConfig.Value.MongoServer.connection_string, _dataBaseConfig.Value.MongoServer.catalog_core);
+
         }
 
         /// <summary>
@@ -374,6 +379,29 @@ namespace REPOSITORIES.Repositories.Hotel
         public async Task<List<HotelPosition>> GetByPositionType(int type)
         {
             return await _hotelPositionDAL.GetByPositionType(type);
+        }
+        public HotelPriceMongoDbModel GetHotelPriceByHotel(string hotel_id, List<int> client_type, DateTime arrivaldate, DateTime departuredate)
+        {
+            return hotelPriceMongoDAL.GetByHotel(hotel_id, client_type, arrivaldate, departuredate);
+        }
+        public async Task<string> UpSertHotelPrice(HotelPriceMongoDbModel item)
+        {
+            try
+            {
+                var exists = hotelPriceMongoDAL.GetByHotel(item.hotel_id, new List<int>() { item.client_type }, item.arrival_date, item.departure_date);
+                if(exists!=null && exists._id != null)
+                {
+                    return await hotelPriceMongoDAL.Update(item, exists._id);
+                }
+                else
+                {
+                    return await hotelPriceMongoDAL.Insert(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

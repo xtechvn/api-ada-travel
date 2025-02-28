@@ -2,6 +2,7 @@
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Booking;
 using ENTITIES.ViewModels.Hotel;
+using ENTITIES.ViewModels.MongoDb;
 using ENTITIES.ViewModels.Programs;
 using System;
 using System.Collections.Generic;
@@ -34,5 +35,7 @@ namespace REPOSITORIES.IRepositories.Hotel
         List<HotelFEDataModel> GetFEHotelListPosition(HotelFESearchModel model);
         IEnumerable<HotelSurchargeGridModel> GetHotelSurchargeList(int hotel_id, int page_index, int page_size);
         Task<List<HotelPosition>> GetByPositionType(int type);
+        public HotelPriceMongoDbModel GetHotelPriceByHotel(string hotel_id, List<int> client_type, DateTime arrivaldate, DateTime departuredate);
+        Task<string> UpSertHotelPrice(HotelPriceMongoDbModel item);
     }
 }
