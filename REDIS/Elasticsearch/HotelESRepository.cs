@@ -346,7 +346,7 @@ namespace Caching.Elasticsearch
             }
 
         }
-        public async Task<List<HotelESViewModel>> GetListByLocationName(string name,int type=0, string Type = "product")
+        public async Task<List<HotelESViewModel>> GetListByLocationName(string name, string Type = "product")
         {
             List<HotelESViewModel> result = new List<HotelESViewModel>();
             try
@@ -358,37 +358,31 @@ namespace Caching.Elasticsearch
                 var elasticClient = new ElasticClient(connectionSettings);
 
                 ISearchResponse<HotelESViewModel> search_response;
-                switch (type)
+                if(name==null|| name.Trim() == "")
                 {
-                    case -1:
-                        {
-                            search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                .Size(50)  // Get top 50 results
-                                .Sort(sort => sort
-                                    .Descending(f => f.id)  // Sort by CreatedDate descending (most recent first)
-                                )
-                            );
-                        }
-                        break;
-                    default:
-                        {
-                            search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                .Index(index_hotel)
-                                .Size(4000)
-                                .Query(q => q
-                                    .Bool(b => b
-                                        .Should(
-                                            sh => sh.Match(m => m.Field(f => f.state).Query(name)),  // Match state
-                                            sh => sh.Match(m => m.Field(f => f.city).Query(name))    // Match city
-                                        )
-                                        .MinimumShouldMatch(1) // Ensures at least one condition matches
-                                    )
-                                )
-                            );
-                        }
-                        break;
+                    search_response = elasticClient.Search<HotelESViewModel>(s => s
+                              .Size(50)  // Get top 50 results
+                              .Sort(sort => sort
+                                  .Descending(f => f.id)  // Sort by CreatedDate descending (most recent first)
+                              )
+                          );
                 }
-               
+                else
+                {
+                    search_response = elasticClient.Search<HotelESViewModel>(s => s
+                               .Index(index_hotel)
+                               .Size(4000)
+                               .Query(q => q
+                                   .Bool(b => b
+                                       .Should(
+                                           sh => sh.Match(m => m.Field(f => f.state).Query(name)),  // Match state
+                                           sh => sh.Match(m => m.Field(f => f.city).Query(name))    // Match city
+                                       )
+                                       .MinimumShouldMatch(1) // Ensures at least one condition matches
+                                   )
+                               )
+                           );
+                }
 
                 if (!search_response.IsValid)
                 {

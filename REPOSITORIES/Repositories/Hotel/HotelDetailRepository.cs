@@ -1,6 +1,7 @@
 ﻿using DAL.Hotel;
 using DAL.MongoDB;
 using Entities.ConfigModels;
+using Entities.ViewModels;
 using ENTITIES.APPModels.PushHotel;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Hotel;
@@ -376,19 +377,23 @@ namespace REPOSITORIES.Repositories.Hotel
                 throw;
             }
         }
-        public async Task<List<HotelPosition>> GetByPositionType(int type)
+        public async Task<List<HotelPosition>> GetListHotelActivePosition()
         {
-            return await _hotelPositionDAL.GetByPositionType(type);
+            return await _hotelPositionDAL.GetListHotelActivePosition();
         }
-        public HotelPriceMongoDbModel GetHotelPriceByHotel(string hotel_id, List<int> client_type, DateTime arrivaldate, DateTime departuredate)
+        public HotelPriceMongoDbModel GetHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1)
         {
-            return hotelPriceMongoDAL.GetByHotel(hotel_id, client_type, arrivaldate, departuredate);
+            return hotelPriceMongoDAL.GetByFilter(hotel_id, client_types, arrivaldate, departuredate, location,stars,min_price,max_price);
+        }
+        public async Task<GenericViewModel<HotelPriceMongoDbModel>> GetListHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30)
+        {
+            return await hotelPriceMongoDAL.GetListByFilter(hotel_id, client_types, arrivaldate, departuredate, location, stars, min_price, max_price);
         }
         public async Task<string> UpSertHotelPrice(HotelPriceMongoDbModel item)
         {
             try
             {
-                var exists = hotelPriceMongoDAL.GetByHotel(item.hotel_id, new List<int>() { item.client_type }, item.arrival_date, item.departure_date);
+                var exists = hotelPriceMongoDAL.GetByFilter(item.hotel_id, new List<int>() { item.client_type }, item.arrival_date, item.departure_date);
                 if(exists!=null && exists._id != null)
                 {
                     return await hotelPriceMongoDAL.Update(item, exists._id);

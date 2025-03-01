@@ -1,4 +1,5 @@
-﻿using ENTITIES.APPModels.PushHotel;
+﻿using Entities.ViewModels;
+using ENTITIES.APPModels.PushHotel;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Booking;
 using ENTITIES.ViewModels.Hotel;
@@ -34,8 +35,9 @@ namespace REPOSITORIES.IRepositories.Hotel
         List<HotelFEDataModel> GetFEHotelDetailPosition(string name, bool? is_commit_fund, string province_id, int page_index, int page_size);
         List<HotelFEDataModel> GetFEHotelListPosition(HotelFESearchModel model);
         IEnumerable<HotelSurchargeGridModel> GetHotelSurchargeList(int hotel_id, int page_index, int page_size);
-        Task<List<HotelPosition>> GetByPositionType(int type);
-        public HotelPriceMongoDbModel GetHotelPriceByHotel(string hotel_id, List<int> client_type, DateTime arrivaldate, DateTime departuredate);
+        Task<List<HotelPosition>> GetListHotelActivePosition();
+        public HotelPriceMongoDbModel GetHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1);
+        Task<GenericViewModel<HotelPriceMongoDbModel>> GetListHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30);
         Task<string> UpSertHotelPrice(HotelPriceMongoDbModel item);
     }
 }

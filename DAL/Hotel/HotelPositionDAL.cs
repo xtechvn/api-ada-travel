@@ -22,13 +22,13 @@ namespace DAL.Hotel
         {
             _DbWorker = new DbWorker(connection);
         }
-        public async Task<List<HotelPosition>> GetByPositionType(int type)
+        public async Task<List<HotelPosition>> GetListHotelActivePosition()
         {
             try
             {
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
-                    return await _DbContext.HotelPosition.AsNoTracking().Where(x => x.PositionType == type && x.Status==1).ToListAsync();
+                    return await _DbContext.HotelPosition.AsNoTracking().Where(x => x.Status==1).ToListAsync();
 
                 }
             }
