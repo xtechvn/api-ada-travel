@@ -29,6 +29,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Utilities;
 using Utilities.Contants;
+using static iTextSharp.text.pdf.AcroFields;
 using static iTextSharp.text.pdf.PdfDiv;
 using ClientType = Utilities.Contants.ClientType;
 
@@ -1798,8 +1799,8 @@ namespace API_CORE.Controllers.B2B
                         Hotel_Booking.HotelName = hotel_sql != null ? hotel_sql.Name : null;
                         Hotel_Booking.CreatedDate = DateTime.Now;
                         Hotel_Booking.PropertyId = detail.search.hotelID;
-                        Hotel_Booking.ArrivalDate = (DateTime)DateUtil.Parse(detail.search.arrivalDate.Replace('-', '/'));
-                        Hotel_Booking.DepartureDate = (DateTime)DateUtil.Parse(detail.search.departureDate.Replace('-', '/'));
+                        Hotel_Booking.ArrivalDate = DateTime.ParseExact(detail.search.arrivalDate, "dd/MM/yyyy", null);
+                        Hotel_Booking.DepartureDate = DateTime.ParseExact(detail.search.departureDate, "dd/MM/yyyy", null);
                         Hotel_Booking.NumberOfAdult = detail.search.numberOfAdult;
                         Hotel_Booking.NumberOfChild = detail.search.numberOfChild;
                         Hotel_Booking.NumberOfInfant = detail.search.numberOfInfant;
@@ -1821,8 +1822,8 @@ namespace API_CORE.Controllers.B2B
                         Hotel_Booking.TotalAmount = detail.rooms.Sum(s => s.total_amount);
                         Hotel_Booking.TotalProfit = detail.rooms.Sum(s => s.profit);
                         Hotel_Booking.TotalPrice = detail.rooms.Sum(s => s.price);
-                        Hotel_Booking.ArrivalDate = detail.rooms.Max(s => s.rates.Min(x => (DateTime)DateUtil.Parse(x.arrivalDate.Replace('-', '/'))));
-                        Hotel_Booking.DepartureDate = detail.rooms.Max(s => s.rates.Max(x => (DateTime)DateUtil.Parse(x.departureDate.Replace('-', '/'))));
+                        Hotel_Booking.ArrivalDate = detail.rooms.Max(s => s.rates.Min(x => DateTime.ParseExact(x.arrivalDate, "dd/MM/yyyy", null)));
+                        Hotel_Booking.DepartureDate = detail.rooms.Max(s => s.rates.Max(x => DateTime.ParseExact(x.departureDate, "dd/MM/yyyy", null)));
                     }
                     if (detail.extrapackages != null && detail.extrapackages.Count > 0)
                     {
@@ -1868,7 +1869,7 @@ namespace API_CORE.Controllers.B2B
                         {
                             var HotelBookingRoomRates = new HotelBookingRoomRates();
                             HotelBookingRoomRates.HotelBookingRoomId = HotelBookingRoomsId;
-                            HotelBookingRoomRates.Nights = (short?)((DateTime)DateUtil.Parse(rate.departureDate.Replace('-', '/')) - (DateTime)DateUtil.Parse(rate.arrivalDate.Replace('-', '/'))).TotalDays;
+                            HotelBookingRoomRates.Nights = (short?)(DateTime.ParseExact(rate.departureDate, "dd/MM/yyyy", null) - DateTime.ParseExact(rate.arrivalDate, "dd/MM/yyyy", null)).TotalDays;
                             HotelBookingRoomRates.RatePlanId = rate.rate_plan_id;
                             HotelBookingRoomRates.RatePlanCode = rate.rate_plan_code;
                             HotelBookingRoomRates.AllotmentId = rate.allotment_id;
@@ -1876,9 +1877,9 @@ namespace API_CORE.Controllers.B2B
                             HotelBookingRoomRates.Profit = rate.profit;
                             HotelBookingRoomRates.Price = rate.price;
                             HotelBookingRoomRates.PackagesInclude = rate.package_includes != null ? string.Join(',', rate.package_includes) : "";
-                            HotelBookingRoomRates.StartDate = (DateTime)DateUtil.Parse(rate.arrivalDate.Replace('-', '/'));
-                            HotelBookingRoomRates.EndDate = (DateTime)DateUtil.Parse(rate.departureDate.Replace('-', '/'));
-                            HotelBookingRoomRates.StayDate = (DateTime)DateUtil.Parse(rate.arrivalDate.Replace('-', '/'));
+                            HotelBookingRoomRates.StartDate = DateTime.ParseExact(rate.arrivalDate, "dd/MM/yyyy", null);
+                            HotelBookingRoomRates.EndDate = DateTime.ParseExact(rate.departureDate, "dd/MM/yyyy", null);
+                            HotelBookingRoomRates.StayDate = DateTime.ParseExact(rate.arrivalDate, "dd/MM/yyyy", null);
                             HotelBookingRoomRates.SalePrice = rate.total_amount / HotelBookingRoomRates.Nights;
                             HotelBookingRoomRates.CreatedBy = (int?)UserId;
                             HotelBookingRoomRates.CreatedDate = DateTime.Now;
