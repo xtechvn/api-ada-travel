@@ -2,10 +2,13 @@
 using Entities.ViewModels;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Hotel;
+using iTextSharp.text;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Nest;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -371,7 +374,72 @@ namespace Caching.Elasticsearch
                 {
                     search_response = elasticClient.Search<HotelESViewModel>(s => s
                                .Index(index_hotel)
-                               .Size(4000)
+                                .Sort(ss => ss
+                                    .Descending(f => f.id) // Sorting by CreatedDate in descending order
+                                )
+                               .Query(q => q
+                                   .Bool(b => b
+                                       .Should(
+                                           sh => sh.Match(m => m.Field(f => f.state).Query(name)),  // Match state
+                                           sh => sh.Match(m => m.Field(f => f.city).Query(name))    // Match city
+                                       )
+                                       .MinimumShouldMatch(1) // Ensures at least one condition matches
+                                   )
+                               )
+                           );
+                }
+
+                if (!search_response.IsValid)
+                {
+                    return result;
+                }
+                else
+                {
+                    result = search_response.Documents as List<HotelESViewModel>;
+                    result = result.Where(x => x.isdisplaywebsite == true).ToList();
+
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+        }
+        public async Task<List<HotelESViewModel>> GetListByLocationNamePagnition(string name,int? index=1,int? size=30, string Type = "product")
+        {
+            List<HotelESViewModel> result = new List<HotelESViewModel>();
+            try
+            {
+                int top = 4000;
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(Type);
+                var elasticClient = new ElasticClient(connectionSettings);
+                int skip = (index == null || size == null) ? 1 : ((int)index - 1) * (int)size; // Calculate how many documents to skip
+                int take = size == null ? 30 : (int)size; // Number of documents per page
+
+                ISearchResponse<HotelESViewModel> search_response;
+                if (name == null || name.Trim() == "")
+                {
+                    search_response = elasticClient.Search<HotelESViewModel>(s => s
+                               .From(skip) // Skip records for pagination
+                                .Size(take) // Take only the required records
+                                .Sort(ss => ss
+                                    .Descending(f => f.id) // Sorting by CreatedDate in descending order
+                                )
+                          );
+                }
+                else
+                {
+                    search_response = elasticClient.Search<HotelESViewModel>(s => s
+                               .Index(index_hotel)
+                               .From(skip) // Skip records for pagination
+                                .Size(take) // Take only the required records
+                                .Sort(ss => ss
+                                    .Descending(f => f.id) // Sorting by CreatedDate in descending order
+                                )
                                .Query(q => q
                                    .Bool(b => b
                                        .Should(

@@ -1,4 +1,5 @@
-﻿using API_CORE.Service.Log;
+﻿using API_CORE.Service.Hotel;
+using API_CORE.Service.Log;
 using API_CORE.Service.Price;
 using API_CORE.Service.Vin;
 using Caching.Elasticsearch;
@@ -2308,15 +2309,22 @@ namespace API_CORE.Controllers.B2B
             try
             {
                 #region Test
-                //var j_param = new Dictionary<string, string>
-                //{
-                //    {"type", "0"},
-                //    {"name", "Hà Nội"},
-                //    {"fromdate", DateTime.Now.ToString()},
-                //    {"todate", DateTime.Now.AddDays(1).ToString()},
-                //};
-                //var data_product = JsonConvert.SerializeObject(j_param);
-                //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                var j_param = new Dictionary<string, string>
+                {
+                    {"client_type", "1"},
+                    {"hotel_position", "1"},
+                    {"fromdate", DateTime.Now.AddDays(1).ToString()},
+                    {"todate", DateTime.Now.AddDays(2).ToString()},
+                    {"stars", ""},
+                    {"min_price", "-1"},
+                    {"max_price", "-1"},
+                    {"index", "1"},
+                    {"size", "30"},
+                    {"name", ""},
+                    {"location", "Phú Quốc"},
+                };
+                var data_product = JsonConvert.SerializeObject(j_param);
+                token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
                 #endregion
 
                 JArray objParr = null;
@@ -2366,14 +2374,17 @@ namespace API_CORE.Controllers.B2B
                             status = (int)ResponseType.FAILED
                         });
                     }
-                    string hotel_ids = "";
+                    var hotels = await _hotelESRepository.GetAllHotels();
+                    
                     var hotel_prices = await _hotelDetailRepository.GetListHotelPriceByFilter(name, new List<int>() { (int)client_type }, fromdate, todate, location, stars,min_price,max_price,index,size);
 
                     //if (hotel_position > 0)
                     //{
                     //    var hotel_list = await _hotelDetailRepository.GetListHotelActivePosition();
+                    int skip = (index == null || size == null) ? 1 : ((int)index - 1) * (int)size; // Calculate how many documents to skip
+                    int take = size == null ? 30 : (int)size; // Number of documents per page
 
-                    if (hotel_prices == null ||hotel_prices.ListData == null || hotel_prices.ListData.Count <= 0)
+                    if (hotel_prices.ListData == null || hotel_prices.ListData == null || hotel_prices.ListData.Count <= 0 )
                     {
                         return Ok(new
                         {
@@ -2383,9 +2394,6 @@ namespace API_CORE.Controllers.B2B
                     //    var hotel = await _hotelESRepository.GetByIds(hotel_list.Select(x => (int)x.HotelId).ToList());
                     //    hotel_prices.ListData = hotel_prices.ListData.Where(x => hotel.Select(x=>x.hotelid).Contains(x.hotel_id)).ToList();
                     //}
-
-                    hotel_ids = string.Join(",", hotel_prices.ListData.Select(x => x.hotel_id));
-
                     try
                     {
                         var str = redisService.Get(cache_name, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
@@ -2400,59 +2408,41 @@ namespace API_CORE.Controllers.B2B
                     catch { }
 
                     List<HotelSearchEntities> result = new List<HotelSearchEntities>();
-                    List<HotelFEDataModel> hotel_datas = new List<HotelFEDataModel>();
-                    hotel_datas = _hotelDetailRepository.GetFEHotelList(new HotelFESearchModel
-                    {
-                        FromDate = fromdate,
-                        ToDate = todate,
-                        HotelId = hotel_ids,
-                        HotelType = "",
-                        PageIndex = 1,
-                        PageSize = 1000,
 
-                    });
-
-                    if (hotel_datas != null && hotel_datas.Any())
+                    if (hotel_prices != null &&hotel_prices.ListData != null && hotel_prices.ListData.Any())
                     {
-                        var data_results = hotel_datas.GroupBy(x => x.Id).Select(x => x.First()).ToList();
-                        if (data_results != null && data_results.Any())
+                        foreach (var h in hotel_prices.ListData)
                         {
-                            data_results = data_results.Skip((index <= 1 ? 0 : ((int)index-1)) * (int)size).Take((int)size).ToList();
-                            
-                            foreach (var hotel in data_results)
+                            var hotel = hotels.FirstOrDefault(x => x.hotelid == h.hotel_id);
+                            result.Add(new HotelSearchEntities
                             {
-                                var hotel_price = hotel_prices.ListData.First(x => x.hotel_id == hotel.HotelId);
-                                result.Add(new HotelSearchEntities
-                                {
-                                    hotel_id = hotel.HotelId.ToString(),
-                                    name = hotel.Name,
-                                    star = hotel.Star,
-                                    country = hotel.Country,
-                                    state = hotel.State,
-                                    street = hotel.Street,
-                                    hotel_type = hotel.HotelType,
-                                    review_point = 10,
-                                    review_count = hotel.ReviewCount ?? 0,
-                                    review_rate = "Tuyệt vời",
-                                    is_refundable = hotel.IsRefundable,
-                                    is_instantly_confirmed = hotel.IsInstantlyConfirmed,
-                                    confirmed_time = hotel.VerifyDate ?? 0,
-                                    is_vin_hotel = hotel.IsVinHotel,
-                                    min_price = (hotel_price!=null && hotel_price._id!=null && hotel_price._id.Trim()!="")?hotel_price.min_price: 0,
-                                    email = hotel.Email,
-                                    telephone = hotel.Telephone,
-                                    img_thumb = new List<string> { hotel.ImageThumb },
-                                    is_commit = hotel.IsCommitFund,
+                                hotel_id = hotel.hotelid,
+                                name = hotel.name,
+                                star = hotel.star==null?0: (double)hotel.star,
+                                country = hotel.country,
+                                state = hotel.state,
+                                street = hotel.street,
+                                hotel_type = hotel.hoteltype,
+                                review_point = 10,
+                                review_count = hotel.reviewcount ?? 0,
+                                review_rate = "Tuyệt vời",
+                                is_refundable = hotel.isrefundable==null ? false : (bool)hotel.isrefundable,
+                                is_instantly_confirmed = hotel.isinstantlyconfirmed!= null && (bool)hotel.isinstantlyconfirmed,
+                                confirmed_time =  0,
+                                is_vin_hotel = hotel.isvinhotel??false,
+                                min_price = (h != null && h._id != null && h._id.Trim() != "") ? h.min_price : 0,
+                                email = hotel.email,
+                                telephone = hotel.telephone,
+                                img_thumb = new List<string> { hotel.imagethumb },
+                                is_commit = false,
 
-                                });
-                            }
+                            });
                         }
-                        if (result.Count > 0)
-                        {
-                            redisService.Set(cache_name, JsonConvert.SerializeObject(result),DateTime.Now.AddDays(1), Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
-                            return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = result, cache_id = string.Empty,total_page=hotel_prices.TotalPage });
-                        }
-
+                    }
+                    if (result.Count > 0)
+                    {
+                        redisService.Set(cache_name, JsonConvert.SerializeObject(result), DateTime.Now.AddDays(1), Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+                        return Ok(new { status = ((int)ResponseType.SUCCESS).ToString(), data = result, cache_id = string.Empty, total_page = hotel_prices.TotalPage });
                     }
                     return Ok(new
                     {
@@ -2494,136 +2484,12 @@ namespace API_CORE.Controllers.B2B
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
                 {
-                    DateTime fromdate = DateTime.Now.AddDays(1);
-                    DateTime todate = DateTime.Now.AddDays(2);
-                                      List<int> client_type_sync = new List<int>() { 1, 2, 3, 4, 5, 9 };
-                    foreach(var client_type in client_type_sync)
-                    {
-                        var client_types_string = client_type.ToString();
-                        if (client_type == (int)ClientType.AGENT || client_type == (int)ClientType.TIER_1_AGENT) client_types_string = "1,2";
-                        var vin_lib = new VinpearlLib(configuration);
-                        int total_nights = (todate - fromdate).Days;
-                        var hotels = await _hotelESRepository.GetAllHotels();
-                        if (hotels != null && hotels.Count > 0)
-                        {
-                           // hotels = hotels.Where(x => x.isvinhotel == true).ToList();
-                            foreach (var h in hotels)
-                            {
-                                HotelPriceMongoDbModel model = new HotelPriceMongoDbModel()
-                                {
-                                    arrival_date = fromdate,
-                                    departure_date = todate,
-                                    client_type = (int)client_type,
-                                    hotel_id = h.hotelid,
-                                    min_price = 0,
-                                    city = h.city,
-                                    state = h.state,
-                                    star = h.star==null? 0: Convert.ToInt32(h.star)
-                                };
-
-                                switch (h.isvinhotel)
-                                {
-                                    case true:
-                                        {
-                                            string input_api_vin_phase = "{ \"distributionChannelId\": \"" + configuration["config_api_vinpearl:Distribution_ID"].ToString()
-                                                + "\", \"propertyID\": \"" + h.hotelid + "\", \"numberOfRoom\":1, \"arrivalDate\":\"" + fromdate.ToString("yyyy-MM-dd")
-                                                + "\", \"departureDate\":\"" + todate.ToString("yyyy-MM-dd")
-                                                + "\", \"roomOccupancy\":{\"numberOfAdult\":2,\"otherOccupancies\":[{\"otherOccupancyRefCode\":\"child\",\"quantity\":0},{\"otherOccupancyRefCode\":\"infant\",\"quantity\":0}]}}";
-                                            var response = vin_lib.getRoomAvailability(input_api_vin_phase).Result;
-                                            var data = JObject.Parse(response);
-                                            if (data == null || data["isSuccess"] == null || data["isSuccess"].ToString().ToLower() == "false") continue;
-                                            var j_rate_list = data["data"]["roomAvailabilityRates"];
-                                            List<RoomDetailRate> rates = new List<RoomDetailRate>();
-                                            if (j_rate_list == null || j_rate_list.Count() <= 0) continue;
-                                            //-- Giá gốc + cancel policy
-                                            foreach (var r in j_rate_list)
-                                            {
-                                                rates.Add(new RoomDetailRate()
-                                                {
-                                                    id = r["ratePlan"]["id"].ToString(),
-                                                    amount = Convert.ToDouble(r["totalAmount"]["amount"]["amount"]),
-                                                    code = r["ratePlan"]["rateCode"].ToString(),
-                                                    description = r["ratePlan"]["description"].ToString(),
-                                                    name = r["ratePlan"]["name"].ToString(),
-                                                    guarantee_policy = r["ratePlan"]["guaranteePolicy"]["description"] != null ? r["ratePlan"]["guaranteePolicy"]["description"].ToString() : "",
-                                                    allotment_id = r["allotments"] != null && r["allotments"].Count() > 0 ? r["allotments"][0]["id"].ToString() : "",
-                                                    room_code = r["roomType"]["roomTypeID"].ToString().Trim(),
-
-                                                });
-                                            }
-                                            if (rates == null || rates.Count() <= 0) continue;
-                                            var profit_list = _hotelDetailRepository.GetHotelRoomPricePolicy(h.hotelid, client_types_string, true);
-                                            List<double> prices = new List<double>();
-                                            foreach (var rate in rates)
-                                            {
-                                                if (client_type == (int)ClientType.STAFF)
-                                                {
-                                                    rate.profit = 0;
-                                                    rate.total_profit = 0;
-                                                    rate.total_price = rate.amount;
-                                                }
-                                                else
-                                                {
-                                                    //var profit = profit_list.Where(x => x.HotelCode == result.hotel_id && x.RoomTypeCode == r_id && x.PackageName == rate.id).ToList();
-                                                    var profit = profit_list.Where(x =>
-                                                    x.RoomTypeCode.ToLower().Trim() == rate.room_code.ToLower().Trim()
-                                                    && x.PackageCode.ToLower().Trim() == rate.code.ToLower().Trim()
-
-                                                    ).ToList();
-
-                                                    if (profit != null && profit.Count > 0)
-                                                    {
-                                                        rate.total_profit = PricePolicyService.CalucateMinProfit(profit, rate.amount, fromdate, todate);
-                                                        rate.total_price = rate.amount + rate.total_profit;
-                                                    }
-                                                    else
-                                                    {
-                                                        rate.profit = 0;
-                                                        rate.total_profit = 0;
-                                                        rate.total_price = 0;
-                                                    }
-                                                }
-                                                prices.Add(rate.total_price);
-                                            }
-                                            var min_price_value = prices.Where(x => x > 0).OrderBy(x => x).FirstOrDefault();
-                                            if (min_price_value > 0)
-                                            {
-                                                model.min_price = min_price_value;
-                                            }
-                                        }
-                                        break;
-                                    default:
-                                        {
-                                            List<RoomDetail> rooms_list = new List<RoomDetail>();
-                                            var hotel_detail = await _hotelDetailRepository.GetByHotelId(h.hotelid);
-                                            if (hotel_detail == null || hotel_detail.Id <= 0) continue;
-                                            var hotel_rooms = _hotelDetailRepository.GetFEHotelRoomList(Convert.ToInt32(h.hotelid));
-                                            if (hotel_rooms == null || hotel_rooms.Count <= 0) continue;
-                                            //-- Tính giá về tay thông qua chính sách giá
-                                            var profit_list = _hotelDetailRepository.GetHotelRoomPricePolicy(h.hotelid, client_types_string);
-                                            foreach (var r in hotel_rooms)
-                                            {
-                                                var room_packages = _hotelDetailRepository.GetFERoomPackageListByRoomId(r.Id, fromdate, todate);
-                                                var room_packages_daily = _hotelDetailRepository.GetFERoomPackageDaiLyListByRoomId(r.Id, fromdate, todate);
-                                                rooms_list.Add(PricePolicyService.GetRoomDetail(r.Id.ToString(), fromdate, todate, total_nights, room_packages_daily, room_packages, profit_list, hotel_detail, null, (int)client_type));
-                                            }
-                                            var min_price_value = rooms_list.Where(x => x.min_price > 0).OrderBy(x => x.min_price).FirstOrDefault();
-                                            if (min_price_value != null && min_price_value.min_price > 0)
-                                            {
-                                                model.min_price = min_price_value.min_price;
-                                            }
-                                        }
-                                        break;
-                                }
-                                _hotelDetailRepository.UpSertHotelPrice(model);
-
-                            }
-                        }
-                    }
+                    HotelPriceSyncService syncService = new HotelPriceSyncService(configuration, _hotelDetailRepository);
+                    syncService.Sync();
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
-                        msg = "On Syncing"
+                        msg = "Start Syncing: "+DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")
                     });
                 }
                 else

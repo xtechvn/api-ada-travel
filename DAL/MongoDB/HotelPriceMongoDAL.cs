@@ -5,10 +5,12 @@ using ENTITIES.ViewModels.MongoDb;
 using ENTITIES.ViewModels.Tour;
 using iTextSharp.text;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Utilities;
@@ -115,8 +117,8 @@ namespace DAL.MongoDB
                 {
                     // Location filter: Match either city or state
                     var locationFilter = Builders<HotelPriceMongoDbModel>.Filter.Or(
-                    Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.city, location),
-                    Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.state, location)
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.city, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i"))
                     );
                     filterDefinition &= locationFilter;
                 }
@@ -166,8 +168,8 @@ namespace DAL.MongoDB
                 {
                     // Location filter: Match either city or state
                     var locationFilter = Builders<HotelPriceMongoDbModel>.Filter.Or(
-                    Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.city, location),
-                    Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.state, location)
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.city, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i"))
                     );
                     filterDefinition &= locationFilter;
                 }
