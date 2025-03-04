@@ -2309,22 +2309,22 @@ namespace API_CORE.Controllers.B2B
             try
             {
                 #region Test
-                var j_param = new Dictionary<string, string>
-                {
-                    {"client_type", "1"},
-                    {"hotel_position", "1"},
-                    {"fromdate", DateTime.Now.AddDays(1).ToString()},
-                    {"todate", DateTime.Now.AddDays(2).ToString()},
-                    {"stars", ""},
-                    {"min_price", "-1"},
-                    {"max_price", "-1"},
-                    {"index", "1"},
-                    {"size", "30"},
-                    {"name", ""},
-                    {"location", "Phú Quốc"},
-                };
-                var data_product = JsonConvert.SerializeObject(j_param);
-                token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                //var j_param = new Dictionary<string, string>
+                //{
+                //    {"client_type", "1"},
+                //    {"hotel_position", "1"},
+                //    {"fromdate", DateTime.Now.AddDays(1).ToString()},
+                //    {"todate", DateTime.Now.AddDays(2).ToString()},
+                //    {"stars", ""},
+                //    {"min_price", "-1"},
+                //    {"max_price", "-1"},
+                //    {"index", "1"},
+                //    {"size", "30"},
+                //    {"name", ""},
+                //    {"location", "Phú Quốc"},
+                //};
+                //var data_product = JsonConvert.SerializeObject(j_param);
+                //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
                 #endregion
 
                 JArray objParr = null;

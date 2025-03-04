@@ -59,6 +59,7 @@ namespace API_CORE.Service.Hotel
                                 client_type = (int)client_type,
                                 hotel_id = h.hotelid,
                                 min_price = 0,
+                                hotel_name=h.name,
                                 city = h.city==null?"": h.city.Trim(),
                                 state = h.state == null ? "" : h.state.Trim(),
                                 star = h.star == null ? 0 : Convert.ToInt32(h.star)

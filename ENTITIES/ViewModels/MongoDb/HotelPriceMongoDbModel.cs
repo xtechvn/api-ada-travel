@@ -14,6 +14,7 @@ namespace ENTITIES.ViewModels.MongoDb
         }
         public int client_type { get; set; }
         public string hotel_id { get; set; }
+        public string hotel_name { get; set; }
         public int star { get; set; }
         public string city { get; set; }
         public string state { get; set; }

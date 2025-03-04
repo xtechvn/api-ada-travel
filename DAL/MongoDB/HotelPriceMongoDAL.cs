@@ -117,6 +117,7 @@ namespace DAL.MongoDB
                 {
                     // Location filter: Match either city or state
                     var locationFilter = Builders<HotelPriceMongoDbModel>.Filter.Or(
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.hotel_name, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
                         Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.city, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
                         Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i"))
                     );
