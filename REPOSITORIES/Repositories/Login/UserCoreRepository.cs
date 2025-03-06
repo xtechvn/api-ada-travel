@@ -61,15 +61,11 @@ namespace REPOSITORIES.Repositories.Login
             {
                 userDAL = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
                 var id = await userDAL.upsertUser(model);
-                if (id <= 0)
+                if (id <= 0 || model.Id == 0)
                 {
                     return id;
                 }
-                else
-                {
-                    if (model.Id == 0)
-                        model.Id = (int)id;
-                }
+
                 var company_type = model.CompanyType != null && model.CompanyType.Trim() != "" ? model.CompanyType.Split(",") : null;
                 if (company_type != null && company_type.Length > 0)
                 {
