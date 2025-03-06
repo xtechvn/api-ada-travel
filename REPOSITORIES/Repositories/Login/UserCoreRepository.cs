@@ -12,9 +12,9 @@ using Utilities;
 
 namespace REPOSITORIES.Repositories.Login
 {
-    public class UserCoreRepository: IUserCoreRepository
+    public class UserCoreRepository : IUserCoreRepository
     {
-        private  UserCoreDAL userDAL;
+        private UserCoreDAL userDAL;
         private readonly UserCoreDAL userCoreDALTravel;
         private readonly UserCoreDAL userCoreDALPQ;
         private readonly IOptions<DataBaseConfig> dataBaseConfig;
@@ -61,21 +61,23 @@ namespace REPOSITORIES.Repositories.Login
             {
                 userDAL = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
                 var id = await userDAL.upsertUser(model);
-                if(id <= 0)
+                if (id <= 0 || model.Id <= 0)
                 {
                     return id;
                 }
-                var company_type = model.CompanyType!=null && model.CompanyType.Trim()!=""? model.CompanyType.Split(","):null;
-                if(company_type!=null && company_type.Length > 0)
+                var company_type = model.CompanyType != null && model.CompanyType.Trim() != "" ? model.CompanyType.Split(",") : null;
+                if (company_type != null && company_type.Length > 0)
                 {
-                    foreach(var ct in company_type)
+                    foreach (var ct in company_type)
                     {
-                        switch (ct.Trim()){
+                        switch (ct.Trim())
+                        {
                             case "0":
                                 {
                                     UserCoreDAL userCoreDALTravel2 = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringTravel);
                                     await userCoreDALTravel2.upsertUserPQvsTravel(model);
-                                }break;
+                                }
+                                break;
                             case "1":
                                 {
                                     UserCoreDAL userCoreDALPQ2 = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringPQ);
@@ -85,7 +87,7 @@ namespace REPOSITORIES.Repositories.Login
                                 break;
                             case "2":
                                 {
-                                    
+
                                 }
                                 break;
                         }
@@ -96,7 +98,7 @@ namespace REPOSITORIES.Repositories.Login
             catch (Exception ex)
             {
 
-                LogHelper.InsertLogTelegram("upsertUse, user = "+ JsonConvert.SerializeObject(model) + " - UserRepository: " + ex);
+                LogHelper.InsertLogTelegram("upsertUse, user = " + JsonConvert.SerializeObject(model) + " - UserRepository: " + ex);
                 return -1;
             }
         }
@@ -106,9 +108,9 @@ namespace REPOSITORIES.Repositories.Login
             try
             {
                 userDAL = new UserCoreDAL(dataBaseConfig.Value.SqlServer.ConnectionStringUser);
-                LogHelper.InsertLogTelegram("upsertUse, user = " );
+                LogHelper.InsertLogTelegram("upsertUse, user = ");
 
-                return await userDAL.changePassword( username,  password);
+                return await userDAL.changePassword(username, password);
 
             }
             catch (Exception ex)
@@ -117,7 +119,7 @@ namespace REPOSITORIES.Repositories.Login
                 LogHelper.InsertLogTelegram("upsertUse, user = " + username + " - UserRepository: " + ex);
                 return -1;
             }
-        }     
+        }
 
 
 
@@ -137,6 +139,6 @@ namespace REPOSITORIES.Repositories.Login
             }
         }
 
-      
+
     }
 }
