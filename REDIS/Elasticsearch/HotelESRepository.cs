@@ -48,8 +48,12 @@ namespace Caching.Elasticsearch
                                                    .Index(index_name)
                                                 .Size(4000)
                                                     .Query(q => q
-                                  .Match(m => m.Field(y => y.name).Query("*" + txtsearch + "*")
+                                                           .Wildcard(w => w
+                                                           .Field(f => f.name) // Replace with your field name
+                                                            .Value("*" + txtsearch + "*") // Use wildcards to match the substring
+
                               )));
+
 
                 if (!search_response.IsValid)
                 {
@@ -361,7 +365,7 @@ namespace Caching.Elasticsearch
                 var elasticClient = new ElasticClient(connectionSettings);
 
                 ISearchResponse<HotelESViewModel> search_response;
-                if(name==null|| name.Trim() == "")
+                if (name == null || name.Trim() == "")
                 {
                     search_response = elasticClient.Search<HotelESViewModel>(s => s
                               .Size(50)  // Get top 50 results
@@ -407,7 +411,7 @@ namespace Caching.Elasticsearch
             }
 
         }
-        public async Task<List<HotelESViewModel>> GetListByLocationNamePagnition(string name,int? index=1,int? size=30, string Type = "product")
+        public async Task<List<HotelESViewModel>> GetListByLocationNamePagnition(string name, int? index = 1, int? size = 30, string Type = "product")
         {
             List<HotelESViewModel> result = new List<HotelESViewModel>();
             try
@@ -480,8 +484,8 @@ namespace Caching.Elasticsearch
                 var connectionPool = new StaticConnectionPool(nodes);
                 var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("0");
                 var elasticClient = new ElasticClient(connectionSettings);
-  
-                ISearchResponse<HotelESViewModel>  search_response = elasticClient.Search<HotelESViewModel>(s => s
+
+                ISearchResponse<HotelESViewModel> search_response = elasticClient.Search<HotelESViewModel>(s => s
                                                    .Index(index_hotel)
                                                     .Size(4000)
                                                     .Query(q => q
