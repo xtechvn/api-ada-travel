@@ -133,16 +133,47 @@ namespace API_CORE.Service.Price
                 List<PricePolicyFilterModel> package_codes = new List<PricePolicyFilterModel>();
                 if (room_packages_special.Count > 0)
                 {
-                    package_codes.AddRange(room_packages_special.Select(x => new PricePolicyFilterModel() { PackageCode=x.PackageCode, ProgramId=x.ProgramId }));
+                    foreach (var x in room_packages_special)
+                    {
+                        PricePolicyFilterModel item = new PricePolicyFilterModel()
+                        {
+                            PackageCode = x.PackageCode,
+                            ProgramId = x.ProgramId,
+                            RoomTypeID=x.RoomTypeId
+                        };
+                        if ( package_codes.Any(y => y.PackageCode.Trim() == item.PackageCode.Trim() && y.ProgramId == item.ProgramId))
+                        {
+                            continue;
+                        }
+                        package_codes.Add(item);
+
+                    }
                 }
                 if (room_packages_daily.Count > 0)
                 {
-                    package_codes.AddRange(room_packages_daily.Select(x => new PricePolicyFilterModel() { PackageCode = x.PackageCode, ProgramId = x.ProgramId }));
+                    foreach(var x in room_packages_daily)
+                    {
+                        PricePolicyFilterModel item = new PricePolicyFilterModel()
+                        {
+                            PackageCode = x.PackageCode,
+                            ProgramId = x.ProgramId,
+                            RoomTypeID = x.RoomTypeId
+
+                        };
+                        if(package_codes.Any(y=>y.PackageCode.Trim()==item.PackageCode.Trim() && y.ProgramId == item.ProgramId))
+                        {
+                            continue;
+                        }
+                        package_codes.Add(item);
+
+                    }
+
                 }
-                package_codes = package_codes.Distinct().ToList();
+                var stayDates = new List<DateTime>();
                 for (int d = 0; d < nights; d++)
                 {
                     var stay_date = arrival_date.AddDays(d);
+                    stayDates.Add(arrival_date.AddDays(d));
                     var day_of_week_orginal = (int)stay_date.DayOfWeek;
                     //-- Set from sunday: 0,2,3,4,5,6,7
                     var day_of_week = day_of_week_orginal <= 0 ? 0 : (day_of_week_orginal + 1);
@@ -164,7 +195,7 @@ namespace API_CORE.Service.Price
                             {
                                 if (profit == null || profit.Count <= 0)
                                 {
-                                    all_rates = all_rates.Where(x => x.code != code.PackageCode && x.program_id == code.ProgramId).ToList();
+                                    //all_rates = all_rates.Where(x => x.code != code.PackageCode && x.program_id == code.ProgramId).ToList();
                                     continue;
                                 }
                                 min_profit = CalucateProfitPerDay(profit, rate_special.Amount);
@@ -183,7 +214,8 @@ namespace API_CORE.Service.Price
                                 total_price = rate_special.Amount + min_profit,
                                 total_profit = min_profit,
                                 amount = rate_special.Amount,
-                                program_name = rate_special.ProgramName
+                                program_name = rate_special.ProgramName,
+                                room_id=rate_special.RoomTypeId
                             });
                         }
                         else
@@ -234,12 +266,15 @@ namespace API_CORE.Service.Price
                                     total_profit = min_profit,
                                     amount = rd.Amount,
                                     program_name = rd.ProgramName,
-                                   
+                                   program_id= rd.ProgramId,
+                                    room_id = rd.RoomTypeId
+
                                 });
                             }
                             if (rd_daily_calculated.Count <= 0)
                             {
-                                all_rates = all_rates.Where(x => x.code != code.PackageCode && x.program_id == code.ProgramId).ToList();
+                                //all_rates = all_rates.Where(x => x.code != code.PackageCode && x.program_id != code.ProgramId && x.room_id==code.RoomTypeID && x.apply_date!=stay_date).ToList();
+                                
                                 continue;
                             }
                             else
@@ -249,7 +284,23 @@ namespace API_CORE.Service.Price
                         }
                     }
                 }
-
+                // Group rooms by the unique combination of {code, program_id, room_id}
+                var groupedRooms = all_rates
+                    .GroupBy(r => new { r.code, r.program_id, r.room_id })
+                    .Select(g => new
+                    {
+                        Key = g.Key,
+                        RoomItems = g.ToList(),
+                        ApplyDates = g.Select(r => r.apply_date).Where(d => d.HasValue).Select(d => d.Value.Date).Distinct().ToList()
+                    });
+                // Filter groups that have all required stay dates
+                var filteredGroups = groupedRooms
+                    .Where(g => stayDates.All(stayDate =>
+                        g.ApplyDates.Contains(stayDate.Date)))
+                    .SelectMany(g => g.RoomItems);
+                //-- To List:
+                all_rates = filteredGroups.ToList();
+                
                 result.rates = all_rates.Where(x => x.total_price > 0).GroupBy(s => new { s.code, s.program_name }).Select(s => new RoomDetailRate
                 {
                     id = $"{room_id}-{s.Select(i => i.id).FirstOrDefault()}".ToLower(),
