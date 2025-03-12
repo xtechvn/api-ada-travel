@@ -44,6 +44,22 @@ namespace DAL.Orders
             }
 
         }
+        public async Task<List<Order>> GetListOrder(List<long> orderIds)
+        {
+            try
+            {
+                using (var _DbContext = new EntityDataContext(_connection))
+                {
+                    return await _DbContext.Order.AsNoTracking().Where(s => orderIds.Contains(s.OrderId)).ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetListOrder - OrderDAL: " + ex.ToString());
+                return null;
+            }
+
+        }
         public Order GetOrderByOrderNo(string order_no)
         {
             try

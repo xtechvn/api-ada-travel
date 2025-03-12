@@ -49,6 +49,10 @@ namespace REPOSITORIES.Repositories
         public Order getDetail(long orderId)
         {
             return orderDAL.GetDetail(orderId);
+        }  
+        public async Task<List<Order>> GetListOrder(List<long> orderIds)
+        {
+            return await orderDAL.GetListOrder(orderIds);
         }
         public async Task<List<List_OrderViewModel>> GetOrderByClientId(long client_id)
         {

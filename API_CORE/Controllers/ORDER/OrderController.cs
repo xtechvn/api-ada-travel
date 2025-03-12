@@ -511,7 +511,91 @@ namespace API_CORE.Controllers.ORDER
             }
         }
 
+        [HttpPost("order/get-orderdetail")]
+        public async Task<ActionResult> GetRawOrderDetail(string token,long? order_id,string order_ids)
+        {
 
+            try
+            {
+                if(token!= "Vro47y1o5QC+6zVy2tuIFTDWo97E52chdG1QgzTnqEx8tIt" )
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Data Invalid ",
+                    });
+                }
+                if(order_ids!=null && order_ids.Trim() != "")
+                {
+                    var split=order_ids.Split(',');
+                    List<long> list_ids = new List<long>();
+                    if (split.Length > 0)
+                    {
+                       foreach(var num in split)
+                       {
+                            try
+                            {
+                                list_ids.Add(Convert.ToInt64(num));
+                            }
+                            catch
+                            {
+
+                            }
+                       }
+                    }
+                    if (list_ids.Count > 0) {
+                        var orders = await ordersRepository.GetListOrder(list_ids);
+                        if (orders != null && orders.Count > 0)
+                        {
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.SUCCESS,
+                                msg = "Successfully ",
+                                data = orders.Select(order => new
+                                {
+                                    id = order.OrderId,
+                                    order_no=order.OrderNo,
+                                    amount = order.Amount,
+                                    status = order.OrderStatus,
+                                    created_date = order.CreateTime
+                                }),
+                            });
+                        }
+
+                    }
+                }
+                if(order_id != null && order_id >0)
+                {
+                    var order = ordersRepository.getDetail((long)order_id);
+                    if (order != null && order.OrderId > 0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "Successfully ",
+                            data = new
+                            {
+                                id = order.OrderId,
+                                amount = order.Amount,
+                                status = order.OrderStatus,
+                                created_date=order.CreateTime
+                            },
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                LogHelper.InsertLogTelegram("order/get-orderdetail - GetRawOrderDetail - OrderController: " + ex.ToString());
+                return Ok(new { status = ((int)ResponseType.ERROR).ToString(), msg = "Error On Excution. Vui lòng liên hệ IT" });
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.FAILED,
+                msg = "Data Invalid ",
+            });
+        }
     }
 }
 
