@@ -167,10 +167,16 @@ namespace DAL.MongoDB
                 filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.departure_date, departuredate);
                 if (location != null && location.Trim() != "")
                 {
+                    var location_nonunicode = CommonHelper.RemoveUnicode(location);
+
                     // Location filter: Match either city or state
                     var locationFilter = Builders<HotelPriceMongoDbModel>.Filter.Or(
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.hotel_name, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
                         Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.city, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
-                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i"))
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.hotel_name, new BsonRegularExpression($"^{Regex.Escape(location_nonunicode)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.city, new BsonRegularExpression($"^{Regex.Escape(location_nonunicode)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location_nonunicode)}[., ]?", "i"))
                     );
                     filterDefinition &= locationFilter;
                 }
@@ -194,10 +200,15 @@ namespace DAL.MongoDB
                 // Pagination parameters
                 int skip = (page_index == null|| page_size==null) ? 1: ((int)page_index - 1) * (int)page_size; // Calculate how many documents to skip
                 int take = page_size == null?30: (int)page_size; // Number of documents per page
-
+                //var sortDefinition = new SortDefinitionBuilder<HotelPriceMongoDbModel>()
+                //        .Combine(
+                //            Builders<HotelPriceMongoDbModel>.Sort.Descending(x => x.position_b2b != null), // Non-null first
+                //            Builders<HotelPriceMongoDbModel>.Sort.Ascending(x => x.position_b2b)          // Then sort ascending
+                //        );
                 // Query execution with pagination
                 var hotels = await bookingCollection
                     .Find(filterDefinition)
+                    //.Sort(sortDefinition) 
                     .Skip(skip)
                     .Limit(take)
                     .ToListAsync();
