@@ -288,11 +288,11 @@ namespace API_CORE.Controllers.NOTIFY
                             case (Int16)ActionType.DA_DUYET_CONG_NO: // Duyệt hợp đồng thành công
                             case (Int16)ActionType.TU_CHOI_DON_CONG_NO:
                                 // Gửi về cho nv tạo hợp đồng đó
-                                var sale_create_don_hang = notifyRepository.getSalerIdByContractNo(code);
+                                var sale_create_don_hang = notifyRepository.getSalerIdByOrderNo(code);
                                 if (sale_create_don_hang.Rows.Count > 0)
                                 {
                                     content = user_name_send + " " + action_label + " đơn hàng " + code ;
-                                    var sale_id = Convert.ToInt32(sale_create_don_hang.Rows[0]["UserIdCreate"]);
+                                    var sale_id = Convert.ToInt32(sale_create_don_hang.Rows[0]["SalerId"]);
                                     user_receiver_id.Add(sale_id);
                                 }
                                 break;
