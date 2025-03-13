@@ -41,6 +41,8 @@ namespace Utilities.Contants
         KHACH_HANG = 3,
         PHIEU_THU = 4,
         DICH_VU = 5,
+        BANG_KE = 6,
+        CONG_NO_DON_HANG = 7,
     }
     public enum ActionType
     {
@@ -60,7 +62,10 @@ namespace Utilities.Contants
         TU_CHOI_HOP_DONG = 13,
         DUYET_YEU_CAU_CHI = 14,
         BO_DUYET_YEU_CAU_CHI = 15,
-        TU_CHOI_DUYET_YEU_CAU_CHI = 16
+        TU_CHOI_DUYET_YEU_CAU_CHI = 16,
+        DA_DUYET_CONG_NO = 19,
+        TU_CHOI_DON_CONG_NO = 20,
+        DUYET_CONG_NO = 21,
     }
     public static class NotifyLabelName
     {
@@ -78,6 +83,8 @@ namespace Utilities.Contants
                     return "phiếu thu";
                 case (Int16)ModuleType.DICH_VU:
                     return "dịch vụ";
+                case (Int16)ModuleType.CONG_NO_DON_HANG:
+                    return "bảo lãnh công nợ";
                 default:
                     return "n/a";
             }
@@ -119,7 +126,12 @@ namespace Utilities.Contants
                     return "bỏ duyệt yêu cầu chi";
                 case (Int16)ActionType.TU_CHOI_DUYET_YEU_CAU_CHI:
                     return "từ chối duyệt yêu cầu chi";
-
+                case (Int16)ActionType.TU_CHOI_DON_CONG_NO:
+                    return "từ chối duyệt công nợ ";
+                case (Int16)ActionType.DA_DUYET_CONG_NO:
+                    return "đã duyệt công nợ ";
+                case (Int16)ActionType.DUYET_CONG_NO:
+                    return "duyệt công nợ ";
                 default:
                     return "n/a";
             }

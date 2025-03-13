@@ -1,6 +1,8 @@
-﻿using DAL.MongoDB.Notify;
+﻿using DAL;
+using DAL.MongoDB.Notify;
 using DAL.Permission;
 using Entities.ConfigModels;
+using ENTITIES.ViewModels;
 using ENTITIES.ViewModels.Notify;
 using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories.Notify;
@@ -99,6 +101,53 @@ namespace REPOSITORIES.Repositories.Notify
                 return null;
             }
         }
+        public List<int> GetLeaderByUserId(int user_id)
+        {
+            try
+            {
+                var obj_manager = permissionDAL.GetLeaderByUserId(user_id);
+                if (obj_manager.Rows.Count > 0)
+                {
+                    // var arr = obj_manager.AsEnumerable().Select(n => n.Field<int>("UserId"));  //Convert.ToInt32(obj_manager.Rows[0]["UserId"]);                    
+                    List<int> userIdList = obj_manager.AsEnumerable().Select(n => n.Field<int>("UserId")).ToList();
 
+                    return userIdList;
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("NotifyRepository - GetLeaderByUserId: " + ex);
+                return null;
+            }
+        } 
+        public async Task<DebtGuaranteeViewModel> GetDetailDebtGuaranteeByDebtGuaranteeCode(string Code)
+        {
+            try
+            {
+                var dt =await permissionDAL.GetDetailDebtGuaranteeByDebtGuaranteeCode(Code);
+                if (dt!=null && dt.Rows.Count > 0)
+                {
+                    // var arr = obj_manager.AsEnumerable().Select(n => n.Field<int>("UserId"));  //Convert.ToInt32(obj_manager.Rows[0]["UserId"]);                    
+                    var data = dt.ToList<DebtGuaranteeViewModel>();
+
+                    return data[0];
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("NotifyRepository - GetDetailDebtGuaranteeByDebtGuaranteeCode: " + ex);
+                return null;
+            }
+        }
     }
 }

@@ -138,7 +138,7 @@ namespace API_CORE.Controllers.NOTIFY
                 {
 
                     var user_name_send = objParr[0]["user_name_send"].ToString();
-                    var code = objParr[0]["code"].ToString();
+                    var code = objParr[0]["code"].ToString();   
                     var link_redirect = objParr[0]["link_redirect"].ToString();
                     var user_id_send = Convert.ToInt16(objParr[0]["user_id_send"]);
                     var module_type = Convert.ToInt16(objParr[0]["module_type"]);
@@ -283,6 +283,55 @@ namespace API_CORE.Controllers.NOTIFY
                                         msg = "Khong tim thay user nao thuoc quyen dieu hanh",
                                         token = token
                                     });
+                                }
+                                break;
+                            case (Int16)ActionType.DA_DUYET_CONG_NO: // Duyệt hợp đồng thành công
+                            case (Int16)ActionType.TU_CHOI_DON_CONG_NO:
+                                // Gửi về cho nv tạo hợp đồng đó
+                                var sale_create_don_hang = notifyRepository.getSalerIdByOrderNo(code);
+                                if (sale_create_don_hang.Rows.Count > 0)
+                                {
+                                    content = user_name_send + " " + action_label + " đơn hàng " + code ;
+                                    var sale_id = Convert.ToInt32(sale_create_don_hang.Rows[0]["SalerId"]);
+                                    user_receiver_id.Add(sale_id);
+                                }
+                                break;
+                            case (Int16)ActionType.DUYET_CONG_NO:
+                                {
+                                    var detaiDH = await notifyRepository.GetDetailDebtGuaranteeByDebtGuaranteeCode(code);
+                                    if(detaiDH!= null)
+                                    {
+                                        if(detaiDH.Amount > 10000000)
+                                        {
+                                            // Gửi về cho tp tạo hợp đồng đó
+                                            var Tpsaler = notifyRepository.getManagerByUserId(user_id_send);
+                                            if (Tpsaler != null && Tpsaler.Count > 0)
+                                            {
+                                                content = user_name_send + " đã gửi " + action_label + " " + module_label + " " + code;
+                                                user_receiver_id = Tpsaler;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Gửi về cho tn tạo hợp đồng đó
+                                            var Leader = notifyRepository.GetLeaderByUserId(user_id_send);
+                                            if (Leader != null && Leader.Count > 0)
+                                            {
+                                                content = user_name_send + " đã gửi " + action_label + " đơn " + code;
+                                                user_receiver_id = Leader;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        LogHelper.InsertLogTelegram("notify/message/send.json" + "token =" + token + "==> Không tìm thấy user duyệt dông nợ");
+                                        return Ok(new
+                                        {
+                                            status = (int)ResponseType.EMPTY,
+                                            msg = "Không tìm thấy user duyệt dông nợ",
+                                            token = token
+                                        });
+                                    }
                                 }
                                 break;
 

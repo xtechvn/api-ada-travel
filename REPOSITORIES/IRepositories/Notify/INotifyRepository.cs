@@ -1,4 +1,5 @@
-﻿using ENTITIES.ViewModels.Notify;
+﻿using ENTITIES.ViewModels;
+using ENTITIES.ViewModels.Notify;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,5 +16,7 @@ namespace REPOSITORIES.IRepositories.Notify
         DataTable getSalerIdByOrderNo(string order_no);
         DataTable getListOperatorByOrderNo(string order_no);
         DataTable getSalerIdByContractNo(string contract_no);
+        List<int> GetLeaderByUserId(int user_id);
+        Task<DebtGuaranteeViewModel> GetDetailDebtGuaranteeByDebtGuaranteeCode(string Code);
     }
 }

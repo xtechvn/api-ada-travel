@@ -4,6 +4,7 @@ using ENTITIES.Models;
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 using Utilities;
 
 namespace DAL.Permission
@@ -112,6 +113,20 @@ namespace DAL.Permission
             }
             return null;
         }
+        public async Task<DataTable> GetDetailDebtGuaranteeByDebtGuaranteeCode(string Code)
+        {
+            try
+            {
+                SqlParameter[] objParam = new SqlParameter[1];
+                objParam[0] = new SqlParameter("@Code", Code);
 
+                return _DbWorker.GetDataTable("SP_GetDetailDebtGuaranteeByDebtGuaranteeCode", objParam);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("PermissionDAL - GetDetailDebtGuaranteeByDebtGuaranteeCode: " + ex);
+            }
+            return null;
+        }
     }
 }
