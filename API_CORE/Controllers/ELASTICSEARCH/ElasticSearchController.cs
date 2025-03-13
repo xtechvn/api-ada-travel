@@ -105,6 +105,7 @@ namespace API_CORE.Controllers.ELASTICSEARCH
                     //        msg = "Không có dữ liệu nào thỏa mãn từ khóa " + txtsearch
                     //    });
                     //}
+                    txtsearch = txtsearch.Trim();
                     var hotel_list = await _hotelESRepository.GetListProduct(txtsearch, search_type=="1"?true:false);
                     var city_list = await _hotelESRepository.GetListCity(txtsearch, search_type=="1"?true:false);
 

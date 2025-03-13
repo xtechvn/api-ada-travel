@@ -48,6 +48,60 @@ namespace Caching.Elasticsearch
             return null;
 
         }
+        public async Task<List<OrderElasticsearchViewModel>> GetOrderByIds(string order_ids, string index_name = "adavigo_sp_getorder")
+        {
+            List<OrderElasticsearchViewModel> result = new List<OrderElasticsearchViewModel>();
+            try
+            {
+                int top = 30;
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(index_name);
+                var elasticClient = new ElasticClient(connectionSettings);
+
+                var search_response = elasticClient.Search<OrderElasticsearchViewModel>(s => s
+                     .Index(index_name)
+                     .Size(10000)
+                     .Query(q =>
+                     {
+                         if (order_ids.Trim() == "-1")
+                         {
+                             // Return all documents when input is "-1"
+                             return q.MatchAll();
+                         }
+                         else
+                         {
+                             // Split the comma-separated string and search for matching order numbers
+                             var orderArray = order_ids.Split(',')
+                                     .Select(x => x.Trim())
+                                     .Where(x => !string.IsNullOrEmpty(x))
+                                     .Select(x => long.Parse(x))  // Convert to long
+                                     .ToArray();
+
+                             return q.Terms(t => t
+                                 .Field("id")
+                                 .Terms(orderArray)
+                             );
+                         }
+                     })
+                 );
+                if (search_response.IsValid)
+                {
+                    result = search_response.Documents as List<OrderElasticsearchViewModel>;
+                    if(result!=null && result.Count>0)
+                    {
+                        return result;
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetOrderByOrderNo - OrderESRepository. " + ex);
+            }
+            return null;
+
+        }
         public async Task<List<OrderElasticsearchViewModel>> GetListOrder(long accountclientid, List<int> order_status,List<int> payment_status, DateTime fromDate, DateTime toDate, string index_name = "adavigo_sp_getorder")
         {
             try

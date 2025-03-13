@@ -10,6 +10,7 @@ namespace REPOSITORIES.IRepositories
     public interface IOrderRepository
     {
         Order getDetail(long orderId);
+        Task<List<Order>> GetListOrder(List<long> orderIds);
         Task<List<List_OrderViewModel>> GetOrderByClientId(long client_id);
         Task<List<List_OrderViewModel>> getOrderByOrderIdPagingList(int PageSize, int pageNumb, long client_id);
         Task<List<OrderDetailViewModel>> getOrderDetail(long order_id, long client_id);

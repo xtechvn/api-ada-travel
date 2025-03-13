@@ -1,4 +1,5 @@
 ﻿using API_CORE.Controllers.ORDER.Base;
+using Caching.Elasticsearch;
 using Caching.RedisWorker;
 using ENTITIES.APPModels.ReadBankMessages;
 using ENTITIES.ViewModels.Order;
@@ -23,6 +24,7 @@ namespace API_CORE.Controllers.ORDER
     {
         private IConfiguration configuration;
         private IOrderRepository ordersRepository;
+        private OrderESRepository orderESRepository;
         private IAccountRepository accountRepository;
         private IAccountB2BRepository accountB2BRepository;
 
@@ -35,7 +37,7 @@ namespace API_CORE.Controllers.ORDER
             ordersRepository = _ordersRepository;
             accountRepository = _accountRepository;
             accountB2BRepository = _accountB2BRepository;
-
+            orderESRepository = new OrderESRepository(_configuration["DataBaseConfig:Elastic:Host"]);
         }
         /// <summary>
         /// Cơ chế set cache giống fly/get-airline-by-code.json file FlyingTicketCOntroller.cs        /// 
@@ -511,7 +513,53 @@ namespace API_CORE.Controllers.ORDER
             }
         }
 
+        [HttpPost("order/get-orderdetail")]
+        public async Task<ActionResult> GetRawOrderDetail(string token,string order_ids)
+        {
 
+            try
+            {
+                if(token!= "Vro47y1o5QC+6zVy2tuIFTDWo97E52chdG1QgzTnqEx8tIt" )
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Data Invalid ",
+                    });
+                }
+                if(order_ids!=null && order_ids.Trim() != "")
+                {
+                    var orders = await orderESRepository.GetOrderByIds(order_ids);
+                    if (orders != null && orders.Count > 0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "Successfully ",
+                            data = orders.Select(order => new
+                            {
+                                id = order.id,
+                                order_no = order.orderno,
+                                amount = order.amount,
+                                status = order.orderstatus,
+                                created_date = order.createtime
+                            }),
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                LogHelper.InsertLogTelegram("order/get-orderdetail - GetRawOrderDetail - OrderController: " + ex.ToString());
+                return Ok(new { status = ((int)ResponseType.ERROR).ToString(), msg = "Error On Excution. Vui lòng liên hệ IT" });
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.FAILED,
+                msg = "Data Invalid ",
+            });
+        }
     }
 }
 

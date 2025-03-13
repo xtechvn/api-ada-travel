@@ -9,5 +9,6 @@ namespace API_CORE.Model.PricePolicy
     {
         public string PackageCode { get; set; }
         public int ProgramId { get; set; }
+        public int RoomTypeID { get; set; }
     }
 }
