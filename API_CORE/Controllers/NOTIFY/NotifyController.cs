@@ -307,7 +307,7 @@ namespace API_CORE.Controllers.NOTIFY
                                             var Tpsaler = notifyRepository.getManagerByUserId(user_id_send);
                                             if (Tpsaler != null && Tpsaler.Count > 0)
                                             {
-                                                content = user_name_send + " đã gửi " + action_label + " " + module_label + " " + code;
+                                                content = user_name_send + " đã gửi yêu cầu " + action_label + " " + module_label + " " + code +" lên trưởn phòng";
                                                 user_receiver_id = Tpsaler;
                                             }
                                         }
@@ -317,7 +317,7 @@ namespace API_CORE.Controllers.NOTIFY
                                             var Leader = notifyRepository.GetLeaderByUserId(user_id_send);
                                             if (Leader != null && Leader.Count > 0)
                                             {
-                                                content = user_name_send + " đã gửi " + action_label + " đơn " + code;
+                                                content = user_name_send + " đã gửi " + action_label + " đơn " + code +" lên trưởng nhóm";
                                                 user_receiver_id = Leader;
                                             }
                                         }
