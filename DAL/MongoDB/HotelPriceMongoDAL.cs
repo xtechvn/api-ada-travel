@@ -197,18 +197,24 @@ namespace DAL.MongoDB
                     filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.In(x => x.star, starList);
 
                 }
+                //-- Has Position B2B >0:
+                filterDefinition &=  Builders<HotelPriceMongoDbModel>.Filter.Ne(x => x.position_b2b, null) // Not null
+                                    & Builders<HotelPriceMongoDbModel>.Filter.Gt(x => x.position_b2b, 0);   // Greater than 0
+                //-- Is Hotel Commit:
+                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true); // 
+
+
                 // Pagination parameters
                 int skip = (page_index == null|| page_size==null) ? 1: ((int)page_index - 1) * (int)page_size; // Calculate how many documents to skip
                 int take = page_size == null?30: (int)page_size; // Number of documents per page
-                //var sortDefinition = new SortDefinitionBuilder<HotelPriceMongoDbModel>()
-                //        .Combine(
-                //            Builders<HotelPriceMongoDbModel>.Sort.Descending(x => x.position_b2b != null), // Non-null first
-                //            Builders<HotelPriceMongoDbModel>.Sort.Ascending(x => x.position_b2b)          // Then sort ascending
-                //        );
+                var sortDefinition = new SortDefinitionBuilder<HotelPriceMongoDbModel>()
+                        .Combine(
+                            Builders<HotelPriceMongoDbModel>.Sort.Ascending(x => x.position_b2b)          // Then sort ascending
+                        );
                 // Query execution with pagination
                 var hotels = await bookingCollection
                     .Find(filterDefinition)
-                    //.Sort(sortDefinition) 
+                    .Sort(sortDefinition) 
                     .Skip(skip)
                     .Limit(take)
                     .ToListAsync();

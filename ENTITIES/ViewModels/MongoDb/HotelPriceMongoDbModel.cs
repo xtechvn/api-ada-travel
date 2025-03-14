@@ -23,6 +23,7 @@ namespace ENTITIES.ViewModels.MongoDb
         public double min_price { get; set; }
         public int? position_b2b { get; set; }
         public int? position_b2c { get; set; }
+        public bool? is_commit { get; set; }
 
     }
 }

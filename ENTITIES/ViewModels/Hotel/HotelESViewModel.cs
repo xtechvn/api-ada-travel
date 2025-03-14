@@ -42,6 +42,7 @@ namespace ENTITIES.ViewModels.Hotel
         public bool? isinstantlyconfirmed { get; set; }
         public bool? isdisplaywebsite { get; set; }
         public bool? isvinhotel { get; set; }
+        public bool? iscommitfund { get; set; }
         public int? position { get; set; }
 
     }
