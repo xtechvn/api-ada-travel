@@ -47,11 +47,14 @@ namespace API_CORE.Service.Hotel
                     var vin_lib = new VinpearlLib(configuration);
                     int total_nights = (todate - fromdate).Days;
                     var hotels = await _hotelESRepository.GetAllHotels();
+                    var hotel_position = await _hotelDetailRepository.GetListHotelActivePosition();
                     if (hotels != null && hotels.Count > 0)
                     {
                         // hotels = hotels.Where(x => x.isvinhotel == true).ToList();
                         foreach (var h in hotels)
                         {
+                            var b2b = hotel_position.FirstOrDefault(x => x.PositionType == 1 && x.HotelId == h.id);
+                            var b2c = hotel_position.FirstOrDefault(x => x.PositionType == 2 && x.HotelId == h.id);
                             HotelPriceMongoDbModel model = new HotelPriceMongoDbModel()
                             {
                                 arrival_date = fromdate,
@@ -62,7 +65,9 @@ namespace API_CORE.Service.Hotel
                                 hotel_name=h.name,
                                 city = h.city==null?"": h.city.Trim(),
                                 state = h.state == null ? "" : h.state.Trim(),
-                                star = h.star == null ? 0 : Convert.ToInt32(h.star)
+                                star = h.star == null ? 0 : Convert.ToInt32(h.star),
+                                position_b2b=(b2b==null || b2b.Id<=0? 0:(int)b2b.Position),
+                                position_b2c=(b2c == null || b2c.Id<=0? 0:(int)b2c.Position)
                             };
 
                             switch (h.isvinhotel)

@@ -21,6 +21,8 @@ namespace ENTITIES.ViewModels.MongoDb
         public DateTime arrival_date { get; set; }
         public DateTime departure_date { get; set; }
         public double min_price { get; set; }
+        public int? position_b2b { get; set; }
+        public int? position_b2c { get; set; }
 
     }
 }
