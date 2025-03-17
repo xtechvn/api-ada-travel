@@ -387,7 +387,16 @@ namespace REPOSITORIES.Repositories.Hotel
         }
         public async Task<GenericViewModel<HotelPriceMongoDbModel>> GetListHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30)
         {
-            return await hotelPriceMongoDAL.GetListByFilter(hotel_id, client_types, arrivaldate, departuredate, location, stars, min_price, max_price,page_index,page_size);
+            try
+            {
+              
+                return await hotelPriceMongoDAL.GetListByFilter(hotel_id, client_types, arrivaldate, departuredate, location, stars, min_price, max_price, page_index, page_size);
+            }
+            catch
+            {
+
+            }
+            return new GenericViewModel<HotelPriceMongoDbModel>();
         }
         public async Task<string> UpSertHotelPrice(HotelPriceMongoDbModel item)
         {

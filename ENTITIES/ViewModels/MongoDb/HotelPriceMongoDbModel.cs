@@ -24,6 +24,7 @@ namespace ENTITIES.ViewModels.MongoDb
         public int? position_b2b { get; set; }
         public int? position_b2c { get; set; }
         public bool? is_commit { get; set; }
+        public bool? is_vinhotel { get; set; }
 
     }
 }

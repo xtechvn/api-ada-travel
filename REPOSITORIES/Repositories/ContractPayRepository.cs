@@ -11,15 +11,19 @@ using ENTITIES.APPModels.ReadBankMessages;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.APP.ContractPay;
 using ENTITIES.ViewModels.APP.ReadBankMessages;
+using iTextSharp.text;
 using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories;
+using SharpCompress.Compressors.Xz;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utilities;
 using Utilities.Contants;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace REPOSITORIES.Repositories
 {
@@ -115,7 +119,7 @@ namespace REPOSITORIES.Repositories
             }
             return null;
         }
-        private async Task<PaymentSuccessDataViewModel> UpdateOrderPayment(BankMessageDetail detail, string contract_pay_code)
+        private async Task<PaymentSuccessDataViewModel> UpdateOrderPayment(BankMessageDetail detail, string contract_pay_code,int adavigo_supplier_id=604)
         {
             try
             {
@@ -175,7 +179,41 @@ namespace REPOSITORIES.Repositories
                 //-- Get Previous ContractPay:
                 db_data.payment = orderDAL.GetContractPayByOrderID(db_data.order.OrderId);
                 var previous_amount = db_data.payment.Sum(x => x.Amount == null ? 0 : Convert.ToDouble(x.Amount));
-                var banking = bankingAccountDAL.GetByAccountNumber(detail.BankName, detail.AccountNumber);
+                var banking = new ENTITIES.Models.BankingAccount();
+                try
+                {
+                    DataTable data = bankingAccountDAL.GetBankAccountDataTableBySupplierId(adavigo_supplier_id);
+                    var listData = data.ToList<ENTITIES.Models.BankingAccount>();
+                    List<ENTITIES.Models.BankingAccount> regex = new List<ENTITIES.Models.BankingAccount>();
+                    if (listData != null && listData.Count > 0)
+                    {
+
+                        foreach (var b in listData)
+                        {
+                            if (b.AccountNumber == null || b.AccountNumber.Trim() == "") continue;
+                            var account_number = b.AccountNumber.Trim();
+                            //^[9*][6*][9*][8*][8*][8*][8*]$
+                            char[] chars = account_number.ToCharArray();
+                            string regex_item = "^";
+                            for (var i = 0; i < chars.Length; i++)
+                            {
+                                regex_item += "[" + chars[i] + "*x]";
+                            }
+                            regex_item += "$";
+                            regex.Add(new ENTITIES.Models.BankingAccount
+                            {
+                                Id = b.Id,
+                                AccountNumber = regex_item
+                            });
+                        }
+                    }
+                    banking = regex.FirstOrDefault(x => Regex.IsMatch(detail.AccountNumber, x.AccountNumber));
+                }catch(Exception ex)
+                {
+                    LogHelper.InsertLogTelegram("UpdateOrderPayment - OrderRepository - Regex Match Banking Account ["+detail.AccountNumber+"]" + ex.ToString());
+
+                }
+                if (banking==null || banking.Id<=0) banking = bankingAccountDAL.GetByAccountNumber(detail.BankName, detail.AccountNumber);
                 //Check if exists
                 var exists_payment = await orderDAL.GetOrderPayment(db_data.order.OrderId, detail.Amount, detail.ReceiveTime);
                 if (exists_payment == null || exists_payment.Id <= 0)
@@ -257,6 +295,7 @@ namespace REPOSITORIES.Repositories
                     Amount = (detail.Amount > db_data.order.Amount) ? (double)db_data.order.Amount : detail.Amount,
                     CreatedBy = user == null ? 2052 : user.Id,
                 };
+                
                 ContractPayViewModel contract_model = new ContractPayViewModel()
                 {
                     BillNo = contract_pay_code,
@@ -316,7 +355,7 @@ namespace REPOSITORIES.Repositories
             }
             return null;
         }
-        public async Task<PaymentSuccessDataViewModel> UpdateDepositTransfer(BankMessageDetail detail,string contract_pay_code)
+        public async Task<PaymentSuccessDataViewModel> UpdateDepositTransfer(BankMessageDetail detail,string contract_pay_code,int adavigo_supplier_id=604)
         {
             try
             {
@@ -330,7 +369,42 @@ namespace REPOSITORIES.Repositories
                 };
                 db_data.depositHistory = await depositHistoryDAL.GetDepositHistoryByTransNo(detail.OrderNo);
                 if (db_data.depositHistory == null || db_data.depositHistory.Id <= 0) return null;
-                var banking = bankingAccountDAL.GetByAccountNumber(detail.BankName, detail.AccountNumber);
+                var banking = new ENTITIES.Models.BankingAccount();
+                try
+                {
+                    DataTable data = bankingAccountDAL.GetBankAccountDataTableBySupplierId(adavigo_supplier_id);
+                    var listData = data.ToList<ENTITIES.Models.BankingAccount>();
+                    List<ENTITIES.Models.BankingAccount> regex = new List<ENTITIES.Models.BankingAccount>();
+                    if (listData != null && listData.Count > 0)
+                    {
+
+                        foreach (var b in listData)
+                        {
+                            if (b.AccountNumber == null || b.AccountNumber.Trim() == "") continue;
+                            var account_number = b.AccountNumber.Trim();
+                            //^[9*][6*][9*][8*][8*][8*][8*]$
+                            char[] chars = account_number.ToCharArray();
+                            string regex_item = "^";
+                            for (var i = 0; i < chars.Length; i++)
+                            {
+                                regex_item += "[" + chars[i] + "*x]";
+                            }
+                            regex_item += "$";
+                            regex.Add(new ENTITIES.Models.BankingAccount
+                            {
+                                Id = b.Id,
+                                AccountNumber = regex_item
+                            });
+                        }
+                    }
+                    banking = regex.FirstOrDefault(x => Regex.IsMatch(detail.AccountNumber, x.AccountNumber));
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.InsertLogTelegram("UpdateDepositTransfer - OrderRepository - Regex Match Banking Account [" + detail.AccountNumber + "]" + ex.ToString());
+
+                }
+                if (banking == null || banking.Id <= 0) banking = bankingAccountDAL.GetByAccountNumber(detail.BankName, detail.AccountNumber);
 
                 var user = userDAL.GetByEmail(botEmail);
                 var contract_pay_detail = new ContractPayDetailViewModel()

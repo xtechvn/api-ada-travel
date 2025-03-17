@@ -197,11 +197,15 @@ namespace DAL.MongoDB
                     filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.In(x => x.star, starList);
 
                 }
-                //-- Has Position B2B >0:
-                filterDefinition &=  Builders<HotelPriceMongoDbModel>.Filter.Ne(x => x.position_b2b, null) // Not null
-                                    & Builders<HotelPriceMongoDbModel>.Filter.Gt(x => x.position_b2b, 0);   // Greater than 0
+                //-- Has Position B2B >0 or Vinpearl:
+                var position_filter = Builders<HotelPriceMongoDbModel>.Filter.Or(
+                     Builders<HotelPriceMongoDbModel>.Filter.Gt(x => x.position_b2b, 0),
+                     Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_vinhotel, true)
+                   );
+                filterDefinition &= position_filter;
+                //filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Gte(x => x.position_b2b, 0);   // Greater than 0
                 //-- Is Hotel Commit:
-                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true); // 
+               // filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true); 
 
 
                 // Pagination parameters
