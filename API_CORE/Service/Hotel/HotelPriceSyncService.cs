@@ -68,8 +68,8 @@ namespace API_CORE.Service.Hotel
                                 star = h.star == null ? 0 : Convert.ToInt32(h.star),
                                 position_b2b=(b2b==null || b2b.Id<=0? 0:(int)b2b.Position),
                                 position_b2c=(b2c == null || b2c.Id<=0? 0:(int)b2c.Position),
-                                is_commit=(h.isvinhotel == true || h.iscommitfund== true) ?true: false,
-
+                                is_commit= h.iscommitfund,
+                                is_vinhotel=h.isvinhotel
                             };
 
                             switch (h.isvinhotel)
