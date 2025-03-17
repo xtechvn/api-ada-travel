@@ -179,6 +179,12 @@ namespace DAL.MongoDB
                         Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location_nonunicode)}[., ]?", "i"))
                     );
                     filterDefinition &= locationFilter;
+                    //-- Has Position B2B >0 or Vinpearl:
+                    var position_filter = Builders<HotelPriceMongoDbModel>.Filter.Or(
+                         Builders<HotelPriceMongoDbModel>.Filter.Gt(x => x.position_b2b, 0),
+                         Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_vinhotel, true)
+                       );
+                    filterDefinition &= position_filter;
                 }
                 if (min_price > 0 && max_price > 0 && max_price > min_price)
                 {
@@ -197,12 +203,7 @@ namespace DAL.MongoDB
                     filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.In(x => x.star, starList);
 
                 }
-                //-- Has Position B2B >0 or Vinpearl:
-                var position_filter = Builders<HotelPriceMongoDbModel>.Filter.Or(
-                     Builders<HotelPriceMongoDbModel>.Filter.Gt(x => x.position_b2b, 0),
-                     Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_vinhotel, true)
-                   );
-                filterDefinition &= position_filter;
+               
                 //filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Gte(x => x.position_b2b, 0);   // Greater than 0
                 //-- Is Hotel Commit:
                // filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true); 
