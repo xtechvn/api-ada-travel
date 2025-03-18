@@ -63,6 +63,7 @@ namespace Utilities.Contants
 
         #region V2:
         public const string HotelByLocation = "B2B_HOTEL_LOCATION_";
+        public const string ALLHotelByLocation = "B2B_ALL_HOTEL_LOCATION_";
 
         #endregion
     }

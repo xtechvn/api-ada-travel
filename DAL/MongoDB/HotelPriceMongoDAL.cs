@@ -243,5 +243,98 @@ namespace DAL.MongoDB
             }
             return null;
         }
+        public async Task<GenericViewModel<HotelPriceMongoDbModel>> GetListAllByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30)
+        {
+            try
+            {
+                arrivaldate = arrivaldate.Date;
+                departuredate = departuredate.Date;
+                var filter = Builders<HotelPriceMongoDbModel>.Filter;
+                var filterDefinition = filter.Empty;
+                if (hotel_id != null && hotel_id.Trim() != "")
+                {
+                    filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.hotel_id, hotel_id);
+                }
+                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.arrival_date, arrivaldate);
+                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.In(x => x.client_type, client_types);
+                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.departure_date, departuredate);
+                if (location != null && location.Trim() != "")
+                {
+                    var location_nonunicode = CommonHelper.RemoveUnicode(location);
+
+                    // Location filter: Match either city or state
+                    var locationFilter = Builders<HotelPriceMongoDbModel>.Filter.Or(
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.hotel_name, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.city, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.hotel_name, new BsonRegularExpression($"^{Regex.Escape(location_nonunicode)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.city, new BsonRegularExpression($"^{Regex.Escape(location_nonunicode)}[., ]?", "i")),
+                        Builders<HotelPriceMongoDbModel>.Filter.Regex(x => x.state, new BsonRegularExpression($"^{Regex.Escape(location_nonunicode)}[., ]?", "i"))
+                    );
+                    filterDefinition &= locationFilter;
+                    ////-- Has Position B2B >=0 or Vinpearl:
+                    //var position_filter = Builders<HotelPriceMongoDbModel>.Filter.Or(
+                    //     Builders<HotelPriceMongoDbModel>.Filter.Gte(x => x.position_b2b, 0),
+                    //     Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_vinhotel, true)
+                    //   );
+                    //filterDefinition &= position_filter;
+                }
+                if (min_price > 0 && max_price > 0 && max_price > min_price)
+                {
+                    // Price range filter: min_price between min_price and max_price
+                    var priceFilter = Builders<HotelPriceMongoDbModel>.Filter.And(
+                        Builders<HotelPriceMongoDbModel>.Filter.Gte(x => x.min_price, min_price),
+                        Builders<HotelPriceMongoDbModel>.Filter.Lte(x => x.min_price, max_price)
+                    );
+                    filterDefinition &= priceFilter;
+                }
+
+                if (stars != null && stars.Trim() != "")
+                {
+                    // Star filter: Matches if the floor or rounded value of the star exists in the provided list
+                    var starList = stars.Split(',').Select(int.Parse).ToList();
+                    filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.In(x => x.star, starList);
+
+                }
+
+                //filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Gte(x => x.position_b2b, 0);   // Greater than 0
+                //-- Is Hotel Commit:
+                // filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true); 
+
+
+                // Pagination parameters
+                int skip = (page_index == null || page_size == null) ? 1 : ((int)page_index - 1) * (int)page_size; // Calculate how many documents to skip
+                int take = page_size == null ? 30 : (int)page_size; // Number of documents per page
+                var sortDefinition = new SortDefinitionBuilder<HotelPriceMongoDbModel>()
+                        .Combine(
+                            Builders<HotelPriceMongoDbModel>.Sort.Ascending(x => x.position_b2b)          // Then sort ascending
+                        );
+                // Query execution with pagination
+                var hotels = await bookingCollection
+                    .Find(filterDefinition)
+                    .Sort(sortDefinition)
+                    .Skip(skip)
+                    .Limit(take)
+                    .ToListAsync();
+
+                // Get total count for pagination
+                var totalCount = await bookingCollection.CountDocumentsAsync(filterDefinition);
+
+                // Prepare response with pagination metadata
+                return new GenericViewModel<HotelPriceMongoDbModel>
+                {
+                    TotalRecord = totalCount,
+                    TotalPage = Convert.ToInt32(totalCount / (int)page_size),
+                    PageSize = page_size == null ? 30 : (int)page_size,
+                    ListData = hotels
+                };
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetByFilter - BookingTour - Cannot Excute: " + ex.ToString());
+            }
+            return null;
+        }
     }
 }
