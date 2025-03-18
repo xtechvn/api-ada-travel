@@ -381,10 +381,6 @@ namespace REPOSITORIES.Repositories.Hotel
         {
             return await _hotelPositionDAL.GetListHotelActivePosition();
         }
-        public HotelPriceMongoDbModel GetHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1)
-        {
-            return hotelPriceMongoDAL.GetByFilter(hotel_id, client_types, arrivaldate, departuredate, location,stars,min_price,max_price);
-        }
         public async Task<GenericViewModel<HotelPriceMongoDbModel>> GetListHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30)
         {
             try
@@ -415,15 +411,15 @@ namespace REPOSITORIES.Repositories.Hotel
         {
             try
             {
-                var exists = hotelPriceMongoDAL.GetByFilter(item.hotel_id, new List<int>() { item.client_type }, item.arrival_date, item.departure_date);
+                var exists = hotelPriceMongoDAL.GetByFilter(item.hotel_id, new List<int>() { item.client_type });
                 if(exists!=null && exists._id != null)
                 {
-                    return await hotelPriceMongoDAL.Update(item, exists._id);
+                    await hotelPriceMongoDAL.DeleteByFilter(exists._id, item.hotel_id, new List<int>() { item.client_type });
+                    var _id= await hotelPriceMongoDAL.Update(item, exists._id);
+                    if (_id != null && _id.Trim() != "") return _id;
                 }
-                else
-                {
-                    return await hotelPriceMongoDAL.Insert(item);
-                }
+
+                return await hotelPriceMongoDAL.Insert(item);
             }
             catch (Exception ex)
             {

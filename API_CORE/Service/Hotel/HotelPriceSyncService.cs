@@ -176,11 +176,14 @@ namespace API_CORE.Service.Hotel
                 {
                     redisService.DeleteCacheByKeyword(CacheName.ALLHotelByLocation, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
                     redisService.DeleteCacheByKeyword(CacheName.HotelByLocation, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+
                 }
                 catch
                 {
 
                 }
+                LogHelper.InsertLogTelegram("Sync - HotelPriceSyncService Completed at: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
+
             }
             catch (Exception ex)
             {

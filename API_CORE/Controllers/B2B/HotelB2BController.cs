@@ -2529,6 +2529,7 @@ namespace API_CORE.Controllers.B2B
                         + "_" + stars
                         + "_" + min_price
                         + "_" + max_price
+                        + "_" + is_commit.ToString()
                         + "_" + (hotel_position == null ? "" : ((int)hotel_position).ToString())
                         + "_" + index + size;
 

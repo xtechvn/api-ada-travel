@@ -98,21 +98,17 @@ namespace DAL.MongoDB
                 return null;
             }
         }
-        public HotelPriceMongoDbModel GetByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location=null,string stars="",double? min_price=-1, double? max_price=-1)
+        public HotelPriceMongoDbModel GetByFilter(string hotel_id, List<int> client_types,  string location=null,string stars="",double? min_price=-1, double? max_price=-1)
         {
             try
             {
-                arrivaldate = arrivaldate.Date;
-                departuredate = departuredate.Date;
                 var filter = Builders<HotelPriceMongoDbModel>.Filter;
                 var filterDefinition = filter.Empty;
                 if(hotel_id!=null && hotel_id.Trim() != "")
                 {
                     filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.hotel_id, hotel_id);
                 }
-                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.arrival_date, arrivaldate);
                 filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.In(x => x.client_type, client_types);
-                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.departure_date, departuredate);
                 if (location != null && location.Trim() != "")
                 {
                     // Location filter: Match either city or state
@@ -335,6 +331,39 @@ namespace DAL.MongoDB
                     ListData = hotels
                 };
 
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetByFilter - BookingTour - Cannot Excute: " + ex.ToString());
+            }
+            return null;
+        }
+        public async Task<HotelPriceMongoDbModel> DeleteByFilter(string exception_id,string hotel_id, List<int> client_types)
+        {
+            try
+            {
+                var filter = Builders<HotelPriceMongoDbModel>.Filter;
+                var filterDefinition = filter.Empty;
+                if (hotel_id != null && hotel_id.Trim() != "")
+                {
+                    filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.hotel_id, hotel_id);
+                }
+                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.In(x => x.client_type, client_types);
+                
+                var model = await bookingCollection.Find(filterDefinition).ToListAsync();
+                if (model != null && model.Count>0)
+                { 
+                    foreach(var m in model)
+                    {
+                        if (m._id.Trim() != exception_id)
+                        {
+                            var delete_filter = Builders<HotelPriceMongoDbModel>.Filter;
+                            var delete_filter_definition = filter.Empty;
+                            delete_filter_definition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x._id, m._id);
+                            await bookingCollection.DeleteOneAsync(delete_filter_definition);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
