@@ -70,6 +70,8 @@ namespace API_CORE.Controllers.B2B
             _ESRepository = new ESRepository<HotelESViewModel>(configuration["DataBaseConfig:Elastic:Host"]);
             _hotelESRepository = new HotelESRepository(_configuration["DataBaseConfig:Elastic:Host"]);
             redisService = _redisService;
+            redisService.Connect();
+
             contractPayRepository = _contractPayRepository;
             _userRepository = userRepository;
             _accountRepository = accountRepository;
@@ -2499,6 +2501,7 @@ namespace API_CORE.Controllers.B2B
                     DateTime todate = Convert.ToDateTime(objParr[0]["todate"].ToString());
                     string stars = objParr[0]["stars"].ToString();
                     string location = objParr[0]["location"].ToString();
+                    bool? is_commit = objParr[0]["is_commit"] != null ? Convert.ToBoolean(objParr[0]["is_commit"].ToString()) : false;
                     double min_price = -1;
                     double max_price = -1;
                     if (!double.TryParse(objParr[0]["min_price"].ToString(), out min_price))
@@ -2538,7 +2541,7 @@ namespace API_CORE.Controllers.B2B
                     }
                     var hotels = await _hotelESRepository.GetAllHotels();
 
-                    var hotel_prices = await _hotelDetailRepository.GetListAllHotelPriceByFilter(name, new List<int>() { (int)client_type }, fromdate, todate, location, stars, min_price, max_price, index, size);
+                    var hotel_prices = await _hotelDetailRepository.GetListAllHotelPriceByFilter(name, new List<int>() { (int)client_type }, fromdate, todate, location, stars, min_price, max_price, index, size, is_commit);
 
                     //if (hotel_position > 0)
                     //{
@@ -2646,7 +2649,7 @@ namespace API_CORE.Controllers.B2B
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
                 {
-                    HotelPriceSyncService syncService = new HotelPriceSyncService(configuration, _hotelDetailRepository);
+                    HotelPriceSyncService syncService = new HotelPriceSyncService(configuration, _hotelDetailRepository,redisService);
                     syncService.Sync();
                     return Ok(new
                     {

@@ -398,12 +398,12 @@ namespace REPOSITORIES.Repositories.Hotel
             }
             return new GenericViewModel<HotelPriceMongoDbModel>();
         }
-        public async Task<GenericViewModel<HotelPriceMongoDbModel>> GetListAllHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30)
+        public async Task<GenericViewModel<HotelPriceMongoDbModel>> GetListAllHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30, bool? is_commit = false)
         {
             try
             {
 
-                return await hotelPriceMongoDAL.GetListAllByFilter(hotel_id, client_types, arrivaldate, departuredate, location, stars, min_price, max_price, page_index, page_size);
+                return await hotelPriceMongoDAL.GetListAllByFilter(hotel_id, client_types, arrivaldate, departuredate, location, stars, min_price, max_price, page_index, page_size, is_commit);
             }
             catch
             {
@@ -427,7 +427,7 @@ namespace REPOSITORIES.Repositories.Hotel
             }
             catch (Exception ex)
             {
-                throw ex;
+                return null;
             }
         }
     }

@@ -25,13 +25,14 @@ namespace API_CORE.Service.Hotel
         private IConfiguration configuration;
         private HotelESRepository _hotelESRepository;
         private IHotelDetailRepository _hotelDetailRepository;
+        private readonly RedisConn redisService;
 
-        public HotelPriceSyncService(IConfiguration _configuration,  IHotelDetailRepository hotelDetailRepository)
+        public HotelPriceSyncService(IConfiguration _configuration,  IHotelDetailRepository hotelDetailRepository, RedisConn _redisService)
         {
             configuration = _configuration;
             _hotelDetailRepository = hotelDetailRepository;
             _hotelESRepository = new HotelESRepository(_configuration["DataBaseConfig:Elastic:Host"]);
-
+            redisService = _redisService;
         }
         public async Task<bool> Sync()
         {
@@ -166,12 +167,20 @@ namespace API_CORE.Service.Hotel
                                     }
                                     break;
                             }
-                            _hotelDetailRepository.UpSertHotelPrice(model);
+                          await  _hotelDetailRepository.UpSertHotelPrice(model);
 
                         }
                     }
                 }
+                try
+                {
+                    redisService.DeleteCacheByKeyword(CacheName.ALLHotelByLocation, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+                    redisService.DeleteCacheByKeyword(CacheName.HotelByLocation, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
+                }
+                catch
+                {
 
+                }
             }
             catch (Exception ex)
             {

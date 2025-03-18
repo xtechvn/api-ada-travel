@@ -204,9 +204,8 @@ namespace DAL.MongoDB
 
                 }
                
-                //filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Gte(x => x.position_b2b, 0);   // Greater than 0
                 //-- Is Hotel Commit:
-               // filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true); 
+                filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true); 
 
 
                 // Pagination parameters
@@ -243,7 +242,7 @@ namespace DAL.MongoDB
             }
             return null;
         }
-        public async Task<GenericViewModel<HotelPriceMongoDbModel>> GetListAllByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30)
+        public async Task<GenericViewModel<HotelPriceMongoDbModel>> GetListAllByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30,bool? is_commit=false)
         {
             try
             {
@@ -299,7 +298,14 @@ namespace DAL.MongoDB
 
                 //filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Gte(x => x.position_b2b, 0);   // Greater than 0
                 //-- Is Hotel Commit:
-                // filterDefinition &= Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true); 
+                if (is_commit!=null && is_commit == true)
+                {
+                    var position_filter = Builders<HotelPriceMongoDbModel>.Filter.Or(
+                         Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_commit, true),
+                         Builders<HotelPriceMongoDbModel>.Filter.Eq(x => x.is_vinhotel, true)
+                       );
+                    filterDefinition &= position_filter;
+                }
 
 
                 // Pagination parameters
