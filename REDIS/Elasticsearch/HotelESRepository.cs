@@ -33,6 +33,7 @@ namespace Caching.Elasticsearch
                 var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(Type);
                 var elasticClient = new ElasticClient(connectionSettings);
                 if (txtsearch == null) txtsearch = "";
+                else txtsearch = txtsearch.Trim();
                 ISearchResponse<HotelESViewModel> search_response;
                 List<bool?> isvinhotels = isvinhotel ? new List<bool?> { true } : new List<bool?> { false, null };
                 //search_response = elasticClient.Search<HotelESViewModel>(s => s
@@ -45,14 +46,21 @@ namespace Caching.Elasticsearch
                 //                       && q.Terms(t => t.Field(f => f.isvinhotel).Terms(isvinhotels))
                 //             ));
                 search_response = elasticClient.Search<HotelESViewModel>(s => s
-                                                   .Index(index_name)
-                                                .Size(4000)
-                                                    .Query(q => q
-                                                           .Wildcard(w => w
-                                                           .Field(f => f.name) // Replace with your field name
-                                                            .Value("*" + txtsearch + "*") // Use wildcards to match the substring
-
-                              )));
+                     .Index(index_name)
+                     .Size(4000)
+                     .Query(q => q
+                         .MultiMatch(mm => mm
+                             .Fields(f => f
+                                 .Field(ff => ff.name)    // Trường name
+                                 .Field(ff => ff.state)   // Trường state
+                                 .Field(ff => ff.city)    // Trường city
+                             )
+                             .Query(txtsearch)
+                             .Fuzziness(Fuzziness.Auto) // Cho phép sai lệch nhỏ
+                             .Type(TextQueryType.BestFields) // Chỉ cần 1 trường khớp
+                         )
+                     )
+                 );
 
 
                 if (!search_response.IsValid)
@@ -85,32 +93,21 @@ namespace Caching.Elasticsearch
                 if (txtsearch == null) txtsearch = "";
                 ISearchResponse<HotelESViewModel> search_response;
                 search_response = elasticClient.Search<HotelESViewModel>(s => s
-                           .Index(index_name)
-                           .Query(q =>
-                             q.Bool(
-                                 qb => qb.Should(
-                                     sh => sh.QueryString(m => m
-                                     .DefaultField(f => f.name)
-                                     .Query("*" + txtsearch + "*")),
-                                     sh => sh.QueryString(m => m
-                                     .DefaultField(f => f.street)
-                                     .Query("*" + txtsearch + "*"))
-                                     ,
-                                     sh => sh.QueryString(m => m
-                                     .DefaultField(f => f.city)
-                                     .Query("*" + txtsearch + "*"))
-
-                                 )
+                     .Index(index_name)
+                     .Size(4000)
+                     .Query(q => q
+                         .MultiMatch(mm => mm
+                             .Fields(f => f
+                                 .Field(ff => ff.name)    // Trường name
+                                 .Field(ff => ff.state)   // Trường state
+                                 .Field(ff => ff.city)    // Trường city
                              )
-                             ).Source(sf => sf
-                            .Includes(i => i
-                                .Fields(
-                                    f => f.city,
-                                    f => f.state,
-                                    f => f.street
-                                )
-                            ))
-                           );
+                             .Query(txtsearch)
+                             .Fuzziness(Fuzziness.Auto) // Cho phép sai lệch nhỏ
+                             .Type(TextQueryType.BestFields) // Chỉ cần 1 trường khớp
+                         )
+                     )
+                 );
                 if (!search_response.IsValid)
                 {
                     return result;
