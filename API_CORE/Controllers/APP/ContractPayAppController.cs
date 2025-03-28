@@ -18,9 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utilities;
 using Utilities.Contants;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace API_CORE.Controllers.APP
 {
@@ -93,8 +95,6 @@ namespace API_CORE.Controllers.APP
 
             try
             {
-                List<string> order_no_start_with = new List<string>() { "CVB", "BKS", "O", "CVW", "KS", "VB", "TR", "VW", "A", "P" };
-
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(token, out objParr, _configuration["DataBaseConfig:key_api:api_manual"]))
                 {
@@ -115,48 +115,41 @@ namespace API_CORE.Controllers.APP
                     {
                         case (int)BankMessageTransferType.CANNOT_DETECT:
                             {
-                                var words = detail.TransferDescription.Split(" ");
-                                foreach (var w in words)
+                                string order_no = "";
+                                Match m = Regex.Match(detail.TransferDescription.ToUpper(), "\\b(O|A|P|D|CVB|BKS|CVW|KS|VB|TR|VW)\\d{2}[A-Z]\\d{5,6}\\b", RegexOptions.IgnoreCase);
+                                if (m.Success && m.Value != null && m.Value.Trim() != "")
                                 {
-                                    if (w == null || w.Trim() == "") { continue; }
-                                    //---- Check nếu từ giống với mã đơn
-                                    bool is_like_order = false;
-                                    foreach (var start_word in order_no_start_with)
+                                    order_no = m.Value;
+                                }
+                               
+                                if(order_no==null || order_no.Trim()=="")
+                                {
+                                    Match m_order = Regex.Match(detail.TransferDescription.ToUpper(), "(O|A|P|D|CVB|BKS|CVW|KS|VB|TR|VW)\\d{2}[A-Z]\\d{5,6}", RegexOptions.IgnoreCase);
+                                    if (m_order.Success && m_order.Value!=null && m_order.Value.Trim()!="")
                                     {
-                                        if (w.ToUpper().Trim().StartsWith(start_word))
-                                        {
-                                            is_like_order = true;
-                                            break;
-                                        }
+                                        order_no = m_order.Value;
                                     }
-                                    if (!is_like_order) { continue; }
-                                    var order = await orderRepository.GetOrderByOrderNo(w);
-                                    if (order != null && order.OrderId > 0)
-                                    {
-                                        detail.OrderNo = order.OrderNo;
-                                        detail.OrderId = order.OrderId;
-                                        detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
-                                        //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
-                                        //    +"with ["+ detail.MessageContent + "] belong to Order ["+detail.OrderNo+"-"+detail.OrderId+"]");
-
-                                        break;
-                                    }
-                                    var deposit = await iDepositHistoryRepository.GetDepositHistoryByTransNo(w);
+                                }
+                                var order = await orderRepository.GetOrderByOrderNo(order_no);
+                                if (order != null && order.OrderId > 0)
+                                {
+                                    detail.OrderNo = order.OrderNo;
+                                    detail.OrderId = order.OrderId;
+                                    detail.BankTransferType = (int)BankMessageTransferType.ORDER_PAYMENT;
+                                }
+                                else
+                                {
+                                    var deposit = await iDepositHistoryRepository.GetDepositHistoryByTransNo(order_no);
                                     if (deposit != null && deposit.Id > 0)
                                     {
                                         detail.OrderNo = deposit.TransNo;
                                         detail.OrderId = deposit.Id;
                                         detail.BankTransferType = (int)BankMessageTransferType.DEPOSIT_PAYMENT;
-                                        //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
-                                        //   + "with [" + detail.MessageContent + "] belong to Transaction [" + detail.OrderNo + "-" + detail.OrderId + "]");
-                                        break;
-
                                     }
+
                                 }
                                 if (detail.BankTransferType == (int)BankMessageTransferType.CANNOT_DETECT)
                                 {
-                                    //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController - "
-                                    //      + "with [" + detail.MessageContent + "] CANNOT DETECT PAYMENT []");
                                     return Ok(new
                                     {
                                         status = (int)ResponseType.FAILED,
