@@ -250,6 +250,16 @@ namespace API_CORE.Controllers.APP
                     long order_id = Convert.ToInt64(objParr[0]["order_id"]);
                     if (order_id > 0)
                     {
+                        var DetailDebtGuarantee = _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
+                        if (DetailDebtGuarantee != null)
+                        {
+                            _debtGuaranteeRepository.UpdateDebtGuarantee(DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.SUCCESS,
+                                msg = "Đã gửi email"
+                            });
+                        }
                         var order = orderRepository.getDetail(order_id);
                         if(order!=null && order.ClientId!=null && order.ClientId > 0)
                         {
@@ -275,11 +285,7 @@ namespace API_CORE.Controllers.APP
                                 msg = success
                             });
                         }
-                      var DetailDebtGuarantee=  _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
-                        if(DetailDebtGuarantee!= null)
-                        {
-                            _debtGuaranteeRepository.UpdateDebtGuarantee(DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
-                        }
+                     
                         
                     }
                     else
