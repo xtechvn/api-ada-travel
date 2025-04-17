@@ -2,9 +2,11 @@
 using API_CORE.Service.Vin;
 using APP.PUSH_LOG.Functions;
 using ENTITIES.APPModels.ReadBankMessages;
+using ENTITIES.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Repositories.IRepositories;
@@ -17,9 +19,13 @@ using REPOSITORIES.IRepositories.VinWonder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Telegram.Bot;
+using Telegram.Bot.Types.Payments;
 using Utilities;
 using Utilities.Contants;
 using static iTextSharp.text.pdf.AcroFields;
@@ -74,21 +80,21 @@ namespace API_CORE.Controllers.APP
 
             //BankMessageDetail model = new BankMessageDetail()
             //{
-            //    AccountNumber = "19131835226016",
-            //    Amount = 8000000, 
-            //    BankName = "TECHCOMBANK",
+            //    AccountNumber = "688989",
+            //    Amount = 1900000,
+            //    BankName = "MSB",
             //    BankTransferType = 0,
             //    BookingCode = "",
             //    CreatedTime = DateTime.Now,
             //    ImagePath = "",
             //    is_specify_transfer_to_order = 0,
-            //    MessageContent = "TCB 19131835226016 A24F04423 CHUYEN KHOAN",
+            //    MessageContent = "688989-780960-A25D172813 FT25107870932852",
             //    OrderId = 0,
             //    OrderNo = "",
             //    ReceiveTime = DateTime.Now,
             //    StatusPush = false,
             //    TransferCode = "",
-            //    TransferDescription = "TCB 19131835226016 A24F04423 CHUYEN KHOAN"
+            //    TransferDescription = "688989-780960-A25D172813 FT25107870932852"
             //};
             //var data_product = JsonConvert.SerializeObject(model);
             //token = CommonHelper.Encode(data_product, _configuration["DataBaseConfig:key_api:api_manual"]);
@@ -116,21 +122,24 @@ namespace API_CORE.Controllers.APP
                         case (int)BankMessageTransferType.CANNOT_DETECT:
                             {
                                 string order_no = "";
-                                Match m = Regex.Match(detail.TransferDescription.ToUpper(), "\\b(O|A|P|D|CVB|BKS|CVW|KS|VB|TR|VW)\\d{2}[A-Z]\\d{5,6}\\b", RegexOptions.IgnoreCase);
+                                Match m = Regex.Match(detail.MessageContent.ToUpper(), @"\b(O|A|P|D|CVB|BKS|CVW|KS|VB|TR|VW)\d{2}[A-Z]\d{5,6}\b", RegexOptions.IgnoreCase);
+                                ENTITIES.Models.Order order = null;
+
                                 if (m.Success && m.Value != null && m.Value.Trim() != "")
                                 {
                                     order_no = m.Value;
+                                    order= await orderRepository.GetOrderByOrderNo(order_no);
                                 }
                                
-                                if(order_no==null || order_no.Trim()=="")
+                                if(order == null || order.OrderId<=0)
                                 {
-                                    Match m_order = Regex.Match(detail.TransferDescription.ToUpper(), "(O|A|P|D|CVB|BKS|CVW|KS|VB|TR|VW)\\d{2}[A-Z]\\d{5,6}", RegexOptions.IgnoreCase);
+                                    Match m_order = Regex.Match(detail.MessageContent.ToUpper(), @"(O|A|P|D|CVB|BKS|CVW|KS|VB|TR|VW)\d{2}[A-Z]\d{5,6}", RegexOptions.IgnoreCase);
                                     if (m_order.Success && m_order.Value!=null && m_order.Value.Trim()!="")
                                     {
                                         order_no = m_order.Value;
+                                        order = await orderRepository.GetOrderByOrderNo(order_no);
                                     }
                                 }
-                                var order = await orderRepository.GetOrderByOrderNo(order_no);
                                 if (order != null && order.OrderId > 0)
                                 {
                                     detail.OrderNo = order.OrderNo;
@@ -397,6 +406,117 @@ namespace API_CORE.Controllers.APP
                     msg = "ERROR!",
                 });
             }
+        }
+        [HttpPost("n8n/send-email-payment-success")]
+        public async Task<ActionResult> N8NSendEmailSuccessPaymentToOperator(string token)
+        {
+
+            try
+            {
+                JArray objParr = null;
+                #region Test
+                /*
+                var j_param = new Dictionary<string, string>
+                {
+                    {"order_id", "12392"},
+                };
+                var data_product = JsonConvert.SerializeObject(j_param);
+                token = CommonHelper.Encode(data_product, _configuration["DataBaseConfig:key_api:api_manual"]);
+                */
+                #endregion
+
+                if (CommonHelper.GetParamWithKey(token, out objParr, _configuration["DataBaseConfig:key_api:api_manual"]))
+                {
+                    long order_id = Convert.ToInt64(objParr[0]["order_id"]);
+                    if (order_id <= 0) {
+
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = "Data Invalid!",
+                            body = ""
+                        });
+                    }
+                    var excute = await _mail_service.SendSuccessPaymentToOperator(order_id);
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        msg = "Success",
+                        body = excute
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("N8NSendEmailSuccessPaymentToOperator - ContractPayAppController - email/payment-email-body: token " + token + "\n " + ex);
+               
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.FAILED,
+                msg = "ERROR!",
+                body=""
+            });
+        }
+        [HttpPost("n8n/telegram")]
+        public async Task<ActionResult> N8NSendMessageTelegram(string token)
+        {
+
+            try
+            {
+                JArray objParr = null;
+                #region Test
+                /*
+                var j_param = new Dictionary<string, string>
+                {
+                    {"order_id", "12392"},
+                };
+                var data_product = JsonConvert.SerializeObject(j_param);
+                token = CommonHelper.Encode(data_product, _configuration["DataBaseConfig:key_api:api_manual"]);
+                */
+                #endregion
+
+                if (CommonHelper.GetParamWithKey(token, out objParr, _configuration["DataBaseConfig:key_api:api_manual"]))
+                {
+                    string bot_id = objParr[0]["bot_id"].ToString();
+                    string group_id = objParr[0]["group_id"].ToString();
+                    string message = objParr[0]["message"].ToString();
+                    if(bot_id==null || bot_id.Trim()==""
+                        || group_id == null || group_id.Trim() == ""
+                         || message == null || message.Trim() == "")
+                    {
+
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = "Data Invalid!",
+                            body = ""
+                        });
+                    }
+
+                    TelegramBotClient alertMsgBot = new TelegramBotClient(bot_id);
+                    var rs_push = await alertMsgBot.SendTextMessageAsync(group_id, message);
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        msg = "Success",
+                        body = (rs_push != null)
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("N8NSendMessageTelegram - ContractPayAppController - n8n/telegram: token " + token + "\n " + ex);
+
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.FAILED,
+                msg = "ERROR!",
+                body = ""
+            });
         }
        
     }

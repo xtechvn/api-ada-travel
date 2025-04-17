@@ -14,4 +14,10 @@ namespace ENTITIES.ViewModels.AttachFiles
         public int type { get; set; }
         public string token { get; set; }
     }
+    public class FileGeneralUploadModel
+    {
+        public IFormFile data { get; set; }
+        public string name { get; set; }
+        public string token { get; set; }
+    }
 }

@@ -1239,6 +1239,31 @@ namespace DAL.Orders
             }
             return null;
         }
+        public List<ContractPayDetail> GetContractPayByDepositID(long depositID)
+        {
+            try
+            {
+                using (var _DbContext = new EntityDataContext(_connection))
+                {
+                    var Listdata = (from a in _DbContext.ContractPayDetail.AsNoTracking()
+                                    join b in _DbContext.ContractPay.AsNoTracking().Where(x => x.Type == 2 && x.IsDelete == false) on a.PayId equals b.PayId
+                                    where a.DataId == depositID
+                                    select new ContractPayDetail
+                                    {
+                                        Amount = a.Amount,
+                                        PayId = a.PayId,
+                                        Id = a.Id,
+                                        DataId = a.DataId
+                                    }).ToList();
+                    return Listdata;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetContractPayDetailByOrderId - HotelBookingDAL: " + ex);
+            }
+            return null;
+        }
         public async Task<Payment> GetOrderPayment(long orderId,double amount,DateTime receiveTime)
         {
             try
