@@ -409,6 +409,7 @@ namespace REPOSITORIES.Repositories
                 var user = userDAL.GetByEmail(botEmail);
                 var contract_pay_detail = new ContractPayDetailViewModel()
                 {
+                    Id = (int)db_data.depositHistory.Id,
                     OrderId = (int)db_data.depositHistory.Id,
                     Amount = detail.Amount > db_data.depositHistory.Price ? (double)db_data.depositHistory.Price : detail.Amount,
                     CreatedBy = user == null ? 2052 : user.Id,
@@ -416,7 +417,7 @@ namespace REPOSITORIES.Repositories
                 var upadate_status = await depositHistoryDAL.updateStatusBotVerifyTrans(detail.OrderNo);
 
                 //-- Get Previous ContractPay:
-                db_data.payment = orderDAL.GetContractPayByOrderID(db_data.order.OrderId);
+                db_data.payment = orderDAL.GetContractPayByDepositID(db_data.depositHistory.Id);
                 var previous_amount = db_data.payment.Sum(x => x.Amount == null ? 0 : Convert.ToDouble(x.Amount));
 
 
