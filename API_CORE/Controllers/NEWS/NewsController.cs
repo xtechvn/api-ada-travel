@@ -49,7 +49,7 @@ namespace API_CORE.Controllers.NEWS
                     string db_type = string.Empty;
                     int _category_id = Convert.ToInt32(objParr[0]["category_id"]);
                     string cache_name = CacheType.ARTICLE_CATEGORY_ID + _category_id;
-                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     var list_article = new List<ArticleFeModel>();
 
                     if (j_data != null)
@@ -62,7 +62,7 @@ namespace API_CORE.Controllers.NEWS
                         list_article = await articleRepository.getArticleListByCategoryId(_category_id);
                         if (list_article.Count() > 0)
                         {
-                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_core"]));
                         }
                         db_type = "database";
                     }
@@ -110,7 +110,7 @@ namespace API_CORE.Controllers.NEWS
                     string db_type = string.Empty;
                     long article_id = Convert.ToInt64(objParr[0]["article_id"]);
                     string cache_name = CacheType.ARTICLE_ID + article_id;
-                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     var detail = new ArticleFeDetailModel();
 
                     if (j_data != null)
@@ -124,7 +124,7 @@ namespace API_CORE.Controllers.NEWS
                         detail.Tags = await _tagRepository.GetAllTagByArticleID(article_id);
                         if (detail != null)
                         {
-                            _redisService.Set(cache_name, JsonConvert.SerializeObject(detail), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(detail), Convert.ToInt32(configuration["Redis:Database:db_core"]));
                             db_type = "database";
                         }
 
@@ -218,16 +218,19 @@ namespace API_CORE.Controllers.NEWS
         {
             try
             {
+                string j_param = "{'category_id':'37','skip':1,'take':30}";
+                token = CommonHelper.Encode(j_param, configuration["DataBaseConfig:key_api:b2c"]);
+
                 JArray objParr = null;
                 string msg = "";
-                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["KEY_TOKEN_API"]))
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
                 {
                     string db_type = string.Empty;
                     int category_id = Convert.ToInt32(objParr[0]["category_id"]);
                     int skip = Convert.ToInt32(objParr[0]["skip"]);
                     int take = Convert.ToInt32(objParr[0]["take"]);
                     string cache_key = CacheType.CATEGORY_NEWS + category_id;
-                    var j_data = await _redisService.GetAsync(cache_key, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    var j_data = await _redisService.GetAsync(cache_key, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     List<ArticleFeModel> data_list;
                     int total_count = -1;
                     if (j_data == null || j_data == "")
@@ -252,7 +255,7 @@ namespace API_CORE.Controllers.NEWS
 
                         }
 
-                        _redisService.Set(cache_key, JsonConvert.SerializeObject(data_100), DateTime.Now.AddMinutes(15), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                        _redisService.Set(cache_key, JsonConvert.SerializeObject(data_100), DateTime.Now.AddMinutes(15), Convert.ToInt32(configuration["Redis:Database:db_core"]));
 
                         return Ok(new
                         {

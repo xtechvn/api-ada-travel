@@ -62,7 +62,7 @@ namespace API_CORE.Controllers.B2C
                     string db_type = string.Empty;
                     string location_code = objParr[0]["code"].ToString();
                     string cache_name = CacheType.PLAYGROUND_DETAIL + location_code;
-                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     var news_detail = new VinWonderPlayGroundViewModel();
 
                     if (j_data != null)
@@ -77,7 +77,7 @@ namespace API_CORE.Controllers.B2C
                         if (news_detail != null && news_detail.title != null && news_detail.title.Trim() != "")
                         {
 
-                            _redisService.Set(cache_name, JsonConvert.SerializeObject(news_detail), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(news_detail), Convert.ToInt32(configuration["Redis:Database:db_core"]));
                         }
                         db_type = "database";
                     }
