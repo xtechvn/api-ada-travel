@@ -259,15 +259,23 @@ namespace API_CORE.Controllers.APP
                     long order_id = Convert.ToInt64(objParr[0]["order_id"]);
                     if (order_id > 0)
                     {
-                        var DetailDebtGuarantee = _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
+                        var DetailDebtGuarantee =await _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
                         if (DetailDebtGuarantee != null)
                         {
-                            _debtGuaranteeRepository.UpdateDebtGuarantee(DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
-                            return Ok(new
+                            if(DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TN_DUYET || DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TP_DUYET)
                             {
-                                status = (int)ResponseType.SUCCESS,
-                                msg = "Đã gửi email"
-                            });
+                                _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
+                                return Ok(new
+                                {
+                                    status = (int)ResponseType.SUCCESS,
+                                    msg = "Đã gửi email"
+                                });
+                            }
+                            else
+                            {
+                                _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
+                            }
+                            
                         }
                         var order = orderRepository.getDetail(order_id);
                         if(order!=null && order.ClientId!=null && order.ClientId > 0)
