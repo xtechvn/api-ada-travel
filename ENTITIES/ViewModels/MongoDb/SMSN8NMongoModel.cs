@@ -7,14 +7,12 @@ using System.Text;
 
 namespace ENTITIES.ViewModels.MongoDb
 {
-    
-    public class ImagesConvertMongoDbModel
+    public class SMSN8NMongoModel : APIRequestGenericModel
     {
         [BsonElement("_id")]
         public string _id { get; set; }
-        public string orginal_url { get; set; }
-        public string converted_url { get; set; }
-        public int? size { get; set; }
+        public string n8n_status { get; set; }
+        public string n8n_response { get; set; }
 
         public void GenID()
         {

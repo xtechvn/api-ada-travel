@@ -26,6 +26,7 @@ namespace ENTITIES.ViewModels.APP.ReadBankMessages
         public DateTime? CreatedTime { get; set; }
         public List<string> SessionId { get; set; }
         public string BillNo { get; set; }
+        public int? PreviousOrderStatus { get; set; }
 
     }
     public class OrderPaymentDetailDbViewModel

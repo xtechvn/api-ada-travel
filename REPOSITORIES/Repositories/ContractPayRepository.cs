@@ -3,6 +3,7 @@ using DAL.Clients;
 using DAL.DepositHistory;
 using DAL.Fly;
 using DAL.Hotel;
+using DAL.MongoDB;
 using DAL.MongoDB.Flight;
 using DAL.Orders;
 using Entities.ConfigModels;
@@ -11,6 +12,7 @@ using ENTITIES.APPModels.ReadBankMessages;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.APP.ContractPay;
 using ENTITIES.ViewModels.APP.ReadBankMessages;
+using ENTITIES.ViewModels.MongoDb;
 using iTextSharp.text;
 using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories;
@@ -41,6 +43,7 @@ namespace REPOSITORIES.Repositories
         private readonly ClientDAL clientDAL;
         private readonly AccountClientDAL accountClientDAL;
         private static BankingAccountDAL bankingAccountDAL;
+        private readonly SMSTransferMongoDAL sMSTransferMongoDAL;
 
         private readonly string botEmail = "bot@adavigo.com";
         public ContractPayRepository(IOptions<DataBaseConfig> dataBaseConfig)
@@ -56,6 +59,7 @@ namespace REPOSITORIES.Repositories
 
             VoucherDAL = new VoucherDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             BookingMongoDAL = new BookingDAL(dataBaseConfig.Value.MongoServer.connection_string, dataBaseConfig.Value.MongoServer.catalog_core);
+            sMSTransferMongoDAL = new SMSTransferMongoDAL(dataBaseConfig.Value.MongoServer.connection_string, dataBaseConfig.Value.MongoServer.catalog_core);
             clientDAL = new ClientDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             accountClientDAL = new AccountClientDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             bankingAccountDAL = new BankingAccountDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
@@ -174,8 +178,9 @@ namespace REPOSITORIES.Repositories
                     //LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
                     //                     + "Not Match Either [" + detail.OrderId + "]  [" + detail.OrderNo + "] [" + detail.TransferDescription + "]");
                     return null;
-                } 
-                    
+                }
+                int previous_order_status = Convert.ToInt32((db_data.order.OrderStatus==null)?0: db_data.order.OrderStatus);
+
                 //-- Get Previous ContractPay:
                 db_data.payment = orderDAL.GetContractPayByOrderID(db_data.order.OrderId);
                 var previous_amount = db_data.payment.Sum(x => x.Amount == null ? 0 : Convert.ToDouble(x.Amount));
@@ -286,7 +291,8 @@ namespace REPOSITORIES.Repositories
                     ServiceType = db_data.order.ServiceType,
                     ContractId = db_data.order.ContractId,
                     ContactClientId = db_data.order.ContactClientId ==null || db_data.order.ContactClientId <= 0 ? 0 : db_data.order.ContactClientId,
-                    CreatedTime = db_data.order.CreateTime
+                    CreatedTime = db_data.order.CreateTime,
+                    PreviousOrderStatus= previous_order_status
                 };
                 var user = userDAL.GetByEmail(botEmail);
                 var contract_pay_detail = new ContractPayDetailViewModel()
@@ -545,6 +551,7 @@ namespace REPOSITORIES.Repositories
             }
             return null;
         }
+        
         public async Task<List<ENTITIES.Models.BankingAccount>> GetBankAccountDataTableBySupplierId(int suplier_id)
         {
             try
@@ -562,6 +569,10 @@ namespace REPOSITORIES.Repositories
                 LogHelper.InsertLogTelegram("GetBankAccountDataTableBySupplierId - ContractPayDAL. " + ex);
             }
             return null;
+        }
+        public async Task<string> InsertSMSN8n(SMSN8NMongoModel item)
+        {
+            return await sMSTransferMongoDAL.Insert(item);
         }
     }
 }

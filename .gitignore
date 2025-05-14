@@ -21,3 +21,8 @@
 /ServiceReceiverMedia/bin
 /API_PUBLIC/bin
 /ServiceReceiverMedia/Properties
+API_CORE/API_CORE.csproj.user
+/ServiceReceiverMedia/Properties
+/ServiceReceiverMedia/uploads
+API_LOGIN/Properties/PublishProfiles/FolderProfile.pubxml.user
+API_LOGIN/API_LOGIN.csproj.user
