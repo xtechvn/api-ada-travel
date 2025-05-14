@@ -3,18 +3,17 @@ using API_CORE.Service.Vin;
 using APP.PUSH_LOG.Functions;
 using ENTITIES.APPModels.ReadBankMessages;
 using ENTITIES.Models;
-using ENTITIES.ViewModels.APP.ContractPay;
-using ENTITIES.ViewModels.MongoDb;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Nest;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Repositories.IRepositories;
 using REPOSITORIES.IRepositories;
 using REPOSITORIES.IRepositories.Clients;
 using REPOSITORIES.IRepositories.Fly;
+using REPOSITORIES.IRepositories.Hotel;
 using REPOSITORIES.IRepositories.Notify;
 using REPOSITORIES.IRepositories.VinWonder;
 using System;
@@ -22,11 +21,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types.Payments;
 using Utilities;
 using Utilities.Contants;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace API_CORE.Controllers.APP
 {
@@ -55,7 +57,7 @@ namespace API_CORE.Controllers.APP
              IAirPortCodeRepository _airPortCodeRepository, IWebHostEnvironment _webHostEnvironment, IAirlinesRepository _airlinesRepository, IAccountClientRepository _accountClientRepository,
            IHotelBookingRepositories _hotelBookingRepositories, IOtherBookingRepository otherBookingRepository, ITourRepository tourRepository, IAllCodeRepository allCodeRepository, IUserRepository userRepository,
            IVinWonderBookingRepository vinWonderBookingRepository, IContactClientRepository contactClientRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository, IClientRepository clientRepository,
-           IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository,IHotelBookingRoomRepository hotelBookingRoomRepository, IDebtGuaranteeRepository debtGuaranteeRepository)
+           IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository, IHotelBookingRoomRepository hotelBookingRoomRepository, IDebtGuaranteeRepository debtGuaranteeRepository)
         {
             _configuration = configuration;
             _contractPayRepository = contractPayRepository;
@@ -126,13 +128,13 @@ namespace API_CORE.Controllers.APP
                                 if (m.Success && m.Value != null && m.Value.Trim() != "")
                                 {
                                     order_no = m.Value;
-                                    order= await orderRepository.GetOrderByOrderNo(order_no);
+                                    order = await orderRepository.GetOrderByOrderNo(order_no);
                                 }
-                               
-                                if(order == null || order.OrderId<=0)
+
+                                if (order == null || order.OrderId <= 0)
                                 {
                                     Match m_order = Regex.Match(detail.MessageContent.ToUpper(), @"(O|A|P|D|CVB|BKS|CVW|KS|VB|TR|VW)\d{2}[A-Z]\d{5,6}", RegexOptions.IgnoreCase);
-                                    if (m_order.Success && m_order.Value!=null && m_order.Value.Trim()!="")
+                                    if (m_order.Success && m_order.Value != null && m_order.Value.Trim() != "")
                                     {
                                         order_no = m_order.Value;
                                         order = await orderRepository.GetOrderByOrderNo(order_no);
@@ -167,7 +169,6 @@ namespace API_CORE.Controllers.APP
                                 var payment_detail = await _contractPayRepository.UpdateOrderBankTransferPayment(detail, contract_pay_code);
                                 if (payment_detail != null && payment_detail.OrderId > 0)
                                 {
-                                    if (payment_detail.BankTransferType <= 0) payment_detail.BankTransferType = detail.BankTransferType;
                                     return Ok(new
                                     {
                                         status = (int)ResponseType.SUCCESS,
@@ -194,7 +195,6 @@ namespace API_CORE.Controllers.APP
                                 //var is_checkout = await iDepositHistoryRepository.BotVerifyTrans(detail.OrderNo);
                                 if (payment_detail != null && payment_detail.OrderId > 0)
                                 {
-                                    if (payment_detail.BankTransferType <= 0) payment_detail.BankTransferType = detail.BankTransferType;
                                     return Ok(new
                                     {
                                         status = (int)ResponseType.SUCCESS,
@@ -262,7 +262,7 @@ namespace API_CORE.Controllers.APP
                         var DetailDebtGuarantee =await _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
                         if (DetailDebtGuarantee != null)
                         {
-                            if(DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TN_DUYET || DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TP_DUYET)
+                            if (DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TN_DUYET || DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TP_DUYET)
                             {
                                 _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
                                 return Ok(new
@@ -275,13 +275,12 @@ namespace API_CORE.Controllers.APP
                             {
                                 _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
                             }
-                            
                         }
                         var order = orderRepository.getDetail(order_id);
-                        if(order!=null && order.ClientId!=null && order.ClientId > 0)
+                        if (order != null && order.ClientId != null && order.ClientId > 0)
                         {
-                           
-                            if (order.OrderStatus == (int) OrderStatus.WAITING_FOR_OPERATOR )
+
+                            if (order.OrderStatus == (int)OrderStatus.WAITING_FOR_OPERATOR)
                             {
                                 var success = await _mail_service.SendSuccessPaymentToOperator(order_id);
                                 return Ok(new
@@ -291,7 +290,7 @@ namespace API_CORE.Controllers.APP
                                 });
                             }
                             LogHelper.InsertLogTelegram("gửi Email Confirmed Payment To Operator không thành công OrderID=" + order_id);
-                           
+
                         }
                         else
                         {
@@ -302,8 +301,8 @@ namespace API_CORE.Controllers.APP
                                 msg = success
                             });
                         }
-                     
-                        
+
+
                     }
                     else
                     {
@@ -436,7 +435,8 @@ namespace API_CORE.Controllers.APP
                 if (CommonHelper.GetParamWithKey(token, out objParr, _configuration["DataBaseConfig:key_api:api_manual"]))
                 {
                     long order_id = Convert.ToInt64(objParr[0]["order_id"]);
-                    if (order_id <= 0) {
+                    if (order_id <= 0)
+                    {
 
                         return Ok(new
                         {
@@ -458,13 +458,13 @@ namespace API_CORE.Controllers.APP
             catch (Exception ex)
             {
                 LogHelper.InsertLogTelegram("N8NSendEmailSuccessPaymentToOperator - ContractPayAppController - email/payment-email-body: token " + token + "\n " + ex);
-               
+
             }
             return Ok(new
             {
                 status = (int)ResponseType.FAILED,
                 msg = "ERROR!",
-                body=""
+                body = ""
             });
         }
         [HttpPost("n8n/telegram")]
@@ -490,7 +490,7 @@ namespace API_CORE.Controllers.APP
                     string bot_id = objParr[0]["bot_id"].ToString();
                     string group_id = objParr[0]["group_id"].ToString();
                     string message = objParr[0]["message"].ToString();
-                    if(bot_id==null || bot_id.Trim()==""
+                    if (bot_id == null || bot_id.Trim() == ""
                         || group_id == null || group_id.Trim() == ""
                          || message == null || message.Trim() == "")
                     {
@@ -505,23 +505,11 @@ namespace API_CORE.Controllers.APP
 
                     TelegramBotClient alertMsgBot = new TelegramBotClient(bot_id);
                     var rs_push = await alertMsgBot.SendTextMessageAsync(group_id, message);
-                    for(int i = 0; i <= 5; i++)
-                    {
-                        if (rs_push != null && rs_push.MessageId > 0)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            await Task.Delay(3000);
-                            rs_push = await alertMsgBot.SendTextMessageAsync(group_id, message);
-                        }
-                    }
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
                         msg = "Success",
-                        body = (rs_push != null && rs_push.MessageId > 0)
+                        body = (rs_push != null)
                     });
                 }
 
@@ -529,107 +517,6 @@ namespace API_CORE.Controllers.APP
             catch (Exception ex)
             {
                 LogHelper.InsertLogTelegram("N8NSendMessageTelegram - ContractPayAppController - n8n/telegram: token " + token + "\n " + ex);
-
-            }
-            return Ok(new
-            {
-                status = (int)ResponseType.FAILED,
-                msg = "ERROR!",
-                body = ""
-            });
-        }
-
-        [HttpPost("receive-sms")]
-        public async Task<ActionResult> N8NReceiverSMS(string body)
-        {
-            LogHelper.InsertLogTelegram("receive-sms - N8NReceiverSMS:  [" + body + "]");
-
-            try
-            {
-                if (body == null || body.Trim() == "" || !body.Trim().StartsWith("{"))
-                {
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.FAILED,
-                        msg = "Data Invalid!",
-                        data = ""
-                    });
-                }
-                LogHelper.InsertLogTelegram("receive-sms - N8NReceiverSMS:  [" + body + "]");
-                APIRequestGenericModel model = null;
-                try
-                {
-                     model = JsonConvert.DeserializeObject<APIRequestGenericModel>(body);
-                }
-                catch
-                {
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.FAILED,
-                        msg = "Data Invalid!",
-                        data = ""
-                    });
-                }
-                if (model==null || model.token==null ||model.token.Trim()=="" || model.message==null || model.message.Trim()==""||model.name==null || model.name.Trim()==""||
-                    model.token!= "VAoD4X7X0iDg5vk73zQLaWk0UeYhOHCi9xBbivTIKfxJ3W9MG9Nfok1gAUZe0wo3lcQ18U0l82ZfapEahi5AaQDmud0y2gTmzuIT")
-                {
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.FAILED,
-                        msg = "Data Invalid!",
-                        data = ""
-                    });
-                }
-                string bank_name_approve = "Techcombank,VIB,Vietcombank,VietinBank,VPBank,HdBank,MBBank,MSB".ToUpper();
-                string url_n8n = "https://n8n.adavigo.com/webhook/bank-message";
-                if (_configuration["config_value:BankName"]!=null && _configuration["config_value:BankName"].ToString() != null
-                    && _configuration["config_value:N8NTransferAnalytic"] != null && _configuration["config_value:N8NTransferAnalytic"].ToString() != null)
-                {
-                    bank_name_approve = _configuration["config_value:BankName"].ToString().ToUpper();
-                    url_n8n = _configuration["config_value:N8NTransferAnalytic"].ToString();
-                }
-                model.name = CommonHelper.RemoveSpecialCharacters(model.name.Trim()).ToUpper();
-                if (bank_name_approve.Contains(model.name))
-                {
-                    var client = new HttpClient();
-                    var request = new HttpRequestMessage(HttpMethod.Post, url_n8n);
-                    request.Content = new StringContent(JsonConvert.SerializeObject(model), null, "application/json");
-                    var response = await client.SendAsync(request);
-                    var item_mdb = JsonConvert.DeserializeObject<SMSN8NMongoModel>(JsonConvert.SerializeObject(model));
-                    try
-                    {
-                        item_mdb.n8n_status = response.StatusCode.ToString();
-                        item_mdb.n8n_response = response.Content.ReadAsStringAsync().Result;
-                    }
-                    catch
-                    {
-                        item_mdb.n8n_status = "503";
-                        item_mdb.n8n_response = "";
-                    }
-                    string id = await _contractPayRepository.InsertSMSN8n(item_mdb);
-
-                    LogHelper.InsertLogTelegram("receive-sms - N8NReceiverSMS - Banking - POST N8N:  [" + id + "]:\n [" + item_mdb.n8n_status + "][" + item_mdb.n8n_response + "]");
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.SUCCESS,
-                        msg = "Success!",
-                        body = JsonConvert.SerializeObject(model),
-                        item_mdb.n8n_response,
-                        mongo_id = id
-                    });
-
-                }
-                return Ok(new
-                {
-                    status = (int)ResponseType.FAILED,
-                    msg = "Data Invalid!",
-                    data = ""
-                });
-
-            }
-            catch (Exception ex)
-            {
-                LogHelper.InsertLogTelegram("N8NSendMessageTelegram - ContractPayAppController - n8n/telegram:  [" + body + "]:\n " + ex);
 
             }
             return Ok(new
