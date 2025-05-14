@@ -55,7 +55,7 @@ namespace API_CORE.Controllers.NEWS
                     string j_data = null;
                     try
                     {
-                        j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                        j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     }
                     catch (Exception ex)
                     {
@@ -78,7 +78,7 @@ namespace API_CORE.Controllers.NEWS
                             detail.Tags = tags == null ? new List<string>() : tags;
                             try
                             {
-                                _redisService.Set(cache_name, JsonConvert.SerializeObject(detail), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                                _redisService.Set(cache_name, JsonConvert.SerializeObject(detail), Convert.ToInt32(configuration["Redis:Database:db_core"]));
                             }
                             catch (Exception ex)
                             {

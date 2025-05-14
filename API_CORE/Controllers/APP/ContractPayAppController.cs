@@ -3,17 +3,18 @@ using API_CORE.Service.Vin;
 using APP.PUSH_LOG.Functions;
 using ENTITIES.APPModels.ReadBankMessages;
 using ENTITIES.Models;
+using ENTITIES.ViewModels.APP.ContractPay;
+using ENTITIES.ViewModels.MongoDb;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+using Nest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Repositories.IRepositories;
 using REPOSITORIES.IRepositories;
 using REPOSITORIES.IRepositories.Clients;
 using REPOSITORIES.IRepositories.Fly;
-using REPOSITORIES.IRepositories.Hotel;
 using REPOSITORIES.IRepositories.Notify;
 using REPOSITORIES.IRepositories.VinWonder;
 using System;
@@ -21,14 +22,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Types.Payments;
 using Utilities;
 using Utilities.Contants;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace API_CORE.Controllers.APP
 {
@@ -169,6 +167,7 @@ namespace API_CORE.Controllers.APP
                                 var payment_detail = await _contractPayRepository.UpdateOrderBankTransferPayment(detail, contract_pay_code);
                                 if (payment_detail != null && payment_detail.OrderId > 0)
                                 {
+                                    if (payment_detail.BankTransferType <= 0) payment_detail.BankTransferType = detail.BankTransferType;
                                     return Ok(new
                                     {
                                         status = (int)ResponseType.SUCCESS,
@@ -195,6 +194,7 @@ namespace API_CORE.Controllers.APP
                                 //var is_checkout = await iDepositHistoryRepository.BotVerifyTrans(detail.OrderNo);
                                 if (payment_detail != null && payment_detail.OrderId > 0)
                                 {
+                                    if (payment_detail.BankTransferType <= 0) payment_detail.BankTransferType = detail.BankTransferType;
                                     return Ok(new
                                     {
                                         status = (int)ResponseType.SUCCESS,
@@ -505,11 +505,23 @@ namespace API_CORE.Controllers.APP
 
                     TelegramBotClient alertMsgBot = new TelegramBotClient(bot_id);
                     var rs_push = await alertMsgBot.SendTextMessageAsync(group_id, message);
+                    for(int i = 0; i <= 5; i++)
+                    {
+                        if (rs_push != null && rs_push.MessageId > 0)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            await Task.Delay(3000);
+                            rs_push = await alertMsgBot.SendTextMessageAsync(group_id, message);
+                        }
+                    }
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
                         msg = "Success",
-                        body = (rs_push != null)
+                        body = (rs_push != null && rs_push.MessageId > 0)
                     });
                 }
 
@@ -526,6 +538,107 @@ namespace API_CORE.Controllers.APP
                 body = ""
             });
         }
-       
+
+        [HttpPost("receive-sms")]
+        public async Task<ActionResult> N8NReceiverSMS(string body)
+        {
+            LogHelper.InsertLogTelegram("receive-sms - N8NReceiverSMS:  [" + body + "]");
+
+            try
+            {
+                if (body == null || body.Trim() == "" || !body.Trim().StartsWith("{"))
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Data Invalid!",
+                        data = ""
+                    });
+                }
+                LogHelper.InsertLogTelegram("receive-sms - N8NReceiverSMS:  [" + body + "]");
+                APIRequestGenericModel model = null;
+                try
+                {
+                     model = JsonConvert.DeserializeObject<APIRequestGenericModel>(body);
+                }
+                catch
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Data Invalid!",
+                        data = ""
+                    });
+                }
+                if (model==null || model.token==null ||model.token.Trim()=="" || model.message==null || model.message.Trim()==""||model.name==null || model.name.Trim()==""||
+                    model.token!= "VAoD4X7X0iDg5vk73zQLaWk0UeYhOHCi9xBbivTIKfxJ3W9MG9Nfok1gAUZe0wo3lcQ18U0l82ZfapEahi5AaQDmud0y2gTmzuIT")
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Data Invalid!",
+                        data = ""
+                    });
+                }
+                string bank_name_approve = "Techcombank,VIB,Vietcombank,VietinBank,VPBank,HdBank,MBBank,MSB".ToUpper();
+                string url_n8n = "https://n8n.adavigo.com/webhook/bank-message";
+                if (_configuration["config_value:BankName"]!=null && _configuration["config_value:BankName"].ToString() != null
+                    && _configuration["config_value:N8NTransferAnalytic"] != null && _configuration["config_value:N8NTransferAnalytic"].ToString() != null)
+                {
+                    bank_name_approve = _configuration["config_value:BankName"].ToString().ToUpper();
+                    url_n8n = _configuration["config_value:N8NTransferAnalytic"].ToString();
+                }
+                model.name = CommonHelper.RemoveSpecialCharacters(model.name.Trim()).ToUpper();
+                if (bank_name_approve.Contains(model.name))
+                {
+                    var client = new HttpClient();
+                    var request = new HttpRequestMessage(HttpMethod.Post, url_n8n);
+                    request.Content = new StringContent(JsonConvert.SerializeObject(model), null, "application/json");
+                    var response = await client.SendAsync(request);
+                    var item_mdb = JsonConvert.DeserializeObject<SMSN8NMongoModel>(JsonConvert.SerializeObject(model));
+                    try
+                    {
+                        item_mdb.n8n_status = response.StatusCode.ToString();
+                        item_mdb.n8n_response = response.Content.ReadAsStringAsync().Result;
+                    }
+                    catch
+                    {
+                        item_mdb.n8n_status = "503";
+                        item_mdb.n8n_response = "";
+                    }
+                    string id = await _contractPayRepository.InsertSMSN8n(item_mdb);
+
+                    LogHelper.InsertLogTelegram("receive-sms - N8NReceiverSMS - Banking - POST N8N:  [" + id + "]:\n [" + item_mdb.n8n_status + "][" + item_mdb.n8n_response + "]");
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        msg = "Success!",
+                        body = JsonConvert.SerializeObject(model),
+                        item_mdb.n8n_response,
+                        mongo_id = id
+                    });
+
+                }
+                return Ok(new
+                {
+                    status = (int)ResponseType.FAILED,
+                    msg = "Data Invalid!",
+                    data = ""
+                });
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("N8NSendMessageTelegram - ContractPayAppController - n8n/telegram:  [" + body + "]:\n " + ex);
+
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.FAILED,
+                msg = "ERROR!",
+                body = ""
+            });
+        }
+
     }
 }

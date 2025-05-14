@@ -167,7 +167,7 @@ namespace API_CORE.Controllers.CACHE
                     string cache_key = objParr[0]["cache_key"].ToString();
 
                     #region Clear a cache
-                    redisService.clear(cache_key, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    redisService.clear(cache_key, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     #endregion
                     return Ok(new { status = (int)ResponseType.SUCCESS, _token = token, msg = "Clear Successfully !!!", cache_key = cache_key });
                 }
@@ -201,14 +201,14 @@ namespace API_CORE.Controllers.CACHE
 
                     long article_id = Convert.ToInt64(objParr[0]["article_id"]);
                     var category_list_id = objParr[0]["category_id"].ToString().Split(",");
-                    redisService.clear(CacheType.ARTICLE_ID + article_id, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    redisService.clear(CacheType.ARTICLE_ID + article_id, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     for (int i = 0; i <= category_list_id.Length - 1; i++)
                     {
                         int category_id = Convert.ToInt32(category_list_id[i]);
-                        redisService.clear(CacheType.ARTICLE_CATEGORY_ID + category_id, Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                        redisService.clear(CacheType.CATEGORY_NEWS + "39", Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                        redisService.clear(CacheType.CATEGORY_NEWS + category_id, Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                        redisService.clear(CacheType.ARTICLE_B2C_MOST_VIEWED, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                        redisService.clear(CacheType.ARTICLE_CATEGORY_ID + category_id, Convert.ToInt32(configuration["Redis:Database:db_core"]));
+                        redisService.clear(CacheType.CATEGORY_NEWS + "39", Convert.ToInt32(configuration["Redis:Database:db_core"]));
+                        redisService.clear(CacheType.CATEGORY_NEWS + category_id, Convert.ToInt32(configuration["Redis:Database:db_core"]));
+                        redisService.clear(CacheType.ARTICLE_B2C_MOST_VIEWED, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     }
 
                     return Ok(new { status = (int)ResponseType.SUCCESS, _token = token, msg = "Sync Successfully !!!", article_id = article_id, category_list_id = category_list_id });
