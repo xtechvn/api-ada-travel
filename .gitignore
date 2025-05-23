@@ -26,3 +26,7 @@ API_CORE/API_CORE.csproj.user
 /ServiceReceiverMedia/uploads
 API_LOGIN/Properties/PublishProfiles/FolderProfile.pubxml.user
 API_LOGIN/API_LOGIN.csproj.user
+API_CORE/API_CORE.csproj.user
+API_LOGIN/API_LOGIN.csproj.user
+API_LOGIN/Properties/PublishProfiles/FolderProfile.pubxml.user
+ServiceReceiverMedia/Properties/PublishProfiles/FolderProfile.pubxml.user
