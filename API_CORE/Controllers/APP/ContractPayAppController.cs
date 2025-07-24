@@ -445,13 +445,61 @@ namespace API_CORE.Controllers.APP
                             body = ""
                         });
                     }
-                    var excute = await _mail_service.SendSuccessPaymentToOperator(order_id);
-                    return Ok(new
+
+                    var DetailDebtGuarantee = await _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
+                    if (DetailDebtGuarantee != null)
                     {
-                        status = (int)ResponseType.SUCCESS,
-                        msg = "Success",
-                        body = excute
-                    });
+                        if (DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TN_DUYET || DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TP_DUYET)
+                        {
+                            _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.SUCCESS,
+                                msg = "Đã gửi email"
+                            });
+                        }
+                        else
+                        {
+                            _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
+                        }
+                    }
+                    var order = orderRepository.getDetail(order_id);
+                    if (order != null && order.ClientId != null && order.ClientId > 0)
+                    {
+
+                        if (order.OrderStatus == (int)OrderStatus.WAITING_FOR_OPERATOR)
+                        {
+                            var excute = await _mail_service.SendSuccessPaymentToOperator(order_id);
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.SUCCESS,
+                                msg = "Success",
+                                body = excute
+                            });
+                        }
+                        LogHelper.InsertLogTelegram("gửi Email Confirmed Payment To Operator không thành công OrderID=" + order_id);
+
+                    }
+                    else
+                    {
+                        var excute = await _mail_service.SendSuccessPaymentToOperator(order_id);
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "Success",
+                            body = excute
+                        });
+                    }
+
+
+
+                    //var excute = await _mail_service.SendSuccessPaymentToOperator(order_id);
+                    //return Ok(new
+                    //{
+                    //    status = (int)ResponseType.SUCCESS,
+                    //    msg = "Success",
+                    //    body = excute
+                    //});
                 }
 
             }
