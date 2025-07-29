@@ -2475,7 +2475,7 @@ namespace API_CORE.Controllers.B2C
                         });
                     }
                     var hotel_list = await _hotelESRepository.GetListByLocation(name, (int)id, (int)type);
-                    if (hotel_list == null || hotel_list.Count <= 0)
+                    if ((hotel_list == null || hotel_list.Count <= 0) && type!= 3)
                     {
                         return Ok(new
                         {
@@ -2484,6 +2484,10 @@ namespace API_CORE.Controllers.B2C
                     }
 
                     string cache_name = CacheName.HotelExclusiveListB2C_POSITION + name + "_" + client_type;
+                    if (PositionType == 3)
+                    {
+                        cache_name = CacheName.HotelExclusiveList_BAN_CHAY_POSITION;
+                    }
                     var str = redisService.Get(cache_name, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
                     if (str != null && str.Trim() != "")
                     {
