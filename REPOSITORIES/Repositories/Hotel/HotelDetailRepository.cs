@@ -188,15 +188,16 @@ namespace REPOSITORIES.Repositories.Hotel
         {
             try
             {
-                var dataTable = _hotelDAL.GetHotelPricePolicyDaily(hotel_id,  client_types/*,  arrival_date,  departure_date*/);
+                var dataTable = _hotelDAL.GetHotelPricePolicyDaily(hotel_id, client_types/*,  arrival_date,  departure_date*/);
                 if (dataTable == null || dataTable.Rows.Count <= 0)
                 {
-                    dataTable = _hotelDAL.GetHotelPricePolicy(hotel_id,  client_types/*,  arrival_date,  departure_date*/);
+                    dataTable = _hotelDAL.GetHotelPricePolicy(hotel_id, client_types/*,  arrival_date,  departure_date*/);
                 }
+                if (dataTable == null || dataTable.Rows.Count > 0) { get_all = true; }
                 if (get_all)
                 {
-                    var list= dataTable.ToList<HotelPricePolicyViewModel>();
-                    var data_table_special= _hotelDAL.GetHotelPricePolicy(hotel_id, client_types/*,  arrival_date,  departure_date*/);
+                    var list = dataTable.ToList<HotelPricePolicyViewModel>();
+                    var data_table_special = _hotelDAL.GetHotelPricePolicy(hotel_id, client_types/*,  arrival_date,  departure_date*/);
                     if (data_table_special != null && data_table_special.Rows.Count > 0)
                     {
                         list.AddRange(data_table_special.ToList<HotelPricePolicyViewModel>());
@@ -261,7 +262,7 @@ namespace REPOSITORIES.Repositories.Hotel
                         {
                             p.program.CreatedBy = exists_program.CreatedBy;
                             p.program.CreatedDate = exists_program.CreatedDate;
-                           
+
                             p.program.Id = exists_program.Id;
 
                             await _programsDAL.UpdatePrograms(p.program);
@@ -385,7 +386,7 @@ namespace REPOSITORIES.Repositories.Hotel
         {
             try
             {
-              
+
                 return await hotelPriceMongoDAL.GetListByFilter(hotel_id, client_types, arrivaldate, departuredate, location, stars, min_price, max_price, page_index, page_size);
             }
             catch
@@ -412,10 +413,10 @@ namespace REPOSITORIES.Repositories.Hotel
             try
             {
                 var exists = hotelPriceMongoDAL.GetByFilter(item.hotel_id, new List<int>() { item.client_type });
-                if(exists!=null && exists._id != null)
+                if (exists != null && exists._id != null)
                 {
                     await hotelPriceMongoDAL.DeleteByFilter(exists._id, item.hotel_id, new List<int>() { item.client_type });
-                    var _id= await hotelPriceMongoDAL.Update(item, exists._id);
+                    var _id = await hotelPriceMongoDAL.Update(item, exists._id);
                     if (_id != null && _id.Trim() != "") return _id;
                 }
 
