@@ -24,6 +24,8 @@ using StackExchange.Redis;
 using Nest;
 using ENTITIES.Models;
 using API_CORE.Service.Hotel;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using REPOSITORIES.Repositories.Hotel;
 
 namespace API_CORE.Controllers.B2C
 {
@@ -422,7 +424,22 @@ namespace API_CORE.Controllers.B2C
                                 hotel_ids = string.Join(",", data_results.Select(x => x.HotelId));
                                 foreach (var hotel in data_results)
                                 {
-                                    var hotel_detail = await hotelDetailRepository.GetByHotelId(hotel.Id.ToString());
+                                    List<RoomDetail> rooms_list_V2 = new List<RoomDetail>();
+
+                                   
+                                    var hotel_detail = await hotelDetailRepository.GetByHotelId(hotel.HotelId);
+                                    var hotel_rooms = hotelDetailRepository.GetFEHotelRoomList(Convert.ToInt32(hotel.HotelId));
+                                    //-- Tính giá về tay thông qua chính sách giá
+                                    var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(hotel.HotelId, Utilities.Contants.ClientType.CUSTOMER.ToString());
+                                    foreach (var r in hotel_rooms)
+                                    {
+                                        var room_packages = hotelDetailRepository.GetFERoomPackageListByRoomId(r.Id, from_date, to_date);
+                                        var room_packages_daily = hotelDetailRepository.GetFERoomPackageDaiLyListByRoomId(r.Id, from_date, to_date);
+                                        rooms_list_V2.Add(PricePolicyService.GetRoomDetail(r.Id.ToString(), from_date, to_date, total_nights, room_packages_daily, room_packages, profit_list, hotel_detail, null));
+                                    }
+                                    var min_price = rooms_list_V2.Where(x => x.min_price > 0).OrderBy(x => x.min_price).FirstOrDefault();
+                                    var min_price_value = min_price == null ? 0 : min_price.min_price;
+                                   
                                     //-- Tính giá về tay thông qua chính sách giá
                                     result.Add(new HotelSearchEntities
                                     {
@@ -439,7 +456,7 @@ namespace API_CORE.Controllers.B2C
                                         is_refundable = hotel.IsRefundable,
                                         is_instantly_confirmed = hotel.IsInstantlyConfirmed,
                                         confirmed_time = hotel.VerifyDate ?? 0,
-                                        min_price = 0,
+                                        min_price = min_price_value,
                                         email = hotel.Email,
                                         telephone = hotel.Telephone,
                                         img_thumb = new List<string> { hotel.ImageThumb },
