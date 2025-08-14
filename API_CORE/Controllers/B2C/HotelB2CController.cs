@@ -160,16 +160,19 @@ namespace API_CORE.Controllers.B2C
 
                 //var j_param = new Dictionary<string, string>
                 //{
-                //    {"arrivalDate", "2024-02-10"},
-                //    {"departureDate","2024-02-11" },
+                //    {"arrivalDate", "2025-08-14"},
+                //    {"departureDate","2025-08-15" },
                 //    {"numberOfRoom", "1"},
-                //    {"hotelID","24386cea-907e-93d5-0755-b4b1d8f5858a" },
+                //    {"hotelID","95" },
                 //    {"numberOfChild","0" },
                 //    {"numberOfAdult","2" },
                 //    {"numberOfInfant","0" },
-                //    {"clientType","2" },
-                //    {"client_id","182" },
+                //    {"clientType","5" },
+                //    {"client_id","200" },
                 //    {"product_type","0" },
+                //    {"hotelName","DeLaSea Ha Long Hotel" },
+                //    {"page","1" },
+                //    {"size","50" },
                 //};
                 //var data_product = JsonConvert.SerializeObject(j_param);
                 //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2c"]);
@@ -430,7 +433,7 @@ namespace API_CORE.Controllers.B2C
                                     var hotel_detail = await hotelDetailRepository.GetByHotelId(hotel.HotelId);
                                     var hotel_rooms = hotelDetailRepository.GetFEHotelRoomList(Convert.ToInt32(hotel.HotelId));
                                     //-- Tính giá về tay thông qua chính sách giá
-                                    var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(hotel.HotelId, Utilities.Contants.ClientType.CUSTOMER.ToString());
+                                    var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(hotel.HotelId, ((int)Utilities.Contants.ClientType.CUSTOMER).ToString());
                                     foreach (var r in hotel_rooms)
                                     {
                                         var room_packages = hotelDetailRepository.GetFERoomPackageListByRoomId(r.Id, from_date, to_date);
