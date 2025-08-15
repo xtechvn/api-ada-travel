@@ -410,8 +410,24 @@ namespace API_CORE.Service.Hotel
 
             try
             {
+                List<RoomDetail> rooms_list_V2 = new List<RoomDetail>();
 
+
+                var hotel_detail = await hotelDetailRepository.GetByHotelId(hotelId.ToString());
                 var hotel_rooms = hotelDetailRepository.GetFEHotelRoomList(hotelId);
+                //-- Tính giá về tay thông qua chính sách giá
+                var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(hotelId.ToString(), ((int)Utilities.Contants.ClientType.CUSTOMER).ToString());
+                foreach (var r in hotel_rooms)
+                {
+                    var room_packages = hotelDetailRepository.GetFERoomPackageListByRoomId(r.Id, arrivalDate, departureDate);
+                    var room_packages_daily = hotelDetailRepository.GetFERoomPackageDaiLyListByRoomId(r.Id, arrivalDate, departureDate);
+                    rooms_list_V2.Add(PricePolicyService.GetRoomDetail(r.Id.ToString(), arrivalDate, departureDate, (int)((departureDate - arrivalDate).TotalDays), room_packages_daily, room_packages, profit_list, hotel_detail, null));
+                }
+                var min_price = rooms_list_V2.Where(x => x.min_price > 0).OrderBy(x => x.min_price).FirstOrDefault();
+                var min_price_value = min_price == null ? 0 : min_price.min_price;
+
+
+                //var hotel_rooms = hotelDetailRepository.GetFEHotelRoomList(hotelId);
                 var hotel_detail_sql = await hotelDetailRepository.GetById(hotelId);
 
                 if (hotel_rooms != null && hotel_rooms.Any())
@@ -425,7 +441,7 @@ namespace API_CORE.Service.Hotel
 
                     //-- Tính giá về tay thông qua chính sách giá
                     int nights = Convert.ToInt32((departureDate - arrivalDate).TotalDays < 1 ? 1 : (departureDate - arrivalDate).TotalDays);
-                    var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(hotelId.ToString(), client_type_string);
+                    //var profit_list = hotelDetailRepository.GetHotelRoomPricePolicy(hotelId.ToString(), client_type_string);
                     // LogService.InsertLog("VinController - getHotelRoomsManualAvailability HotelManual: Profit List [" + hotelID + client_type_string + "] count= " + profit_list.Count);
 
                     foreach (var room in hotel_rooms)
@@ -467,7 +483,7 @@ namespace API_CORE.Service.Hotel
                                                 url = room.Avatar
                                          }
                                  },
-                                 min_price = 0,
+                                 min_price = min_price_value,
                                  remainming_room = room.NumberOfRoom ?? 0,
                                  rates = new List<RoomDetailRate>()
 
