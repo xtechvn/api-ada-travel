@@ -66,6 +66,8 @@ namespace Utilities.Contants
         DA_DUYET_CONG_NO = 19,
         TU_CHOI_DON_CONG_NO = 20,
         DUYET_CONG_NO = 21,
+        KHACH_HANG = 22,
+        YEU_CAU_XUAT_HD = 23,
     }
     public static class NotifyLabelName
     {

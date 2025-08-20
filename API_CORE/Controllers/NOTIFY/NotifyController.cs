@@ -334,7 +334,34 @@ namespace API_CORE.Controllers.NOTIFY
                                     }
                                 }
                                 break;
-
+                            case (Int16)ActionType.KHACH_HANG:
+                                {
+                                    var role_type = Convert.ToInt16(objParr[0]["role_type"]);
+                                    if (role_type == 1)
+                                    {
+                                        content = "Marketing tạo mới KH "+ service_code + "( "+ code + "). Giao cho " + user_name_send;
+                                    }
+                                    else
+                                    {
+                                        content = "Khách "+ service_code + " ("+ code + ") đã được chuyển phụ trách sang " + user_name_send ;
+                                    }
+                                    user_receiver_id .Add( user_id_send);
+                                }
+                                break;
+                            case (Int16)ActionType.YEU_CAU_XUAT_HD:
+                                {
+                                    var role_type = Convert.ToInt16(objParr[0]["role_type"]);
+                                    if (role_type == 1)
+                                    {
+                                        content = "Hóa đơn đơn hàng "+ code + " đã được xử lý" ;
+                                    }
+                                    else
+                                    {
+                                        content = "Hóa đơn đơn hàng " + code + " đã hoàn thành";
+                                    }
+                                    user_receiver_id.Add(user_id_send);
+                                }
+                                break;
                             default:
                                 break;
                         }
