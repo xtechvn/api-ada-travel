@@ -1,6 +1,7 @@
 ﻿using APP.PUSH_LOG.Functions;
 using Entities.ViewModels;
 using ENTITIES.ViewModels.Booking;
+using ENTITIES.ViewModels.BookingFly;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
@@ -9,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using REPOSITORIES.IRepositories;
 using REPOSITORIES.IRepositories.Fly;
+using REPOSITORIES.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,12 +29,14 @@ namespace API_CORE.Controllers.BOOKING.Fly
         private IFlyBookingMongoRepository bookingRepository;
         private IOrderRepository orderRepository;
         private IAccountRepository accountRepository;
-        public BookingController(IConfiguration _configuration, IFlyBookingMongoRepository _bookingRepository, IOrderRepository _ordersRepository, IAccountRepository _accountRepository)
+        private ISaveBookingRepository saveBookingRepository;
+        public BookingController(IConfiguration _configuration, IFlyBookingMongoRepository _bookingRepository, IOrderRepository _ordersRepository, IAccountRepository _accountRepository, ISaveBookingRepository _saveBookingRepository)
         {
             configuration = _configuration;
             bookingRepository = _bookingRepository;
             orderRepository = _ordersRepository;
             accountRepository=_accountRepository;
+            saveBookingRepository = _saveBookingRepository;
     }
 
         /// <summary>
@@ -329,6 +333,54 @@ namespace API_CORE.Controllers.BOOKING.Fly
                 });
             }
         }
-        
+        [HttpPost("flight/save-booking-ada.json")]
+        public async Task<ActionResult> saveBookingAda(string token)
+        {
+            try
+            {
+                JArray objParr = null;
+                #region Test
+
+                string text = "{\"order\":{\"orderCode\":\"ADV557452505300036\",\"transactionTime\":\"30/05-13:03\",\"totalPrice\":\"6.456.500\",\"success\":true,\"message\":\"success\",\"remark\":\"\",\"numberOfAdult\":1,\"numberOfChild\":0,\"numberOfInfant\":0,\"companyName\":\"\",\"companyAddress\":\",HuyệnVũThư,TháiBình\",\"taxCode\":\"\",\"invoiceEmail\":\"\",\"paymentType\":\"Thanhtoántạivănphòng\",\"customerName\":\"NguyễnThanhTuyền\",\"customerEmail\":\"thanhtuyen0171@gmail.com\",\"customerPhone\":\"0933428416\"},\"passengers\":[{\"paxName\":\"NGUYEN/VANA/MRS\",\"birthday\":\"01/01/1972\",\"loyalty\":\"\",\"type\":\"ADT\",\"baggages\":[{\"segment\":\"VCSSGN\",\"weight\":\"20\",\"price\":\"216000\"}]}],\"bookings\":[{\"pnr\":\"6VIRBK\",\"recordStatus\":\"HOLD\",\"timeLimit\":\"31/05/202501:18\",\"airline\":\"VN\",\"purchaseTimeLimit\":\"31/05/202513:18\",\"routeInfos\":[{\"routeID\":\"1\",\"from\":\"VCS\",\"to\":\"SGN\",\"departDate\":\"07-06-2025\",\"timeFrom\":\"07:30\",\"timeTo\":\"08:40\",\"airCraft\":\"VN\",\"flightNo\":\"1854\",\"class\":\"HPXVNF(Economy)\",\"aircraftType\":\"ATR\",\"cabinClass\":\"Economy\",\"flightTime\":\"01:10\",\"freeBaggage\":{\"pieces\":1,\"description\":\"23KG\"},\"handBaggage\":{\"pieces\":1,\"description\":\"10KG\"}},{\"routeID\":\"1\",\"from\":\"SGN\",\"to\":\"VCS\",\"departDate\":\"08-06-2025\",\"timeFrom\":\"07:30\",\"timeTo\":\"08:40\",\"airCraft\":\"VN\",\"flightNo\":\"1854\",\"class\":\"HPXVNF(Economy)\",\"aircraftType\":\"ATR\",\"cabinClass\":\"Economy\",\"flightTime\":\"01:10\",\"freeBaggage\":{\"pieces\":1,\"description\":\"23KG\"},\"handBaggage\":{\"pieces\":1,\"description\":\"10KG\"}}],\"fareData\":{\"fareADT\":1039000,\"taxADT\":529000,\"vatADT\":84000,\"fareCHD\":936000,\"taxCHD\":489500,\"vatCHD\":75000,\"fareINF\":0,\"taxINF\":0,\"vatINF\":0,\"otherFee\":0,\"totalPrice\":6456500},\"system\":\"VN\"}]}";
+                var data_product = JsonConvert.SerializeObject(text);
+                token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2c"]);
+                #endregion
+
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
+                {
+                    var model = JsonConvert.DeserializeObject<BookingFlyMua_Di>(objParr[0].ToString());
+                    var data = await saveBookingRepository.saveBookingAda(model);
+                        if(data > 0)
+                        return Ok(new
+                          {
+                              status = (int)ResponseType.SUCCESS,
+                              msg = "thêm mới thành công!",
+                            data = data
+                        });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "Key invalid!"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("saveBookingAda - BookingControl: token+" + token + "\n " + ex);
+                return Ok(new
+                {
+                    status = (int)ResponseType.ERROR,
+                    msg = "ERROR!",
+                });
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.ERROR,
+                msg = "thêm mới thông thành công!"
+            });
+        }
     }
 }
