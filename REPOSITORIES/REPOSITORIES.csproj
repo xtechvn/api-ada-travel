@@ -16,6 +16,7 @@
     <ProjectReference Include="..\DAL\DAL.csproj" />
     <ProjectReference Include="..\ENTITIES\ENTITIES.csproj" />
     <ProjectReference Include="..\REDIS\CACHING.csproj" />
+    <ProjectReference Include="..\ServiceReceiverMedia\ServiceReceiverMedia.csproj" />
     <ProjectReference Include="..\Utilities\Utilities.csproj" />
   </ItemGroup>
 

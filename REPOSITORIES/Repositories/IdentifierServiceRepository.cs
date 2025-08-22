@@ -14,7 +14,7 @@ using Utilities.Contants;
 
 namespace REPOSITORIES.Repositories
 {
-    public class IdentifierServiceRepository : IIdentifierServiceRepository
+    public class IdentifierServiceRepository : IRepositories.IIdentifierServiceRepository
     {
         private readonly ContractDAL contractDAL;
         private readonly OrderDAL orderDAL;

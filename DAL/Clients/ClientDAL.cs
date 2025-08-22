@@ -1,6 +1,7 @@
 ﻿using DAL.Generic;
 using DAL.StoreProcedure;
 using ENTITIES.Models;
+using ENTITIES.ViewModels.BookingFly;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;
@@ -215,7 +216,7 @@ namespace DAL
                 return true;
             }
         }
-        public Client GetClientDetailByEmail(string  Email)
+        public Client GetClientDetailByEmail(string Email)
         {
             try
             {
@@ -228,6 +229,63 @@ namespace DAL
             {
                 LogHelper.InsertLogTelegram("GetDetailAsync - ClientDAL: " + ex);
                 return null;
+            }
+        }
+        public bool CheckPhoneClient(string Phone)
+        {
+            try
+            {
+
+                using (var _DbContext = new EntityDataContext(_connection))
+                {
+                    var entity = _DbContext.Client.Where(s => s.Phone == Phone).ToList();
+                    if (entity.Count > 0)
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("CountClientByParentId - ClientDAL: " + ex);
+                return true;
+            }
+        }
+        public Client GetByPhone(string Phone)
+        {
+            try
+            {
+                using (var _DbContext = new EntityDataContext(_connection))
+                {
+                    return _DbContext.Client.AsNoTracking().Where(s => s.Phone == Phone).FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetByClientId - ClientDAL: " + ex);
+                return null;
+            }
+        }
+        public static int CreateContactClients(ContactClientViewModel obj_contact_client)
+        {
+            try
+            {
+
+                SqlParameter[] objParam_cclient = new SqlParameter[6];
+                objParam_cclient[0] = new SqlParameter("@Name", obj_contact_client.Name);
+                objParam_cclient[1] = new SqlParameter("@Mobile", obj_contact_client.Mobile);
+                objParam_cclient[2] = new SqlParameter("@Email", obj_contact_client.Email);
+                objParam_cclient[3] = new SqlParameter("@CreateDate", obj_contact_client.CreateDate);
+                objParam_cclient[4] = new SqlParameter("@AccountClientId", obj_contact_client.ClientId);
+                objParam_cclient[5] = new SqlParameter("@OrderId", obj_contact_client.OrderId);
+                var id = _DbWorker.ExecuteNonQuery(ProcedureConstants.CreateContactClients, objParam_cclient);
+                return id;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("CreateContactClients - ClientDAL: " + ex);
+                return -1;
             }
         }
     }

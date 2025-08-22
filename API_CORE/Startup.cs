@@ -87,7 +87,7 @@ namespace API_CORE
             services.AddTransient<IAccountClientRepository, AccountClientRepository>();
             services.AddTransient<IAccountRepository, AccountRepository>();
             services.AddTransient<IGroupProductRepository, GroupProductRepository>();
-            services.AddTransient<IIdentifierServiceRepository, IdentifierServiceRepository>();
+            services.AddTransient<REPOSITORIES.Repositories.IdentifierServiceRepository, REPOSITORIES.Repositories.IdentifierServiceRepository>();
             services.AddTransient<IPaymentRepository, PaymentRepository>();
             services.AddTransient<IContractPayRepository, ContractPayRepository>();
             services.AddTransient<IHotelDetailRepository, HotelDetailRepository>();
@@ -112,6 +112,7 @@ namespace API_CORE
             services.AddSingleton<IHotelBookingRoomExtraPackageRepository, HotelBookingRoomExtraPackageRepository>();
             services.AddSingleton<IHotelBookingRoomRepository, HotelBookingRoomsRepository>();
             services.AddSingleton<IDebtGuaranteeRepository, DebtGuaranteeRepository>();
+            services.AddSingleton<ISaveBookingRepository, SaveBookingRepository>();
 
             services.AddSwaggerGen();
 

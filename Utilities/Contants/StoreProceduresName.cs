@@ -195,6 +195,7 @@ namespace Utilities.Contants
         public static string SP_GetDetailDebtGuaranteeByOrderid = "SP_GetDetailDebtGuaranteeByOrderid";
         public static string SP_GeDetailDebtGuarantee = "SP_GeDetailDebtGuarantee";
         public static string sp_UpdateDebtGuarantee = "sp_UpdateDebtGuarantee";
+        public static string SP_InsertOrder = "SP_InsertOrder";
     }
 
 }

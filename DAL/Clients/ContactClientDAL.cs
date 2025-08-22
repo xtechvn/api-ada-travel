@@ -1,6 +1,7 @@
 ﻿using DAL.Generic;
 using DAL.StoreProcedure;
 using ENTITIES.Models;
+using ENTITIES.ViewModels.BookingFly;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -46,5 +47,30 @@ namespace DAL.Clients
                 return null;
             }
         }
+        public long CreateContactClients(ContactClientViewModel client)
+        {
+            try
+            {
+                var ContactClient =new ContactClient();
+                ContactClient.ClientId = client.ClientId;
+                ContactClient.Name = client.Name;
+                ContactClient.Mobile = client.Mobile;
+                ContactClient.Email = client.Email;
+                ContactClient.CreateDate = client.CreateDate;
+                ContactClient.OrderId = client.OrderId;
+                using (var _DbContext = new EntityDataContext(_connection))
+                {
+                    var result = _DbContext.ContactClient.Add(ContactClient);
+                    _DbContext.SaveChanges();
+                    return ContactClient.Id;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("Insert - ClientDAL: " + ex);
+                return -1;
+            }
+        }
+
     }
 }

@@ -5,7 +5,7 @@ namespace Utilities.Contants
     public enum SourcePaymentType
     {
         b2b = 0,
-        b2c,
+        b2c=1,
         cms 
     }
     public enum SourceBoongkingType

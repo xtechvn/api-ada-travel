@@ -66,7 +66,7 @@ namespace DAL.Orders
             {
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
-                    return _DbContext.Order.AsNoTracking().FirstOrDefault(s => s.OrderNo.ToLower().Trim()== order_no.ToLower().Trim());
+                    return _DbContext.Order.AsNoTracking().FirstOrDefault(s => s.OrderNo.ToLower().Trim() == order_no.ToLower().Trim());
                 }
             }
             catch (Exception ex)
@@ -618,10 +618,10 @@ namespace DAL.Orders
                                                                           child = (int)a.Child,
                                                                           old = (int)a.Old,
                                                                           BookingTicketId = a.Id,
-                                                                          Name=b.Name,
+                                                                          Name = b.Name,
                                                                       }).ToList();
 
-                                        
+
                                         item.VinWonderBookingTicket = VinWonderBookingTicket;
                                     }
                                 }
@@ -1113,9 +1113,9 @@ namespace DAL.Orders
                                     PaymentStatusName = j.Description,
                                     VoucherId = Convert.ToInt32(a.VoucherId),
                                     Price = Convert.ToInt32(a.Price),
-                                    Amount=(double)a.Amount,
+                                    Amount = (double)a.Amount,
                                     Discount = (int)a.Discount,
-                                    Passenger= listPassenger,
+                                    Passenger = listPassenger,
                                 }).OrderByDescending(x => x.CreateTime).ToList();
                     var VinWonderBooking = (from a in _DbContext.VinWonderBooking.AsNoTracking().Where(s => s.OrderId == order_id)
                                             select new vinWonderdetail
@@ -1124,24 +1124,24 @@ namespace DAL.Orders
                                                 BookingId = a.Id,
                                                 SiteName = a.SiteName,
                                             }).FirstOrDefault();
-                    if (VinWonderBooking != null )
+                    if (VinWonderBooking != null)
                     {
-                       
-                            var VinWonderBookingTicket = (from a in _DbContext.VinWonderBookingTicket.AsNoTracking().Where(s => s.BookingId == VinWonderBooking.BookingId)
-                                                          join b in _DbContext.VinWonderBookingTicketDetail.AsNoTracking() on  a.Id equals b.BookingTicketId
-                                                          select new VinWonderBookingTicketViewModel
-                                                          {
-                                                              DateUsed = Convert.ToDateTime(a.DateUsed).ToString("dd/MM/yyyy"),
-                                                              adt = (int)a.Adt,
-                                                              child = (int)a.Child,
-                                                              old = (int)a.Old,
-                                                              BookingTicketId = a.Id,
-                                                              Name=b.Name
-                                                          }).ToList();
+
+                        var VinWonderBookingTicket = (from a in _DbContext.VinWonderBookingTicket.AsNoTracking().Where(s => s.BookingId == VinWonderBooking.BookingId)
+                                                      join b in _DbContext.VinWonderBookingTicketDetail.AsNoTracking() on a.Id equals b.BookingTicketId
+                                                      select new VinWonderBookingTicketViewModel
+                                                      {
+                                                          DateUsed = Convert.ToDateTime(a.DateUsed).ToString("dd/MM/yyyy"),
+                                                          adt = (int)a.Adt,
+                                                          child = (int)a.Child,
+                                                          old = (int)a.Old,
+                                                          BookingTicketId = a.Id,
+                                                          Name = b.Name
+                                                      }).ToList();
 
 
                         VinWonderBooking.VinWonderBookingTicket = VinWonderBookingTicket;
-                        
+
                     }
                     var Listdata = (from a in data
                                     join b in _DbContext.Client.AsNoTracking() on a.ClientId equals b.Id
@@ -1171,7 +1171,7 @@ namespace DAL.Orders
                                         Price = a.Price,
                                         Discount = a.Discount,
                                         vinWonderdetail = VinWonderBooking,
-                                        BookingId=f.AdavigoBookingId,
+                                        BookingId = f.AdavigoBookingId,
                                         is_lock = a.OrderStatus == (byte?)OrderStatus.CANCEL ? 1 : 0,
                                     }).ToList();
                     return Listdata;
@@ -1264,7 +1264,7 @@ namespace DAL.Orders
             }
             return null;
         }
-        public async Task<Payment> GetOrderPayment(long orderId,double amount,DateTime receiveTime)
+        public async Task<Payment> GetOrderPayment(long orderId, double amount, DateTime receiveTime)
         {
             try
             {
@@ -1278,8 +1278,8 @@ namespace DAL.Orders
                 LogHelper.InsertLogTelegram("GetPayment - HotelBookingDAL: " + ex);
             }
             return null;
-        } 
-        public async Task<Payment> GetDepositPayment(long orderId,double amount,DateTime receiveTime)
+        }
+        public async Task<Payment> GetDepositPayment(long orderId, double amount, DateTime receiveTime)
         {
             try
             {
@@ -1371,8 +1371,8 @@ namespace DAL.Orders
                 SqlParameter[] objParam = new SqlParameter[24];
 
 
-                objParam[0] = new SqlParameter("@CreateTime", DBNull.Value) ;
-                objParam[1] = new SqlParameter("@ToDateTime", DBNull.Value) ;
+                objParam[0] = new SqlParameter("@CreateTime", DBNull.Value);
+                objParam[1] = new SqlParameter("@ToDateTime", DBNull.Value);
                 objParam[2] = new SqlParameter("@SysTemType", searchModel.SysTemType);
                 objParam[3] = new SqlParameter("@OrderNo", searchModel.OrderNo);
                 objParam[4] = new SqlParameter("@Note", searchModel.Note);
@@ -1458,7 +1458,7 @@ namespace DAL.Orders
 
                 }
                 objParam[23] = new SqlParameter("@UtmMedium", searchModel.UtmMedium);
-                
+
                 return _DbWorker.GetDataTable(proc, objParam);
             }
             catch (Exception ex)
@@ -1467,7 +1467,7 @@ namespace DAL.Orders
             }
             return null;
         }
-        public DataTable GetListOrder(long clientId, DateTime fromDate, DateTime toDate,string OrderStatus="")
+        public DataTable GetListOrder(long clientId, DateTime fromDate, DateTime toDate, string OrderStatus = "")
         {
             try
             {
@@ -1476,7 +1476,7 @@ namespace DAL.Orders
                 objParam[1] = new SqlParameter("@StartDateTo", DBNull.Value);
                 objParam[2] = new SqlParameter("@EndDateFrom", DBNull.Value);
                 objParam[3] = new SqlParameter("@EndDateTo", DBNull.Value);
-                if (fromDate == null || fromDate<new DateTime(2020,01,01))
+                if (fromDate == null || fromDate < new DateTime(2020, 01, 01))
                 {
                     objParam[4] = new SqlParameter("@CreateDateFrom", DBNull.Value);
 
@@ -1499,7 +1499,7 @@ namespace DAL.Orders
                 objParam[6] = new SqlParameter("@ClientId", clientId);
                 objParam[7] = new SqlParameter("@SupplierId", DBNull.Value);
                 objParam[8] = new SqlParameter("@OrderId", DBNull.Value);
-                if (OrderStatus == null || OrderStatus.Trim()=="")
+                if (OrderStatus == null || OrderStatus.Trim() == "")
                 {
                     objParam[9] = new SqlParameter("@OrderStatus", DBNull.Value);
 
@@ -1519,6 +1519,75 @@ namespace DAL.Orders
                 LogHelper.InsertLogTelegram("GetOrderListByClientId - DebtStatisticDAL: " + ex);
             }
             return null;
+        }
+        public static int CreateOrder(Order order_info)
+        {
+            try
+            {
+                SqlParameter[] objParam_order = new SqlParameter[34];
+                objParam_order[0] = new SqlParameter("@OrderNo", order_info.OrderNo);
+                objParam_order[1] = new SqlParameter("@ServiceType", order_info.ServiceType);
+                objParam_order[2] = new SqlParameter("@Amount", order_info.Amount);
+                objParam_order[3] = new SqlParameter("@PaymentStatus", order_info.PaymentStatus);
+                objParam_order[4] = new SqlParameter("@CreateTime", order_info.CreateTime);
+                objParam_order[5] = new SqlParameter("@ClientId", order_info.ClientId);
+                objParam_order[6] = new SqlParameter("@ContactClientId", order_info.ContactClientId);
+                objParam_order[7] = new SqlParameter("@OrderStatus", order_info.OrderStatus);
+                objParam_order[8] = new SqlParameter("@ContractId", DBNull.Value);
+                objParam_order[9] = new SqlParameter("@SmsContent", order_info.SmsContent);
+                objParam_order[10] = new SqlParameter("@PaymentType", order_info.PaymentType);
+                objParam_order[11] = new SqlParameter("@BankCode", order_info.BankCode);
+                if (order_info.PaymentDate != null)
+                {
+                    objParam_order[12] = new SqlParameter("@PaymentDate", order_info.PaymentDate);
+                }
+                else
+                {
+                    objParam_order[12] = new SqlParameter("@PaymentDate", DBNull.Value);
+                }
+
+                if (order_info.PaymentNo != null)
+                {
+                    objParam_order[13] = new SqlParameter("@PaymentNo", order_info.PaymentNo);
+                }
+                else
+                {
+                    objParam_order[13] = new SqlParameter("@PaymentNo", DBNull.Value);
+                }
+                
+                objParam_order[14] = new SqlParameter("@ColorCode", DBNull.Value);
+                objParam_order[15] = new SqlParameter("@Discount", order_info.Discount);
+                objParam_order[16] = new SqlParameter("@Profit", order_info.Profit);
+                objParam_order[17] = new SqlParameter("@ExpriryDate", order_info.ExpriryDate);
+                objParam_order[18] = new SqlParameter("@AccountClientId", order_info.AccountClientId);
+                objParam_order[19] = new SqlParameter("@StartDate", order_info.StartDate);
+                objParam_order[20] = new SqlParameter("@EndDate", order_info.EndDate);
+                objParam_order[21] = new SqlParameter("@ProductService", order_info.ProductService);
+                objParam_order[22] = new SqlParameter("@SystemType", order_info.SystemType);
+                objParam_order[23] = new SqlParameter("@Note", order_info.Note);
+                objParam_order[24] = new SqlParameter("@UtmSource", order_info.UtmSource);
+                objParam_order[25] = new SqlParameter("@SalerId", order_info.SalerId);
+                objParam_order[26] = new SqlParameter("@SalerGroupId", order_info.SalerGroupId);
+                objParam_order[27] = new SqlParameter("@CreatedBy", order_info.CreatedBy);
+                objParam_order[28] = new SqlParameter("@Label", order_info.Label);
+                objParam_order[29] = new SqlParameter("@IsFinishPayment", DBNull.Value);
+                objParam_order[30] = new SqlParameter("@VoucherId", DBNull.Value);
+                objParam_order[31] = new SqlParameter("@PercentDecrease", order_info.PercentDecrease);
+                objParam_order[32] = new SqlParameter("@Price", order_info.Price);
+                objParam_order[33] = new SqlParameter("@SupplierId", order_info.SupplierId);
+
+
+                var id = _DbWorker.ExecuteNonQuery(StoreProceduresName.SP_InsertOrder, objParam_order);
+                order_info.OrderId = id;
+                return id;
+            }
+            catch (Exception ex)
+            {
+
+                LogHelper.InsertLogTelegram("CreateOrder - DebtStatisticDAL: " + ex);
+
+                return -1;
+            }
         }
     }
 

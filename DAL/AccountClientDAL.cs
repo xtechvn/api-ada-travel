@@ -430,6 +430,23 @@ namespace DAL
                 return null;
             }
         }
+        public long Insert(AccountClient client)
+        {
+            try
+            {
+                using (var _DbContext = new EntityDataContext(_connection))
+                {
+                    var result = _DbContext.AccountClient.Add(client);
+                    _DbContext.SaveChanges();
+                    return client.Id;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("Insert - ClientDAL: " + ex);
+                return -1;
+            }
+        }
     }
 
 }

@@ -12,6 +12,8 @@ namespace DAL.StoreProcedure
         #endregion
         public const string ARTICLE_SEARCH = "Article_Search";
         public const string sp_getLocationServiceDetailByCode = "sp_getLocationServiceDetailByCode";
+        public const string CreateContactClients = "SP_CreateContactClients";
+        public const string CreatePassengers = "SP_CreatePassengers";
 
     }
 }
