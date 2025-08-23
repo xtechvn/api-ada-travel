@@ -308,6 +308,32 @@ namespace DAL.Fly
                 return -1;
             }
         }
+        public static int InsertFlyBookingExtraPackages(ENTITIES.Models.FlyBookingExtraPackages model)
+        {
+            try
+            {
 
+                SqlParameter[] objParam_order = new SqlParameter[12];
+                objParam_order[0] = new SqlParameter("@PackageId", model.PackageId);
+                objParam_order[1] = new SqlParameter("@PackageCode", model.PackageCode);
+                objParam_order[2] = new SqlParameter("@GroupFlyBookingId", model.GroupFlyBookingId);
+                objParam_order[3] = new SqlParameter("@Amount", model.Amount);
+                objParam_order[4] = new SqlParameter("@BasePrice", model.BasePrice);
+                objParam_order[5] = new SqlParameter("@Quantity", model.Quantity);
+                objParam_order[6] = new SqlParameter("@Price", model.Price);
+                objParam_order[7] = new SqlParameter("@Profit", model.Profit);
+                objParam_order[8] = new SqlParameter("@CreatedBy", model.CreatedBy);
+                objParam_order[9] = new SqlParameter("@CreatedDate", model.CreatedDate);
+                objParam_order[10] = new SqlParameter("@UpdatedBy", model.UpdatedBy);
+                objParam_order[11] = new SqlParameter("@UpdatedDate", model.UpdatedDate);
+                var id = _DbWorker.ExecuteNonQuery("SP_InsertFlyBookingExtraPackages", objParam_order);
+                return id;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("UpdateFlyBookingDetail - FlyBookingDetailDAL: " + ex);
+                return -1;
+            }
+        }
     }
 }

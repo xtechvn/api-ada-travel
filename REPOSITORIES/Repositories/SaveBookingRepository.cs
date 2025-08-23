@@ -1,23 +1,25 @@
-﻿using DAL.Fly;
-using DAL.Orders;
+﻿using Caching.Elasticsearch;
 using DAL;
+using DAL.Clients;
+using DAL.Fly;
+using DAL.MongoDB.Flight;
+using DAL.Orders;
+using Entities.ConfigModels;
+using ENTITIES.Models;
+using ENTITIES.ViewModels.BookingFly;
+using ENTITIES.ViewModels.Order;
+using Microsoft.Extensions.Options;
+using Nest;
 using REPOSITORIES.IRepositories;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using System.Text;
-using DAL.MongoDB.Flight;
-using Entities.ConfigModels;
-using Microsoft.Extensions.Options;
-using ENTITIES.ViewModels.BookingFly;
+using System.Threading.Tasks;
+using Telegram.Bot.Types.Payments;
 using Utilities;
 using Utilities.Contants;
-using System.Threading.Tasks;
-using Nest;
-using ENTITIES.Models;
-using Caching.Elasticsearch;
-using Telegram.Bot.Types.Payments;
-using ENTITIES.ViewModels.Order;
-using DAL.Clients;
 using static ENTITIES.ViewModels.B2C.AccountB2CViewModel;
 using static Utilities.Contants.UserConstant;
 
@@ -154,10 +156,12 @@ namespace REPOSITORIES.Repositories
 
                 var order_id = OrderDAL.CreateOrder(model_order);
                 if (order_id < 0) return -1;
+                List<long> group_fly_id = new List<long>();
+                var list_FlyBookingDetail = new List<FlyBookingDetailViewModel>();
                 if (data.bookings != null && data.bookings.Count > 0)
                 {
                     var dem = 0;
-                    List<long> group_fly_id = new List<long>();
+
                     foreach (var item in data.bookings)
                     {
                         foreach (var routeInfos in item.routeInfos)
@@ -190,31 +194,31 @@ namespace REPOSITORIES.Repositories
                                 FareAdt = item.fareData.fareADT,
                                 TaxAdt = item.fareData.taxADT,
                                 FeeAdt = item.fareData.vatADT,
-                                FareChd = item.fareData.fareADT,
+                                FareChd = item.fareData.fareCHD,
                                 TaxChd = item.fareData.taxCHD,
                                 FeeChd = item.fareData.vatCHD,
                                 FareInf = item.fareData.fareINF,
                                 TaxInf = item.fareData.taxINF,
-                                FeeInf = item.fareData.fareADT,                        
+                                FeeInf = item.fareData.fareINF,
                                 ServiceFeeAdt = 0,
                                 ServiceFeeChd = 0,
                                 ServiceFeeInf = 0,
-                                AmountAdt = 0,
-                                AmountChd = 0,
-                                AmountInf = 0,
-                                TotalDiscount=0,
-                                TotalBaggageFee=0,
-                                TotalCommission=0,
-                                Profit=0,
-                                ProfitAdt=0,
-                                ProfitChd=0,
-                                ProfitInf=0,
-                                BookingId=0,
-                                PriceAdt=0,
+                                AmountAdt = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult,
+                                AmountChd = (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild,
+                                AmountInf = (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant,
+                                TotalDiscount = 0,
+                                TotalBaggageFee = 0,
+                                TotalCommission = 0,
+                                Profit = 0,
+                                ProfitAdt = 0,
+                                ProfitChd = 0,
+                                ProfitInf = 0,
+                                BookingId = 0,
+                                PriceAdt = 0,
                                 PriceChd = 0,
                                 PriceInf = 0,
-                                UpdatedBy=2052,
-                                SalerId=2052,
+                                UpdatedBy = 2052,
+                                SalerId = 2052,
                                 Price = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
 
                                 Amount = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
@@ -228,7 +232,7 @@ namespace REPOSITORIES.Repositories
                                 FlyBookingDetail.SupplierId = airline[0].SupplierId;
                             }
                             var data_create_fly_book_detail = FlyBookingDetailDAL.CreateFlyBookingDetail(FlyBookingDetail);
-                           
+                            list_FlyBookingDetail.Add(FlyBookingDetail);
                             group_fly_id.Add(FlyBookingDetail.Id);
                             //FlySegment
                             var seg = new FlyingSegmentViewModel
@@ -244,17 +248,34 @@ namespace REPOSITORIES.Repositories
                                 OperatingAirline = routeInfos.airCraft,
                                 HandBaggage = routeInfos.handBaggage.description,
                                 Duration = ConvertToMinutes(routeInfos.flightTime),
-                                Plane= routeInfos.flightNo,
+                                Plane = routeInfos.flightNo,
 
                             };
                             var data_create_fly_segment = FlightSegmentDAL.CreateFlySegment(seg);
-                            FlyBookingDetail.GroupBookingId = string.Join(",", group_fly_id);
-                            //FlyBookingDetail.Note = order_info.additional.note_go + "\n" + order_info.additional.note_back;
-                            var id = FlyBookingDetailDAL.UpdateFlyBookingDetail(FlyBookingDetail);
+
                             dem++;
                         }
 
+
                     }
+                    foreach (var fly_id in group_fly_id)
+                    {
+                        var FlyBooking_Detail = list_FlyBookingDetail.FirstOrDefault(s => s.Id == fly_id);
+                        FlyBooking_Detail.GroupBookingId = string.Join(",", group_fly_id);
+                        //if (FlyBooking_Detail.AdultNumber > 0) {
+                        //    FlyBooking_Detail.AdultNumber = list_FlyBookingDetail.Count();
+                        //        }
+                        //if (FlyBooking_Detail.ChildNumber > 0) {
+                        //    FlyBooking_Detail.ChildNumber = list_FlyBookingDetail.Count();
+                        //        }
+                        //if (FlyBooking_Detail.InfantNumber > 0) {
+                        //    FlyBooking_Detail.InfantNumber = list_FlyBookingDetail.Count();
+                            
+                        //        }
+                     
+                        var id = FlyBookingDetailDAL.UpdateFlyBookingDetail(FlyBooking_Detail);
+                        
+                    }            
                     //-- Passengers:
                     foreach (var item in data.passengers)
                     {
@@ -265,6 +286,28 @@ namespace REPOSITORIES.Repositories
                         PassengerViewModel.OrderId = order_id;
                         PassengerViewModel.GroupBookingId = string.Join(",", group_fly_id);
                         var passenger = PassengerDAL.CreatePassengers(PassengerViewModel);
+                         if(item.baggages!= null && item.baggages.Count > 0)
+                        {
+                            foreach (var baggage in item.baggages)
+                            {
+                                var ExtraPackages = new ENTITIES.Models.FlyBookingExtraPackages();
+                                ExtraPackages.GroupFlyBookingId = string.Join(",", group_fly_id); 
+                                ExtraPackages.PackageId = baggage.weight; 
+                                ExtraPackages.PackageCode = baggage.weight +"("+ baggage.segment + ")"; 
+                                ExtraPackages.Price = Convert.ToInt32( baggage.price); 
+                                ExtraPackages.Amount = Convert.ToInt32( baggage.price); 
+                                ExtraPackages.BasePrice = Convert.ToInt32( baggage.price); 
+                                ExtraPackages.Profit = 0; 
+                                ExtraPackages.Quantity = 1; 
+                                ExtraPackages.CreatedBy = 2052; 
+                                ExtraPackages.UpdatedBy = 2052; 
+                                ExtraPackages.CreatedDate = DateTime.Now;
+                                ExtraPackages.UpdatedDate = DateTime.Now; 
+                               
+                                FlyBookingDetailDAL.InsertFlyBookingExtraPackages(ExtraPackages);
+                            }
+                        }
+                        
                     }
                 }
 
