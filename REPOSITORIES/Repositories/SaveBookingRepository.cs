@@ -235,23 +235,27 @@ namespace REPOSITORIES.Repositories
                             list_FlyBookingDetail.Add(FlyBookingDetail);
                             group_fly_id.Add(FlyBookingDetail.Id);
                             //FlySegment
-                            var seg = new FlyingSegmentViewModel
-                            {
-                                FlyBookingId = FlyBookingDetail.Id,
-                                FlightNumber = routeInfos.flightNo,
-                                StartPoint = routeInfos.from,
-                                EndPoint = routeInfos.to,
-                                StartTime = DateTime.ParseExact(routeInfos.departDate + " " + routeInfos.timeFrom, "dd-MM-yyyy HH:mm", null),
-                                EndTime = DateTime.ParseExact(routeInfos.departDate + " " + routeInfos.timeTo, "dd-MM-yyyy HH:mm", null),
-                                StopTime = ConvertToMinutes(routeInfos.flightTime),
-                                Class = routeInfos.Class,
-                                OperatingAirline = routeInfos.airCraft,
-                                HandBaggage = routeInfos.handBaggage.description,
-                                Duration = ConvertToMinutes(routeInfos.flightTime),
-                                Plane = routeInfos.flightNo,
+                            if(routeInfos.handBaggage!= null){
+                                var seg = new FlyingSegmentViewModel
+                                {
+                                    FlyBookingId = FlyBookingDetail.Id,
+                                    FlightNumber = routeInfos.flightNo,
+                                    StartPoint = routeInfos.from,
+                                    EndPoint = routeInfos.to,
+                                    StartTime = DateTime.ParseExact(routeInfos.departDate + " " + routeInfos.timeFrom, "dd-MM-yyyy HH:mm", null),
+                                    EndTime = DateTime.ParseExact(routeInfos.departDate + " " + routeInfos.timeTo, "dd-MM-yyyy HH:mm", null),
+                                    StopTime = ConvertToMinutes(routeInfos.flightTime),
+                                    Class = routeInfos.Class,
+                                    OperatingAirline = routeInfos.airCraft,
+                                    HandBaggage = routeInfos.handBaggage.description,
+                                    Duration = ConvertToMinutes(routeInfos.flightTime),
+                                    Plane = routeInfos.flightNo,
 
-                            };
-                            var data_create_fly_segment = FlightSegmentDAL.CreateFlySegment(seg);
+                                };
+                                var data_create_fly_segment = FlightSegmentDAL.CreateFlySegment(seg);
+
+                            }
+                           
 
                             dem++;
                         }

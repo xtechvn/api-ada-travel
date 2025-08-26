@@ -380,7 +380,7 @@ namespace API_CORE.Controllers.BOOKING.Fly
             return Ok(new
             {
                 status = (int)ResponseType.ERROR,
-                msg = "thêm mới thông thành công!"
+                msg = "thêm mới không thành công!"
             });
         }
     }
