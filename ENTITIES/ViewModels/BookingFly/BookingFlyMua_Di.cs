@@ -105,6 +105,7 @@ namespace ENTITIES.ViewModels.BookingFly
         public int vatINF { get; set; }
         public int otherFee { get; set; }
         public int totalPrice { get; set; }
+        public int issueFee { get; set; }
 
     }
 

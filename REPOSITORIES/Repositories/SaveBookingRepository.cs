@@ -102,7 +102,7 @@ namespace REPOSITORIES.Repositories
                 model_order.OrderNo = await identifierServiceRepository.buildOrderNo((int)ServicesType.FlyingTicket, (int)SourcePaymentType.b2c);
                 model_order.CreateTime = DateTime.Now;
                 model_order.Amount = Convert.ToInt32(data.order.totalPrice.Replace(".", string.Empty));
-                model_order.Profit = 55000;
+                model_order.Profit = data.bookings.Sum(s=>s.fareData.issueFee)* data.order.numberOfAdult + data.bookings.Sum(s => s.fareData.issueFee) * data.order.numberOfChild;
                 model_order.Price = model_order.Amount - model_order.Profit;
                 model_order.OrderStatus = (byte?)OrderStatus.CREATED_ORDER;
                 model_order.ProductService = "3";
@@ -221,7 +221,7 @@ namespace REPOSITORIES.Repositories
                                 SalerId = 2052,
                                 Price = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
 
-                                Amount = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
+                                Amount = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT + item.fareData.issueFee) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD + item.fareData.issueFee) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
                                 TotalNetPrice = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
 
 
