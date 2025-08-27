@@ -37,6 +37,10 @@ namespace ENTITIES.ViewModels.BookingFly
     }
     public class passengers
     {
+        public string PaxType { get; set; }
+        public string Title { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string paxName { get; set; }
         public string birthday { get; set; }
         public string loyalty { get; set; }

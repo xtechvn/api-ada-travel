@@ -284,8 +284,8 @@ namespace REPOSITORIES.Repositories
                     foreach (var item in data.passengers)
                     {
                         var PassengerViewModel = new PassengerViewModel();
-                        PassengerViewModel.Name = item.paxName;
-                        PassengerViewModel.PersonType = item.type;
+                        PassengerViewModel.Name = item.FirstName + " "+item.LastName;
+                        PassengerViewModel.PersonType = item.PaxType;
                         PassengerViewModel.Gender = false;
                         PassengerViewModel.OrderId = order_id;
                         PassengerViewModel.GroupBookingId = string.Join(",", group_fly_id);
