@@ -37,6 +37,8 @@ namespace REPOSITORIES.Repositories
         private readonly ContactClientDAL ContactClientDAL;
         private readonly AccountClientDAL AccountClientDAL;
         private readonly IdentifierServiceRepository identifierServiceRepository;
+        private readonly UserDAL userDAL;
+        private int id_bot = 2052;
         public SaveBookingRepository(IOptions<DataBaseConfig> _dataBaseConfig)
         {
             dataBaseConfig = _dataBaseConfig;
@@ -47,6 +49,7 @@ namespace REPOSITORIES.Repositories
             AirlinesDAL = new AirlinesDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             ContactClientDAL = new ContactClientDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             AccountClientDAL = new AccountClientDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
+            userDAL = new UserDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             identifierServiceRepository = new IdentifierServiceRepository(dataBaseConfig);
         }
         public async Task<long> saveBookingAda(BookingFlyMua_Di data)
@@ -115,9 +118,9 @@ namespace REPOSITORIES.Repositories
                 model_order.ExpriryDate = DateTime.Now;
                 model_order.AccountClientId = Acclentid;
                 model_order.SystemType = 2;
-                model_order.CreatedBy = 2052;
-                model_order.SalerId = 2052;
-                model_order.UserUpdateId = 2052;
+                model_order.CreatedBy = id_bot;
+                model_order.SalerId = id_bot;
+                model_order.UserUpdateId = id_bot;
                 model_order.PercentDecrease = 0;
                 model_order.SalerGroupId = "";
                 model_order.Note = "";
@@ -158,6 +161,7 @@ namespace REPOSITORIES.Repositories
                 if (order_id < 0) return -1;
                 List<long> group_fly_id = new List<long>();
                 var list_FlyBookingDetail = new List<FlyBookingDetailViewModel>();
+                var user = userDAL.GetHeadOfDepartmentByRoleID((int)RoleType.TPDHVe);
                 if (data.bookings != null && data.bookings.Count > 0)
                 {
                     var dem = 0;
@@ -191,10 +195,10 @@ namespace REPOSITORIES.Repositories
                                 AdultNumber = data.order.numberOfAdult,
                                 ChildNumber = data.order.numberOfChild,
                                 InfantNumber = data.order.numberOfInfant,
-                                FareAdt = item.fareData.fareADT,
+                                FareAdt = item.fareData.fareADT- item.fareData.issueFee,
                                 TaxAdt = item.fareData.taxADT,
                                 FeeAdt = item.fareData.vatADT,
-                                FareChd = item.fareData.fareCHD,
+                                FareChd = item.fareData.fareCHD - item.fareData.issueFee,
                                 TaxChd = item.fareData.taxCHD,
                                 FeeChd = item.fareData.vatCHD,
                                 FareInf = item.fareData.fareINF,
@@ -209,7 +213,7 @@ namespace REPOSITORIES.Repositories
                                 TotalDiscount = 0,
                                 TotalBaggageFee = 0,
                                 TotalCommission = 0,
-                                Profit = 0,
+                                Profit = item.fareData.issueFee,
                                 ProfitAdt = 0,
                                 ProfitChd = 0,
                                 ProfitInf = 0,
@@ -217,11 +221,11 @@ namespace REPOSITORIES.Repositories
                                 PriceAdt = 0,
                                 PriceChd = 0,
                                 PriceInf = 0,
-                                UpdatedBy = 2052,
-                                SalerId = 2052,
+                                UpdatedBy = id_bot,
+                                SalerId = user.Id,
                                 Price = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
 
-                                Amount = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT + item.fareData.issueFee) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD + item.fareData.issueFee) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
+                                Amount = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT ) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD ) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
                                 TotalNetPrice = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
 
 
