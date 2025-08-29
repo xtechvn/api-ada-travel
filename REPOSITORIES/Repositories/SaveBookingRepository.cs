@@ -150,11 +150,11 @@ namespace REPOSITORIES.Repositories
                 }
                 if (data.bookings[0].routeInfos.Count > 1)
                 {
-                    model_order.Label = "Vé khứ hồi " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
+                    model_order.Label = data.order.orderCode + "- Vé khứ hồi " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
                 }
                 else
                 {
-                    model_order.Label = "Vé 1 chiều " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
+                    model_order.Label = data.order.orderCode + "- Vé 1 chiều " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
                 }
 
                 var order_id = OrderDAL.CreateOrder(model_order);
