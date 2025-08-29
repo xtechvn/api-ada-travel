@@ -352,21 +352,26 @@ namespace API_CORE.Controllers.BOOKING.Fly
                 {
                     LogHelper.InsertLogTelegram("token:" + token);
                     var model = JsonConvert.DeserializeObject<BookingFlyMua_Di>(objParr[0].ToString());
-                    var data = await saveBookingRepository.saveBookingAda(model);
-                    if (data > 0)
+                    if (model.order.success == true)
                     {
-                        var order_detail = orderRepository.getDetail(data);
-                        _workQueueClient.SyncES((long)order_detail.ClientId, configuration["DataBaseConfig:Elastic:SP:sp_GetClient"], configuration["DataBaseConfig:Elastic:Index:Client"], ProjectType.ADAVIGO_CMS);
-                        _workQueueClient.SyncES(data, configuration["DataBaseConfig:Elastic:SP:sp_Order"], configuration["DataBaseConfig:Elastic:Index:Order"], ProjectType.ADAVIGO_CMS);
-
-
-                        return Ok(new
+                        var data = await saveBookingRepository.saveBookingAda(model);
+                        if (data > 0)
                         {
-                            status = (int)ResponseType.SUCCESS,
-                            msg = "thêm mới thành công!",
-                            data = data
-                        });
+                            var order_detail = orderRepository.getDetail(data);
+                            _workQueueClient.SyncES((long)order_detail.ClientId, configuration["DataBaseConfig:Elastic:SP:sp_GetClient"], configuration["DataBaseConfig:Elastic:Index:Client"], ProjectType.ADAVIGO_CMS);
+                            _workQueueClient.SyncES(data, configuration["DataBaseConfig:Elastic:SP:sp_Order"], configuration["DataBaseConfig:Elastic:Index:Order"], ProjectType.ADAVIGO_CMS);
+
+
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.SUCCESS,
+                                msg = "thêm mới thành công!",
+                                data = data
+                            });
+                        }
+
                     }
+                
 
                 }
                 else
