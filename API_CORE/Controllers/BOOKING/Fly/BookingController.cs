@@ -30,14 +30,16 @@ namespace API_CORE.Controllers.BOOKING.Fly
         private IOrderRepository orderRepository;
         private IAccountRepository accountRepository;
         private ISaveBookingRepository saveBookingRepository;
+        private readonly WorkQueueClient _workQueueClient;
         public BookingController(IConfiguration _configuration, IFlyBookingMongoRepository _bookingRepository, IOrderRepository _ordersRepository, IAccountRepository _accountRepository, ISaveBookingRepository _saveBookingRepository)
         {
             configuration = _configuration;
             bookingRepository = _bookingRepository;
             orderRepository = _ordersRepository;
-            accountRepository=_accountRepository;
+            accountRepository = _accountRepository;
             saveBookingRepository = _saveBookingRepository;
-    }
+            _workQueueClient = new WorkQueueClient(configuration);
+        }
 
         /// <summary>
         /// Dùng để lưu booking ngoài frontend B2C
@@ -102,8 +104,8 @@ namespace API_CORE.Controllers.BOOKING.Fly
 
                     string session = (string)booking_data.SelectToken("ListBooking[0].Session");
                     var list_session_id = Array.ConvertAll(session.Split(','), s => (s).ToString());
-                    var datalist =await bookingRepository.getBookingBySessionId(list_session_id,data.account_client_id);
-                    if (datalist.Count != 0) 
+                    var datalist = await bookingRepository.getBookingBySessionId(list_session_id, data.account_client_id);
+                    if (datalist.Count != 0)
                     {
                         var delete = bookingRepository.DeleteBookingBySessionId(data);
                         var create = bookingRepository.saveBooking(data);
@@ -150,7 +152,7 @@ namespace API_CORE.Controllers.BOOKING.Fly
                 }
                 else
                 {
-                  
+
                     return Ok(new
                     {
                         status = (int)ResponseType.ERROR,
@@ -161,13 +163,13 @@ namespace API_CORE.Controllers.BOOKING.Fly
             }
             catch (Exception ex)
             {
-               
-                LogHelper.InsertLogTelegram("saveBooking - BookingControl: " + ex + ";Token: "+token);
+
+                LogHelper.InsertLogTelegram("saveBooking - BookingControl: " + ex + ";Token: " + token);
                 return Ok(new
                 {
                     status = (int)ResponseType.ERROR,
                     msg = "ERROR!",
-                    
+
                 });
             }
         }
@@ -175,7 +177,7 @@ namespace API_CORE.Controllers.BOOKING.Fly
         [HttpPost("flight/get-booking-by-booking-id.json")]
         public async Task<ActionResult> getBookingByBookingId(string token)
         {
-           
+
             try
             {
                 JArray objParr = null;
@@ -229,7 +231,7 @@ namespace API_CORE.Controllers.BOOKING.Fly
             }
             catch (Exception ex)
             {
-                LogHelper.InsertLogTelegram("getBookingByBookingId - BookingControl: token "+token+"\n " + ex);
+                LogHelper.InsertLogTelegram("getBookingByBookingId - BookingControl: token " + token + "\n " + ex);
                 return Ok(new
                 {
                     status = (int)ResponseType.ERROR,
@@ -239,9 +241,9 @@ namespace API_CORE.Controllers.BOOKING.Fly
         }
 
         [HttpPost("flight/get-booking-by-session-id.json")]
-        public async Task<ActionResult> getBookingBySessionId(string token, int source_booking_type )
+        public async Task<ActionResult> getBookingBySessionId(string token, int source_booking_type)
         {
-       
+
             try
             {
                 JArray objParr = null;
@@ -259,11 +261,11 @@ namespace API_CORE.Controllers.BOOKING.Fly
                 {
                     string session_id = objParr[0]["session_id"].ToString();
                     var list_session_id = Array.ConvertAll(session_id.Split(','), s => (s).ToString());
-                   
+
                     int account_client_id = Convert.ToInt32(objParr[0]["client_id"]);
-                   // var account_client = await accountRepository.GetByClientId(account_client_id);
-                   // var AccountclientId = account_client != null ? account_client.Id : account_client_id;
-                    if (source_booking_type !=(int) SourceBoongkingType.Sql)
+                    // var account_client = await accountRepository.GetByClientId(account_client_id);
+                    // var AccountclientId = account_client != null ? account_client.Id : account_client_id;
+                    if (source_booking_type != (int)SourceBoongkingType.Sql)
                     {
                         var result = await bookingRepository.getBookingBySessionId(list_session_id, account_client_id);
                         if (result.Count > 0 && result != null)
@@ -310,9 +312,9 @@ namespace API_CORE.Controllers.BOOKING.Fly
                             });
                         }
                     }
-                    
 
-                   
+
+
                 }
                 else
                 {
@@ -348,16 +350,24 @@ namespace API_CORE.Controllers.BOOKING.Fly
 
                 if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
                 {
-                    LogHelper.InsertLogTelegram("token:" + token );
+                    LogHelper.InsertLogTelegram("token:" + token);
                     var model = JsonConvert.DeserializeObject<BookingFlyMua_Di>(objParr[0].ToString());
                     var data = await saveBookingRepository.saveBookingAda(model);
-                        if(data > 0)
+                    if (data > 0)
+                    {
+                        var order_detail = orderRepository.getDetail(data);
+                        _workQueueClient.SyncES((long)order_detail.ClientId, configuration["DataBaseConfig:Elastic:SP:sp_GetClient"], configuration["DataBaseConfig:Elastic:Index:Client"], ProjectType.ADAVIGO_CMS);
+                        _workQueueClient.SyncES(data, configuration["DataBaseConfig:Elastic:SP:sp_Order"], configuration["DataBaseConfig:Elastic:Index:Order"], ProjectType.ADAVIGO_CMS);
+
+
                         return Ok(new
-                          {
-                              status = (int)ResponseType.SUCCESS,
-                              msg = "thêm mới thành công!",
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "thêm mới thành công!",
                             data = data
                         });
+                    }
+
                 }
                 else
                 {

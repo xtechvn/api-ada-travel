@@ -119,7 +119,7 @@ namespace REPOSITORIES.Repositories
                 model_order.AccountClientId = Acclentid;
                 model_order.SystemType = 2;
                 model_order.CreatedBy = id_bot;
-                model_order.SalerId = id_bot;
+                model_order.SalerId = -1;
                 model_order.UserUpdateId = id_bot;
                 model_order.PercentDecrease = 0;
                 model_order.SalerGroupId = "";
