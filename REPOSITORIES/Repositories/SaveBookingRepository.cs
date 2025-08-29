@@ -105,7 +105,7 @@ namespace REPOSITORIES.Repositories
                 model_order.OrderNo = await identifierServiceRepository.buildOrderNo((int)ServicesType.FlyingTicket, (int)SourcePaymentType.b2c);
                 model_order.CreateTime = DateTime.Now;
                 model_order.Amount = Convert.ToInt32(data.order.totalPrice.Replace(".", string.Empty));
-                model_order.Profit = data.bookings.Sum(s=>s.fareData.issueFee)* data.order.numberOfAdult + data.bookings.Sum(s => s.fareData.issueFee) * data.order.numberOfChild;
+                model_order.Profit = data.bookings.Sum(s=>s.fareData.issueFee);
                 model_order.Price = model_order.Amount - model_order.Profit;
                 model_order.OrderStatus = (byte?)OrderStatus.CREATED_ORDER;
                 model_order.ProductService = "3";
