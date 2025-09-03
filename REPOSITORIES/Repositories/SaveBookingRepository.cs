@@ -207,8 +207,8 @@ namespace REPOSITORIES.Repositories
                                 ServiceFeeAdt = 0,
                                 ServiceFeeChd = 0,
                                 ServiceFeeInf = 0,
-                                AmountAdt = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult,
-                                AmountChd = (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild,
+                                AmountAdt = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult - item.fareData.issueFee,
+                                AmountChd = (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild - item.fareData.issueFee,
                                 AmountInf = (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant,
                                 TotalDiscount = 0,
                                 TotalBaggageFee = 0,
@@ -270,16 +270,19 @@ namespace REPOSITORIES.Repositories
                     {
                         var FlyBooking_Detail = list_FlyBookingDetail.FirstOrDefault(s => s.Id == fly_id);
                         FlyBooking_Detail.GroupBookingId = string.Join(",", group_fly_id);
-                        //if (FlyBooking_Detail.AdultNumber > 0) {
-                        //    FlyBooking_Detail.AdultNumber = list_FlyBookingDetail.Count();
-                        //        }
-                        //if (FlyBooking_Detail.ChildNumber > 0) {
-                        //    FlyBooking_Detail.ChildNumber = list_FlyBookingDetail.Count();
-                        //        }
-                        //if (FlyBooking_Detail.InfantNumber > 0) {
-                        //    FlyBooking_Detail.InfantNumber = list_FlyBookingDetail.Count();
-                            
-                        //        }
+                        if (group_fly_id.Count > 1)
+                        {
+                            if (FlyBooking_Detail.StartDate == list_FlyBookingDetail.Min(s => s.StartDate))
+                            {
+                                FlyBooking_Detail.Leg = 0;
+                            }
+                            else
+                            {
+                                FlyBooking_Detail.Leg = 1;
+                            }
+
+                        }
+
                      
                         var id = FlyBookingDetailDAL.UpdateFlyBookingDetail(FlyBooking_Detail);
                         
