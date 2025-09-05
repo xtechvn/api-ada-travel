@@ -2640,7 +2640,7 @@ namespace API_CORE.Controllers.MAIL.Base
         
             //message.CC.Add(new MailAddress(clientEmail));
             message.To.Add(email);
-            message.CC.Add("anhhieuk51@gmail.com");
+            message.CC.Add(new MailAddress("anhhieuk51@gmail.com"));
             smtp.Send(message);
         }
     }
