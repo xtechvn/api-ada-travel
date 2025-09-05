@@ -7,5 +7,6 @@ namespace REPOSITORIES.IRepositories
     {
         Airlines GetByCode(string code);
         List<Airlines> GetAllData();
+        GroupClassAirlines getDetailGroupClassAirlines(string classCode, string airline, string fairtype);
     }
 }

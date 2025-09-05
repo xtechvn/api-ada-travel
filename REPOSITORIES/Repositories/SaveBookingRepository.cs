@@ -38,6 +38,7 @@ namespace REPOSITORIES.Repositories
         private readonly AccountClientDAL AccountClientDAL;
         private readonly IdentifierServiceRepository identifierServiceRepository;
         private readonly UserDAL userDAL;
+        private readonly BaggageDAL baggageDAL;
         private int id_bot = 2052;
         public SaveBookingRepository(IOptions<DataBaseConfig> _dataBaseConfig)
         {
@@ -51,6 +52,7 @@ namespace REPOSITORIES.Repositories
             AccountClientDAL = new AccountClientDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             userDAL = new UserDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             identifierServiceRepository = new IdentifierServiceRepository(dataBaseConfig);
+            baggageDAL = new BaggageDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
         }
         public async Task<long> saveBookingAda(BookingFlyMua_Di data)
         {
@@ -105,7 +107,7 @@ namespace REPOSITORIES.Repositories
                 model_order.OrderNo = await identifierServiceRepository.buildOrderNo((int)ServicesType.FlyingTicket, (int)SourcePaymentType.b2c);
                 model_order.CreateTime = DateTime.Now;
                 model_order.Amount = Convert.ToInt32(data.order.totalPrice.Replace(".", string.Empty));
-                model_order.Profit = data.bookings.Sum(s=>s.fareData.issueFee);
+                model_order.Profit = data.bookings.Sum(s => s.fareData.issueFee);
                 model_order.Price = model_order.Amount - model_order.Profit;
                 model_order.OrderStatus = (byte?)OrderStatus.CREATED_ORDER;
                 model_order.ProductService = "3";
@@ -195,10 +197,10 @@ namespace REPOSITORIES.Repositories
                                 AdultNumber = data.order.numberOfAdult,
                                 ChildNumber = data.order.numberOfChild,
                                 InfantNumber = data.order.numberOfInfant,
-                                FareAdt = item.routeInfos.Count > 1 ? item.fareData.fareADT - item.fareData.issueFee/(2+ data.order.numberOfAdult+ data.order.numberOfChild) : item.fareData.fareADT - item.fareData.issueFee,
+                                FareAdt = item.routeInfos.Count > 1 ? item.fareData.fareADT - item.fareData.issueFee / (2 + data.order.numberOfAdult + data.order.numberOfChild) : item.fareData.fareADT - item.fareData.issueFee,
                                 TaxAdt = item.fareData.taxADT,
                                 FeeAdt = item.fareData.vatADT,
-                                FareChd = item.routeInfos.Count > 1 ? item.fareData.fareCHD - item.fareData.issueFee/(2+data.order.numberOfAdult + data.order.numberOfChild): item.fareData.fareCHD - item.fareData.issueFee,
+                                FareChd = item.routeInfos.Count > 1 ? item.fareData.fareCHD - item.fareData.issueFee / (2 + data.order.numberOfAdult + data.order.numberOfChild) : item.fareData.fareCHD - item.fareData.issueFee,
                                 TaxChd = item.fareData.taxCHD,
                                 FeeChd = item.fareData.vatCHD,
                                 FareInf = item.fareData.fareINF,
@@ -207,8 +209,8 @@ namespace REPOSITORIES.Repositories
                                 ServiceFeeAdt = 0,
                                 ServiceFeeChd = 0,
                                 ServiceFeeInf = 0,
-                                AmountAdt = item.routeInfos.Count > 1? (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult  : (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult,
-                                AmountChd = item.routeInfos.Count > 1?(item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild : (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild,
+                                AmountAdt = item.routeInfos.Count > 1 ? (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult : (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult,
+                                AmountChd = item.routeInfos.Count > 1 ? (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild : (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild,
                                 AmountInf = (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant,
                                 TotalDiscount = 0,
                                 TotalBaggageFee = 0,
@@ -225,7 +227,7 @@ namespace REPOSITORIES.Repositories
                                 SalerId = user.Id,
                                 Price = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
 
-                                Amount = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT ) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD ) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
+                                Amount = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
                                 TotalNetPrice = (item.fareData.fareADT + item.fareData.taxADT + item.fareData.vatADT) * data.order.numberOfAdult + (item.fareData.fareCHD + item.fareData.taxCHD + item.fareData.vatCHD) * data.order.numberOfChild + (item.fareData.fareINF + item.fareData.taxINF + item.fareData.vatINF) * data.order.numberOfInfant + item.fareData.otherFee,
 
 
@@ -239,27 +241,28 @@ namespace REPOSITORIES.Repositories
                             list_FlyBookingDetail.Add(FlyBookingDetail);
                             group_fly_id.Add(FlyBookingDetail.Id);
                             //FlySegment
-                            if(routeInfos.handBaggage!= null){
-                                var seg = new FlyingSegmentViewModel
-                                {
-                                    FlyBookingId = FlyBookingDetail.Id,
-                                    FlightNumber = routeInfos.flightNo,
-                                    StartPoint = routeInfos.from,
-                                    EndPoint = routeInfos.to,
-                                    StartTime = DateTime.ParseExact(routeInfos.departDate + " " + routeInfos.timeFrom, "dd-MM-yyyy HH:mm", null),
-                                    EndTime = DateTime.ParseExact(routeInfos.departDate + " " + routeInfos.timeTo, "dd-MM-yyyy HH:mm", null),
-                                    StopTime = ConvertToMinutes(routeInfos.flightTime),
-                                    Class = routeInfos.Class,
-                                    OperatingAirline = routeInfos.airCraft,
-                                    HandBaggage = routeInfos.handBaggage.description,
-                                    Duration = ConvertToMinutes(routeInfos.flightTime),
-                                    Plane = routeInfos.flightNo,
 
-                                };
-                                var data_create_fly_segment = FlightSegmentDAL.CreateFlySegment(seg);
+                            var seg = new FlyingSegmentViewModel();
 
-                            }
-                           
+
+                            seg.FlyBookingId = FlyBookingDetail.Id;
+                            seg.FlightNumber = routeInfos.flightNo;
+                            seg.StartPoint = routeInfos.from;
+                            seg.EndPoint = routeInfos.to;
+                            seg.StartTime = DateTime.ParseExact(routeInfos.departDate + " " + routeInfos.timeFrom, "dd-MM-yyyy HH:mm", null);
+                            seg.EndTime = DateTime.ParseExact(routeInfos.departDate + " " + routeInfos.timeTo, "dd-MM-yyyy HH:mm", null);
+                            seg.StopTime = (routeInfos.flightTime == "" || routeInfos.flightTime == null) ? 0 : ConvertToMinutes( routeInfos.flightTime);
+                            seg.Class = routeInfos.Class;
+                            seg.OperatingAirline = routeInfos.airCraft;
+                            seg.HandBaggage = routeInfos.handBaggage == null ? "0" : routeInfos.handBaggage.description;
+                            seg.Duration = (routeInfos.flightTime == "" || routeInfos.flightTime == null) ? 0 : ConvertToMinutes(routeInfos.flightTime);
+                            seg.Plane = routeInfos.flightNo;
+
+
+                            var data_create_fly_segment = FlightSegmentDAL.CreateFlySegment(seg);
+
+
+
 
                             dem++;
                         }
@@ -283,42 +286,42 @@ namespace REPOSITORIES.Repositories
 
                         }
 
-                     
+
                         var id = FlyBookingDetailDAL.UpdateFlyBookingDetail(FlyBooking_Detail);
-                        
-                    }            
+
+                    }
                     //-- Passengers:
                     foreach (var item in data.passengers)
                     {
                         var PassengerViewModel = new PassengerViewModel();
-                        PassengerViewModel.Name = item.FirstName + " "+item.LastName;
+                        PassengerViewModel.Name = item.FirstName + " " + item.LastName;
                         PassengerViewModel.PersonType = item.PaxType;
                         PassengerViewModel.Gender = false;
                         PassengerViewModel.OrderId = order_id;
                         PassengerViewModel.GroupBookingId = string.Join(",", group_fly_id);
                         var passenger = PassengerDAL.CreatePassengers(PassengerViewModel);
-                         if(item.baggages!= null && item.baggages.Count > 0)
+                        if (item.baggages != null && item.baggages.Count > 0)
                         {
                             foreach (var baggage in item.baggages)
                             {
                                 var ExtraPackages = new ENTITIES.Models.FlyBookingExtraPackages();
-                                ExtraPackages.GroupFlyBookingId = string.Join(",", group_fly_id); 
-                                ExtraPackages.PackageId = baggage.weight; 
-                                ExtraPackages.PackageCode = baggage.weight +"("+ baggage.segment + ")"; 
-                                ExtraPackages.Price = Convert.ToInt32( baggage.price); 
-                                ExtraPackages.Amount = Convert.ToInt32( baggage.price); 
-                                ExtraPackages.BasePrice = Convert.ToInt32( baggage.price); 
-                                ExtraPackages.Profit = 0; 
-                                ExtraPackages.Quantity = 1; 
-                                ExtraPackages.CreatedBy = 2052; 
-                                ExtraPackages.UpdatedBy = 2052; 
+                                ExtraPackages.GroupFlyBookingId = string.Join(",", group_fly_id);
+                                ExtraPackages.PackageId = baggage.weight;
+                                ExtraPackages.PackageCode = baggage.weight + "(" + baggage.segment + ")";
+                                ExtraPackages.Price = Convert.ToInt32(baggage.price);
+                                ExtraPackages.Amount = Convert.ToInt32(baggage.price);
+                                ExtraPackages.BasePrice = Convert.ToInt32(baggage.price);
+                                ExtraPackages.Profit = 0;
+                                ExtraPackages.Quantity = 1;
+                                ExtraPackages.CreatedBy = id_bot;
+                                ExtraPackages.UpdatedBy = id_bot;
                                 ExtraPackages.CreatedDate = DateTime.Now;
-                                ExtraPackages.UpdatedDate = DateTime.Now; 
-                               
+                                ExtraPackages.UpdatedDate = DateTime.Now;
+
                                 FlyBookingDetailDAL.InsertFlyBookingExtraPackages(ExtraPackages);
                             }
                         }
-                        
+
                     }
                 }
 

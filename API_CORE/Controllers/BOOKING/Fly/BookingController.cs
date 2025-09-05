@@ -1,5 +1,6 @@
 ﻿using APP.PUSH_LOG.Functions;
 using Entities.ViewModels;
+using ENTITIES.Models;
 using ENTITIES.ViewModels.Booking;
 using ENTITIES.ViewModels.BookingFly;
 using Microsoft.AspNetCore.Mvc;
@@ -11,13 +12,26 @@ using Newtonsoft.Json.Linq;
 using REPOSITORIES.IRepositories;
 using REPOSITORIES.IRepositories.Fly;
 using REPOSITORIES.Repositories;
+using REPOSITORIES.Repositories.Clients;
+using REPOSITORIES.Repositories.Fly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Mail;
+using System.Net;
 using System.Threading.Tasks;
 using Utilities;
 using Utilities.Contants;
 using WEB.API.Service.Queue;
+using API_CORE.Service.Mail;
+using REPOSITORIES.IRepositories.Clients;
+using API_CORE.Controllers.MAIL.Base;
+using Microsoft.AspNetCore.Hosting;
+using REPOSITORIES.Repositories.VinWonder;
+using Repositories.Repositories;
+using REPOSITORIES.IRepositories.Notify;
+using REPOSITORIES.IRepositories.VinWonder;
+using Repositories.IRepositories;
 
 namespace API_CORE.Controllers.BOOKING.Fly
 {
@@ -31,14 +45,33 @@ namespace API_CORE.Controllers.BOOKING.Fly
         private IAccountRepository accountRepository;
         private ISaveBookingRepository saveBookingRepository;
         private readonly WorkQueueClient _workQueueClient;
-        public BookingController(IConfiguration _configuration, IFlyBookingMongoRepository _bookingRepository, IOrderRepository _ordersRepository, IAccountRepository _accountRepository, ISaveBookingRepository _saveBookingRepository)
+        private readonly IClientRepository _clientRepository;
+        private readonly IFlyBookingDetailRepository _flyBookingDetailRepository;
+        private readonly IContactClientRepository _contactClientRepository;
+        private readonly IFlightSegmentRepository _flightSegmentRepository;
+        private MAIL.Base.MailService _mail_service;
+        public BookingController(IConfiguration _configuration, IFlyBookingMongoRepository _bookingRepository, IOrderRepository _ordersRepository, IAccountRepository _accountRepository, 
+            ISaveBookingRepository _saveBookingRepository, IFlightSegmentRepository flightSegmentRepository, IFlyBookingDetailRepository flyBookingDetailRepository,
+            IContactClientRepository contactClientRepository, IClientRepository clientRepository,IVinWonderBookingRepository vinWonderBookingRepository,
+             IPassengerRepository _passengerRepository, IBagageRepository _bagageRepository, IContractPayRepository contractPayRepository,
+             IAirPortCodeRepository _airPortCodeRepository, IWebHostEnvironment _webHostEnvironment, IAirlinesRepository _airlinesRepository, IAccountClientRepository _accountClientRepository,
+             IHotelBookingRepositories _hotelBookingRepositories, IOtherBookingRepository otherBookingRepository, ITourRepository tourRepository, IAllCodeRepository allCodeRepository, IOrderRepository _orderRepository,
+             IUserRepository userRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository, IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository, IHotelBookingRoomRepository hotelBookingRoomRepository)
         {
+            
             configuration = _configuration;
             bookingRepository = _bookingRepository;
             orderRepository = _ordersRepository;
             accountRepository = _accountRepository;
             saveBookingRepository = _saveBookingRepository;
             _workQueueClient = new WorkQueueClient(configuration);
+            _flightSegmentRepository = flightSegmentRepository;
+            _flyBookingDetailRepository = flyBookingDetailRepository;
+            _contactClientRepository = contactClientRepository;
+            _clientRepository = clientRepository;
+            _mail_service = new MAIL.Base.MailService(configuration, _contactClientRepository, vinWonderBookingRepository, _clientRepository, _flyBookingDetailRepository,
+            _flightSegmentRepository, _orderRepository, _passengerRepository, _bagageRepository, _airPortCodeRepository, _webHostEnvironment, _airlinesRepository, _hotelBookingRepositories,
+                      otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository, _voucherRepository, _notifyRepository, hotelBookingRoomExtraPackageRepository, hotelBookingRoomRepository);
         }
 
         /// <summary>
@@ -361,7 +394,16 @@ namespace API_CORE.Controllers.BOOKING.Fly
                             _workQueueClient.SyncES((long)order_detail.ClientId, configuration["DataBaseConfig:Elastic:SP:sp_GetClient"], configuration["DataBaseConfig:Elastic:Index:Client"], ProjectType.ADAVIGO_CMS);
                             _workQueueClient.SyncES(data, configuration["DataBaseConfig:Elastic:SP:sp_Order"], configuration["DataBaseConfig:Elastic:Index:Order"], ProjectType.ADAVIGO_CMS);
 
-
+                     
+                            var subject = string.Empty;
+                            var orderInfo=new Order();
+                            int template_type = Convert.ToInt32(objParr[0]["template_type"]);
+                            orderInfo.OrderNo = order_detail.OrderNo;
+                            orderInfo.CreateTime = order_detail.CreateTime;
+                            orderInfo.OrderId = order_detail.OrderId;
+                            orderInfo.ClientId = order_detail.ClientId;
+               
+                            var resulstSendMail = _mail_service.sendMailOrderB2C((int)data);
                             return Ok(new
                             {
                                 status = (int)ResponseType.SUCCESS,

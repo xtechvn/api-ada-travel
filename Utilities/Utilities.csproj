@@ -145,10 +145,10 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="MailTemplate\B2C\ETicketMailTemplate.html">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="MailTemplate\B2C\ETicketTemplate.html">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="MailTemplate\B2C\MailChangePassTemplate.html">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -159,11 +159,14 @@
     <None Update="MailTemplate\B2C\OrderMailTemplate.html">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
+    <None Update="MailTemplate\B2C\OrderFlyTemplate.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="MailTemplate\B2C\PaymentReceiptTemplate.html">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="MailTemplate\B2C\sendMailInsertUser.html">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="MailTemplate\OrderConfirmedPaymentTemplate.html">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

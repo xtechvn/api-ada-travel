@@ -10,9 +10,11 @@ namespace REPOSITORIES.Repositories
     public class AirlinesRepository : IAirlinesRepository
     {
         private readonly AirlinesDAL airlinesDAL;
+        private readonly GroupClassAirlinesDAL groupClassAirlinesDAL;
         public AirlinesRepository(IOptions<DataBaseConfig> dataBaseConfig)
         {
             airlinesDAL = new AirlinesDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
+            groupClassAirlinesDAL = new GroupClassAirlinesDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
         }
 
         public List<Airlines> GetAllData()
@@ -23,6 +25,10 @@ namespace REPOSITORIES.Repositories
         public Airlines GetByCode(string code)
         {
             return airlinesDAL.GetByCode(code);
+        } public GroupClassAirlines getDetailGroupClassAirlines(string classCode, string airline, string fairtype)
+        {
+            var data = groupClassAirlinesDAL.getDetailGroupClassAirlines(classCode, airline, fairtype);
+            return data;
         }
     }
 }

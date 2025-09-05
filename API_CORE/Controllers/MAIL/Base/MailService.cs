@@ -1,10 +1,13 @@
-﻿using Entities.ViewModels;
+﻿using API_CORE.Service;
+using Entities.ViewModels;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.HotelBookingRoom;
 using ENTITIES.ViewModels.VinWonder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Protocols;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PdfSharpCore;
 using Repositories.IRepositories;
 using REPOSITORIES.IRepositories;
@@ -2373,6 +2376,272 @@ namespace API_CORE.Controllers.MAIL.Base
                 LogHelper.InsertLogTelegram("GetTemplateHotelBooking - MailService: " + ex.ToString());
                 return null;
             }
+        }
+        public async Task<bool> sendMailOrderB2C(int order_id)
+        {
+            try
+            {
+                //2 get template mail
+                string workingDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                var template = workingDirectory + @"/MailTemplate/B2C/OrderFlyTemplate.html";
+          
+                var subject = File.ReadAllText(template);
+
+                if (order_id == -1)
+                {
+                    LogHelper.InsertLogTelegram("Service sendMailOrderB2C. Create order Fail. order_id = " + order_id);
+                    return false;
+                }
+
+                //order_id = 43;
+                //1. get order info
+                var orderInfo = orderRepository.getDetail(order_id);
+
+                var client = clientRepository.GetDetail(orderInfo.ClientId.Value);
+                List<FlyBookingDetail> flyBookingDetailList = flyBookingDetailRepository.GetListByOrderId(orderInfo.OrderId);
+                List<FlightSegment> flightSegmentList = flightSegmentRepository.GetByFlyBookingDetailIds(flyBookingDetailList.Select(n => n.Id).ToList());
+                ContactClient contactClient = contactClientRepository.GetByClientId(orderInfo.ClientId.Value);
+                var listAirportCode = airPortCodeRepository.GetAirPortCodes();
+                var listAirlines = airlinesRepository.GetAllData(); ;
+                var listPassenger = passengerRepository.GetPassengers(orderInfo.OrderId);
+                var listPassengerId = listPassenger != null ? listPassenger.Select(n => n.Id).ToList() : new List<int>();
+                var listBaggage = new List<Baggage>();
+                if (listPassengerId.Count > 0)
+                    listBaggage = bagageRepository.GetBaggages(listPassengerId); 
+
+
+                var images_url = "https://static-image.adavigo.com/uploads/images/airlinelogo/";
+                //3. fill data to template
+                //thông tin order
+                subject = subject.Replace("{{orderNo}}", orderInfo.OrderNo);
+                subject = subject.Replace("{{orderDate}}", orderInfo.CreateTime.Value.ToString("dd/MM/yyyy HH:mm:ss"));
+
+                var flyBookingDetail = flyBookingDetailList.FirstOrDefault();
+
+                if (flyBookingDetail != null)
+                {
+                    var expiryDateMin = flyBookingDetail.ExpiryDate;
+                    foreach (var item in flyBookingDetailList)
+                    {
+                        if (item.ExpiryDate < expiryDateMin)
+                            expiryDateMin = item.ExpiryDate;
+                    }
+                    if (flyBookingDetailList.FirstOrDefault(n => string.IsNullOrEmpty(n.BookingCode)) != null)
+                    {
+                        subject = subject.Replace("{{keepTicketTime}}", "Thời gian thanh toán đến " + expiryDateMin.ToString("HH:mm:ss dd/MM/yyyy"));
+                        subject = subject.Replace("{{keepTicketTimeText}}", " <br>Loại vé không giữ được chỗ. Vui lòng liên hệ hotline 093.6191.192 để đặt vé");
+                    }
+                    else
+                    {
+                        subject = subject.Replace("{{keepTicketTime}}", "Đang giữ vé đến " + expiryDateMin.ToString("HH:mm:ss dd/MM/yyyy"));
+                        subject = subject.Replace("{{keepTicketTimeText}}", "");
+
+                    }
+                    //số tiền thanh toán
+                    subject = subject.Replace("{{total}}", orderInfo.Amount?.ToString("N0").Replace(',', '.'));
+                    //số tiền cần thanh toán
+                    subject = subject.Replace("{{amount}}", orderInfo.Amount?.ToString("N0").Replace(',', '.'));
+                }
+
+                //thông tin hành khách
+                subject = subject.Replace("{{customerName}}", contactClient?.Name);
+                //subject = subject.Replace("{{gender}}", client?.Gender == (int)CommonGender.FEMALE ? "Nữ" : "Nam");
+                var mobilephone = (contactClient?.Mobile) == null || (contactClient?.Mobile).StartsWith("0") || (contactClient?.Mobile).StartsWith("+") || (contactClient?.Mobile).StartsWith("(+") ? contactClient?.Mobile : "0" + contactClient?.Mobile;
+                subject = subject.Replace("{{phone}}", mobilephone);
+                subject = subject.Replace("{{email}}", contactClient?.Email);
+
+                string passenger = String.Empty;
+                var count = 1;
+                foreach (var item in listPassenger)
+                {
+                    Baggage baggageGo = listBaggage.FirstOrDefault(n => n.PassengerId == item.Id && n.Leg == (int)CommonConstant.FlyBookingDetailType.GO);
+                    Baggage baggageBack = listBaggage.FirstOrDefault(n => n.PassengerId == item.Id && n.Leg == (int)CommonConstant.FlyBookingDetailType.BACK);
+                    var flyBookingGo = flyBookingDetailList.FirstOrDefault(n => n.Leg == (int)CommonConstant.FlyBookingDetailType.GO);
+                    var flightSegmentGo = flightSegmentList.FirstOrDefault(n => n.FlyBookingId == flyBookingGo?.Id);
+                    var flyBookingBack = flyBookingDetailList.FirstOrDefault(n => n.Leg != (int)CommonConstant.FlyBookingDetailType.GO);
+                    var flightSegmentBack = flightSegmentList.FirstOrDefault(n => n.FlyBookingId == flyBookingBack?.Id);
+
+                    string baggeGo = String.Empty;
+                    string baggeBack = String.Empty;
+
+                    if (flightSegmentGo != null && flightSegmentGo.AllowanceBaggageValue > 0)
+                        baggeGo = " + " + flightSegmentGo?.AllowanceBaggageValue + " kg ký gửi ";
+
+                    if (baggageGo != null && baggageGo.WeightValue > 0)
+                        baggeGo = " + " + baggageGo?.WeightValue + " kg ký gửi ";
+
+                    if (baggageGo != null && flightSegmentGo != null && baggageGo.WeightValue > 0 && flightSegmentGo.AllowanceBaggageValue > 0)
+                        baggeGo = " + " + (flightSegmentGo?.AllowanceBaggageValue + baggageGo?.WeightValue) + " kg ký gửi ";
+
+                    if (flightSegmentBack != null && flightSegmentBack.AllowanceBaggageValue > 0)
+                        baggeBack = " + " + flightSegmentBack?.AllowanceBaggageValue + " kg ký gửi ";
+
+                    if (baggageBack != null && baggageBack.WeightValue > 0)
+                        baggeBack = " + " + baggageBack?.WeightValue + " kg ký gửi ";
+
+                    if (baggageBack != null && flightSegmentBack != null && baggageBack.WeightValue > 0 && flightSegmentBack.AllowanceBaggageValue > 0)
+                        baggeBack = " + " + (flightSegmentBack?.AllowanceBaggageValue + baggageBack?.WeightValue) + " kg ký gửi ";
+                    string birthday = string.Empty;
+                    if (item.Birthday != null)
+                        birthday = item.Birthday.Value.ToString("dd/MM/yyyy");
+                    passenger += @"<tr style=" + "\"" + "font-size: 14px;" + "\"" + ">" +
+                                    "<td>" + count + @"</td>" +
+                                    "<td><strong>" + item.Name + @"</strong></td>" +
+                                    "<td>" + (item.Gender == false ? "Nữ" : "Nam") + @"</td>" +
+                                    "<td>" + birthday + @"</td>" +
+                                    "<td style=" + "\"" + "font-size: 12px; font-weight: bold;" + "\"" + ">" +
+                                        "<p {{displayChieuDi}}> Chiều đi: " + flightSegmentGo?.HandBaggageValue + " kg xách tay " + baggeGo + @"</p>" +
+                                        "<p {{displayChieuVe}}> Chiều về: " + flightSegmentBack?.HandBaggageValue + " kg xách tay " + baggeBack + @" </p>" +
+                                    "</td>" +
+                                "</tr> ";
+                    count++;
+                }
+                subject = subject.Replace("{{passengerList}}", passenger);
+
+                //thông tin chuyến bay đi
+                var flyBookingDetailGo = flyBookingDetailList.FirstOrDefault(n => n.Leg == (int)CommonConstant.FlyBookingDetailType.GO);
+                if (flyBookingDetailGo != null)
+                {
+                    subject = subject.Replace("{{isDisplayGo}}", "");
+                    var airportCodeStartPoint = listAirportCode.FirstOrDefault(n => n.Code == flyBookingDetailGo.StartPoint);
+                    var airportCodeEndPoint = listAirportCode.FirstOrDefault(n => n.Code == flyBookingDetailGo.EndPoint);
+                    subject = subject.Replace("{{flyOrderNoGo}}", flyBookingDetailGo.BookingCode);
+
+                    FlightSegment flightSegment = flightSegmentList.FirstOrDefault(n => n.FlyBookingId == flyBookingDetailGo.Id);
+                    if (flightSegment != null)
+                    {
+                        subject = subject.Replace("{{handBaggageGo}}", flightSegment.HandBaggage);//hành lý chiều đi
+                        subject = subject.Replace("{{allowanceBaggageGo}}", flightSegment.AllowanceBaggage);//hành lý ký gửi chiều đi
+                        //get logo theo flightSegment.FlightNumber, get url ảnh
+                        subject = subject.Replace("{{logoAirlineGo}}", images_url + flyBookingDetailGo.Airline.ToLower() + ".png");
+                        var airline = listAirlines.FirstOrDefault(n => n.Code == flyBookingDetailGo.Airline);//get theo flyBookingDetailGo.Airline
+                        subject = subject.Replace("{{flyNameGo}}", airline?.NameVi);
+                        subject = subject.Replace("{{flyCodeGo}}", flightSegment.FlightNumber);
+                        subject = subject.Replace("{{dayGo}}", flightSegment.StartTime != null ?
+                            GetDay(flightSegment.StartTime.DayOfWeek) : "");
+                        subject = subject.Replace("{{dateGo}}", flightSegment.StartTime != null ?
+                            flightSegment.StartTime.ToString("dd/MM/yyyy") : "");
+                        subject = subject.Replace("{{addressGoFrom}}", flyBookingDetailGo.StartPoint + "-" +
+                            airportCodeStartPoint?.DistrictVi);//HAN - Hà Nội
+                        subject = subject.Replace("{{addressGoTo}}", flyBookingDetailGo.EndPoint + "-" +
+                            airportCodeEndPoint?.DistrictVi);// PQC - Phú Quốc
+                        var groupclassAirline = airlinesRepository.getDetailGroupClassAirlines(flightSegment.Class, flyBookingDetailGo.Airline, flyBookingDetailGo.GroupClass);
+                        if (groupclassAirline != null)
+                            subject = subject.Replace("{{flyTicketClassGo}}", groupclassAirline?.DetailVi);
+                        else
+                            subject = subject.Replace("{{flyTicketClassGo}}", flyBookingDetailGo.GroupClass);
+
+                        subject = subject.Replace("{{timeFromGo}}", flyBookingDetailGo.StartDate.Value.ToString("HH:mm"));//10:40
+                        subject = subject.Replace("{{timeToGo}}", flyBookingDetailGo.EndDate.Value.ToString("HH:mm"));//22:45
+                    }
+                }
+                else
+                {
+                    subject = subject.Replace("{{displayChieuDi}}", @"style=" + "\"" + "display: none!important;" + "\"");
+                    subject = subject.Replace("{{isDisplayGo}}", "display: none!important;");
+                }
+
+                //thông tin chuyến bay về
+                var flyBookingDetailBack = flyBookingDetailList.FirstOrDefault(n => n.Leg != (int)CommonConstant.FlyBookingDetailType.GO);
+                if (flyBookingDetailBack != null)
+                {
+                    subject = subject.Replace("{{isDisplayBack}}", "");
+                    subject = subject.Replace("{{flyOrderNoBack}}", flyBookingDetailBack.BookingCode);
+                    var airportCodeStartPoint = listAirportCode.FirstOrDefault(n => n.Code == flyBookingDetailBack.StartPoint);
+                    var airportCodeEndPoint = listAirportCode.FirstOrDefault(n => n.Code == flyBookingDetailBack.EndPoint);
+                    FlightSegment flightSegment = flightSegmentList.FirstOrDefault(n => n.FlyBookingId == flyBookingDetailBack.Id);
+                    subject = subject.Replace("{{handBaggageBack}}", flightSegment.HandBaggage);//hành lý chiều về
+                    subject = subject.Replace("{{allowanceBaggageBack}}", flightSegment.AllowanceBaggage);//hành lý ký gửi chiều về
+                    subject = subject.Replace("{{flyCodeBack}}", flightSegment.FlightNumber);
+                    subject = subject.Replace("{{addressBackFrom}}", flyBookingDetailBack.StartPoint + "-" +
+                            airportCodeStartPoint?.DistrictVi);//HAN - Hà Nội
+                    subject = subject.Replace("{{addressBackTo}}", flyBookingDetailBack.EndPoint + "-" +
+                        airportCodeEndPoint?.DistrictVi);// PQC - Phú Quốc
+                    subject = subject.Replace("{{dayBack}}", flightSegment.StartTime != null ?
+                        GetDay(flightSegment.StartTime.DayOfWeek) : "");
+                    subject = subject.Replace("{{dateBack}}", flightSegment.StartTime != null ?
+                            flightSegment.StartTime.ToString("dd/MM/yyyy") : "");
+                    subject = subject.Replace("{{timeFromBack}}", flyBookingDetailBack.StartDate.Value.ToString("HH:mm"));//10:40
+                    subject = subject.Replace("{{timeToBack}}", flyBookingDetailBack.EndDate.Value.ToString("HH:mm"));//22:45
+
+                    //get logo theo flightSegment.FlightNumber, get url ảnh
+                    subject = subject.Replace("{{logoAirlineBack}}", images_url + flyBookingDetailBack.Airline.ToLower() + ".png");
+                    var airline = listAirlines.FirstOrDefault(n => n.Code == flyBookingDetailBack.Airline);//get theo flyBookingDetailBack.Airline
+                    subject = subject.Replace("{{flyNameBack}}", airline?.NameVi);
+                    var groupclassAirline = airlinesRepository.getDetailGroupClassAirlines(flightSegment.Class, flyBookingDetailBack.Airline, flyBookingDetailBack.GroupClass);
+                    if (groupclassAirline != null)
+                        subject = subject.Replace("{{flyTicketClassBack}}", groupclassAirline?.DetailVi);
+                    else
+                        subject = subject.Replace("{{flyTicketClassBack}}", flyBookingDetailBack.GroupClass);
+                }
+                else
+                {
+                    subject = subject.Replace("{{displayChieuVe}}", @"style=" + "\"" + "display: none!important;" + "\"");
+                    subject = subject.Replace("{{isDisplayBack}}", "display: none!important;");
+                }
+           
+                var data_VietQRBankList =await ApiQRService.GetVietQRBankList();
+                var selected_bank = data_VietQRBankList.Count > 0 ? data_VietQRBankList.FirstOrDefault(x => x.shortName.Trim().ToLower().Contains("Techcombank".Trim().ToLower())) : null;
+                string bank_code = "Techcombank";
+                if (selected_bank != null) bank_code = selected_bank.bin;
+                var result = ApiQRService.GetVietQRCode("19131835226016", bank_code, orderInfo.OrderNo, Convert.ToDouble(orderInfo.Amount)).Result;
+                var jsonData = JObject.Parse(result);
+                var status = int.Parse(jsonData["code"].ToString());
+                if (status == (int)ResponseType.SUCCESS)
+                {
+                    var url_path = ApiQRService.UploadImageQRBase64(orderInfo.OrderNo, Convert.ToDouble(orderInfo.Amount).ToString(), jsonData["data"]["qrDataURL"].ToString(), "19131835226016").Result;
+
+                    subject = subject.Replace("{{LinkQR}}", configuration["config_value:ImageStatic"] + url_path);
+                }
+            
+
+                SendEmail(orderInfo.OrderNo, subject, contactClient?.Email, client.Email, true);
+                //-- Logging
+                // Telegram.pushLog("APP.CHECKOUT_SERVICE - Send Email Order :"+ orderInfo.OrderId+" - " + orderInfo.OrderNo+" - ClientID: "+orderInfo.ClientId+" . Email Reveived: "+ contactClient?.Email);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("Service sendMailOrderB2C. Exception" + ex);
+                return false;
+            }
+
+        }
+        private void SendEmail(string orderNo, string subject, string email, string clientEmail = "", bool isB2C = false)
+        {
+            string host = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MAIL_CONFIG")["HOST"];
+            string port = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MAIL_CONFIG")["PORT"];
+            string account = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MAIL_CONFIG")["USERNAME"];
+            string password = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MAIL_CONFIG")["PASSWORD"];
+            //4. send my using smtp 
+            var smtp = new SmtpClient
+            {
+                Host = host,
+                Port = int.Parse(port),
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Credentials = new NetworkCredential(account,password),
+                Timeout = 10000,
+            };
+            //config send email
+            string from_mail = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MAIL_CONFIG")["FROM_MAIL"];
+            
+           
+            var message = new MailMessage()
+            {
+                IsBodyHtml = true,
+                From = new MailAddress(from_mail, "Adavigo Booking"),
+                Subject = "THÔNG TIN ĐƠN HÀNG " + orderNo,
+                Body = subject,
+                BodyEncoding = System.Text.Encoding.UTF8,
+                SubjectEncoding = System.Text.Encoding.UTF8,
+            };
+        
+            //message.CC.Add(new MailAddress(clientEmail));
+            message.To.Add(email);
+            message.CC.Add("anhhieuk51@gmail.com");
+            smtp.Send(message);
         }
     }
 
