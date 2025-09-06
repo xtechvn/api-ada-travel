@@ -2638,7 +2638,7 @@ namespace API_CORE.Controllers.MAIL.Base
                 SubjectEncoding = System.Text.Encoding.UTF8,
             };
         
-            //message.CC.Add(new MailAddress(clientEmail));
+            message.CC.Add(new MailAddress(clientEmail));
             message.To.Add(email);
             message.CC.Add(new MailAddress("anhhieuk51@gmail.com"));
             smtp.Send(message);
