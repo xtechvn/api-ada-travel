@@ -2400,7 +2400,7 @@ namespace API_CORE.Controllers.MAIL.Base
                 var client = clientRepository.GetDetail(orderInfo.ClientId.Value);
                 List<FlyBookingDetail> flyBookingDetailList = flyBookingDetailRepository.GetListByOrderId(orderInfo.OrderId);
                 List<FlightSegment> flightSegmentList = flightSegmentRepository.GetByFlyBookingDetailIds(flyBookingDetailList.Select(n => n.Id).ToList());
-                ContactClient contactClient = contactClientRepository.GetByClientId(orderInfo.ClientId.Value);
+                ContactClient contactClient = contactClientRepository.GetByContactClientId(orderInfo.ContactClientId.Value);
                 var listAirportCode = airPortCodeRepository.GetAirPortCodes();
                 var listAirlines = airlinesRepository.GetAllData(); ;
                 var listPassenger = passengerRepository.GetPassengers(orderInfo.OrderId);
