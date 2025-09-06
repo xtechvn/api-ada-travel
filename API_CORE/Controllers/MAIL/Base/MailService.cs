@@ -2488,11 +2488,11 @@ namespace API_CORE.Controllers.MAIL.Base
                                     "<td>" + count + @"</td>" +
                                     "<td><strong>" + item.Name + @"</strong></td>" +
                                     "<td>" + (item.Gender == false ? "Nữ" : "Nam") + @"</td>" +
-                                    "<td>" + birthday + @"</td>" +
-                                    "<td style=" + "\"" + "font-size: 12px; font-weight: bold;" + "\"" + ">" +
-                                        "<p {{displayChieuDi}}> Chiều đi: " + flightSegmentGo?.HandBaggageValue + " kg xách tay " + baggeGo + @"</p>" +
-                                        "<p {{displayChieuVe}}> Chiều về: " + flightSegmentBack?.HandBaggageValue + " kg xách tay " + baggeBack + @" </p>" +
-                                    "</td>" +
+                                    //"<td>" + birthday + @"</td>" +
+                                    //"<td style=" + "\"" + "font-size: 12px; font-weight: bold;" + "\"" + ">" +
+                                    //    "<p {{displayChieuDi}}> Chiều đi: " + flightSegmentGo?.HandBaggageValue + " kg xách tay " + baggeGo + @"</p>" +
+                                    //    "<p {{displayChieuVe}}> Chiều về: " + flightSegmentBack?.HandBaggageValue + " kg xách tay " + baggeBack + @" </p>" +
+                                    //"</td>" +
                                 "</tr> ";
                     count++;
                 }
