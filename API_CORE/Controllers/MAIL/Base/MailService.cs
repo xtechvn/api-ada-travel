@@ -2423,7 +2423,7 @@ namespace API_CORE.Controllers.MAIL.Base
                     var expiryDateMin = flyBookingDetail.ExpiryDate;
                     foreach (var item in flyBookingDetailList)
                     {
-                        if (item.ExpiryDate < expiryDateMin)
+                        if (item.ExpiryDate < expiryDateMin )
                             expiryDateMin = item.ExpiryDate;
                     }
                     if (flyBookingDetailList.FirstOrDefault(n => string.IsNullOrEmpty(n.BookingCode)) != null)

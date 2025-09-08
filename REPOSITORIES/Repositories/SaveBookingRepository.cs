@@ -136,6 +136,8 @@ namespace REPOSITORIES.Repositories
                 model_order.StartDate = DateTime.ParseExact(data.bookings[0].routeInfos[0].departDate + " " + data.bookings[0].routeInfos[0].timeFrom, "dd-MM-yyyy HH:mm", null);
                 if (data.bookings.Count > 1)
                 {
+                    model_order.Label = data.order.orderCode + "- Vé khứ hồi " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
+
                     model_order.EndDate = DateTime.ParseExact(data.bookings[1].routeInfos[0].departDate + " " + data.bookings[1].routeInfos[0].timeFrom, "dd-MM-yyyy HH:mm", null);
                 }
                 else
@@ -143,21 +145,15 @@ namespace REPOSITORIES.Repositories
                     if (data.bookings[0].routeInfos.Count > 1)
                     {
                         model_order.EndDate = DateTime.ParseExact(data.bookings[0].routeInfos[1].departDate + " " + data.bookings[0].routeInfos[1].timeFrom, "dd-MM-yyyy HH:mm", null);
-
+                        model_order.Label = data.order.orderCode + "- Vé khứ hồi " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
                     }
                     else
                     {
+                        model_order.Label = data.order.orderCode + "- Vé 1 chiều " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
                         model_order.EndDate = DateTime.ParseExact(data.bookings[0].routeInfos[0].departDate + " " + data.bookings[0].routeInfos[0].timeFrom, "dd-MM-yyyy HH:mm", null);
                     }
                 }
-                if (data.bookings[0].routeInfos.Count > 1)
-                {
-                    model_order.Label = data.order.orderCode + "- Vé khứ hồi " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
-                }
-                else
-                {
-                    model_order.Label = data.order.orderCode + "- Vé 1 chiều " + data.bookings[0].routeInfos[0].from + "-" + data.bookings[0].routeInfos[0].to;
-                }
+
 
                 var order_id = OrderDAL.CreateOrder(model_order);
                 if (order_id < 0) return -1;
@@ -187,7 +183,7 @@ namespace REPOSITORIES.Repositories
                                 Currency = "VND",
                                 Leg = dem > 0 ? 1 : 0,
                                 Airline = routeInfos.airCraft,
-                                ExpiryDate = DateTime.Now,
+                                ExpiryDate = item.recordStatus== "ERROR"?DateTime.Now.AddHours(6): DateTime.ParseExact(item.timeLimit, "dd/MM/yyyy HH:mm:ss", null),
                                 OthersAmount = 0,
                                 Adgcommission = 0,
                                 SupplierId = 0,
@@ -197,10 +193,10 @@ namespace REPOSITORIES.Repositories
                                 AdultNumber = data.order.numberOfAdult,
                                 ChildNumber = data.order.numberOfChild,
                                 InfantNumber = data.order.numberOfInfant,
-                                FareAdt = item.routeInfos.Count > 1 ? item.fareData.fareADT - item.fareData.issueFee / (2 + data.order.numberOfAdult + data.order.numberOfChild) : item.fareData.fareADT - item.fareData.issueFee,
+                                FareAdt = item.routeInfos.Count > 1 ? item.fareData.fareADT - item.fareData.issueFee / (2 + data.order.numberOfAdult + data.order.numberOfChild) : item.fareData.fareADT - item.fareData.issueFee / (data.order.numberOfAdult + data.order.numberOfChild),
                                 TaxAdt = item.fareData.taxADT,
                                 FeeAdt = item.fareData.vatADT,
-                                FareChd = item.routeInfos.Count > 1 ? item.fareData.fareCHD - item.fareData.issueFee / (2 + data.order.numberOfAdult + data.order.numberOfChild) : item.fareData.fareCHD - item.fareData.issueFee,
+                                FareChd = item.routeInfos.Count > 1 ? item.fareData.fareCHD - item.fareData.issueFee / (2 + data.order.numberOfAdult + data.order.numberOfChild) : item.fareData.fareCHD - item.fareData.issueFee / (data.order.numberOfAdult + data.order.numberOfChild),
                                 TaxChd = item.fareData.taxCHD,
                                 FeeChd = item.fareData.vatCHD,
                                 FareInf = item.fareData.fareINF,
@@ -275,15 +271,17 @@ namespace REPOSITORIES.Repositories
                         FlyBooking_Detail.GroupBookingId = string.Join(",", group_fly_id);
                         if (group_fly_id.Count > 1)
                         {
-                            if (FlyBooking_Detail.StartDate == list_FlyBookingDetail.Min(s => s.StartDate))
+                            if (list_FlyBookingDetail[0].StartDate != list_FlyBookingDetail[0].StartDate)
                             {
-                                FlyBooking_Detail.Leg = 0;
+                                if (FlyBooking_Detail.StartDate == list_FlyBookingDetail.Min(s => s.StartDate))
+                                {
+                                    FlyBooking_Detail.Leg = 0;
+                                }
+                                else
+                                {
+                                    FlyBooking_Detail.Leg = 1;
+                                }
                             }
-                            else
-                            {
-                                FlyBooking_Detail.Leg = 1;
-                            }
-
                         }
 
 

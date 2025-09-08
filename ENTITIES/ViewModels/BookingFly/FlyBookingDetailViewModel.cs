@@ -17,7 +17,7 @@ namespace ENTITIES.ViewModels.BookingFly
         public double? Profit { get; set; }
         public double? Difference { get; set; }
         public string Currency { get; set; }
-        public DateTime ExpiryDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
         public int? Leg { get; set; }
         public string Session { get; set; }
         public string Airline { get; set; }
