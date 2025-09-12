@@ -446,23 +446,6 @@ namespace API_CORE.Controllers.APP
                         });
                     }
 
-                    var DetailDebtGuarantee = await _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
-                    if (DetailDebtGuarantee != null)
-                    {
-                        if (DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TN_DUYET || DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TP_DUYET)
-                        {
-                            _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
-                            return Ok(new
-                            {
-                                status = (int)ResponseType.SUCCESS,
-                                msg = "Đã gửi email"
-                            });
-                        }
-                        else
-                        {
-                            _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
-                        }
-                    }
                     var order = orderRepository.getDetail(order_id);
                     if (order != null && order.ClientId != null && order.ClientId > 0)
                     {
@@ -687,6 +670,69 @@ namespace API_CORE.Controllers.APP
                 body = ""
             });
         }
+        [HttpPost("n8n/check-debt-guarantee")]
+        public async Task<ActionResult> N8NCheckDebtGuarantee(string token)
+        {
 
+            try
+            {
+                JArray objParr = null;
+                #region Test
+                /*
+                var j_param = new Dictionary<string, string>
+                {
+                    {"order_id", "12392"},
+                };
+                var data_product = JsonConvert.SerializeObject(j_param);
+                token = CommonHelper.Encode(data_product, _configuration["DataBaseConfig:key_api:api_manual"]);
+                */
+                #endregion
+
+                if (CommonHelper.GetParamWithKey(token, out objParr, _configuration["DataBaseConfig:key_api:api_manual"]))
+                {
+                    long order_id = Convert.ToInt64(objParr[0]["order_id"]);
+                    if (order_id <= 0)
+                    {
+
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = "Data Invalid!",
+                            body = ""
+                        });
+                    }
+
+                    var DetailDebtGuarantee = await _debtGuaranteeRepository.DetailDebtGuaranteebyOrderid((int)order_id);
+                    if (DetailDebtGuarantee != null)
+                    {
+                        if (DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TN_DUYET || DetailDebtGuarantee.Status == (int)DebtGuaranteeStatus.TP_DUYET)
+                        {
+                            _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
+                          
+                        }
+                        else
+                        {
+                            _debtGuaranteeRepository.UpdateDebtGuarantee((int)DetailDebtGuarantee.Id, (int)DebtGuaranteeStatus.HOAN_THANH, 2052);
+                        }
+                    }
+                }
+                return Ok(new
+                {
+                    status = (int)ResponseType.SUCCESS,
+                    msg = "Cập nhật thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("N8NCheckDebtGuarantee - ContractPayAppController - email/check-debt-guarantee: token " + token + "\n " + ex);
+
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.FAILED,
+                msg = "ERROR!",
+                body = ""
+            });
+        }
     }
 }
