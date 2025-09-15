@@ -33,7 +33,7 @@ namespace ENTITIES.Models
         public bool? IsRegisterAffiliate { get; set; }
         public string ReferralId { get; set; }
         public int? ParentId { get; set; }
-
+        public int? UtmSource { get; set; }
         public virtual UserAgent UserAgent { get; set; }
     }
 }

@@ -69,7 +69,7 @@ namespace REPOSITORIES.Repositories
                     model_client.ClientName = data.order.customerName;
                     model_client.Phone = data.order.customerPhone;
                     model_client.Email = data.order.customerEmail;
-
+                    model_client.UtmSource = (int)ClientUtmSource.B2C;
                     model_client.ClientType = (byte?)ClientType.CUSTOMER;
                     model_client.ClientCode = await identifierServiceRepository.buildClientNo(8, (int)ClientType.CUSTOMER);
                     model_client.JoinDate = DateTime.Now;

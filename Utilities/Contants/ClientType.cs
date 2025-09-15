@@ -54,4 +54,11 @@ namespace Utilities.Contants
             {Convert.ToInt16(ClientType.STAFF), "NV" }
         };
     }
+    public enum ClientUtmSource
+    {
+       B2C = 8,//b2c
+      
+       
+
+    }
 }
