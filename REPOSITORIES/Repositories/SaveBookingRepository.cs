@@ -183,7 +183,7 @@ namespace REPOSITORIES.Repositories
                                 Currency = "VND",
                                 Leg = dem > 0 ? 1 : 0,
                                 Airline = routeInfos.airCraft,
-                                ExpiryDate = (item.timeLimit==""|| item.recordStatus== "ERROR")?DateTime.Now.AddHours(6): DateTime.ParseExact(item.timeLimit, "dd/MM/yyyy HH:mm:ss", null),
+                                ExpiryDate = (item.timeLimit==""|| item.recordStatus== "ERROR")?DateTime.Now.AddHours(6): DateTime.ParseExact(item.timeLimit.Replace("/","-"), "dd-MM-yyyy HH:mm:ss", null),
                                 OthersAmount = 0,
                                 Adgcommission = 0,
                                 SupplierId = 0,
