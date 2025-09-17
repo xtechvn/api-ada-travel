@@ -196,23 +196,28 @@ namespace REPOSITORIES.Repositories
                         foreach (var b in listData)
                         {
                             if (b.AccountNumber == null || b.AccountNumber.Trim() == "") continue;
-                            var account_number = b.AccountNumber.Trim();
-                            //^[9*][6*][9*][8*][8*][8*][8*]$
-                            char[] chars = account_number.ToCharArray();
-                            string regex_item = "^";
-                            for (var i = 0; i < chars.Length; i++)
-                            {
-                                regex_item += "[" + chars[i] + "*x]";
+                            //var account_number = b.AccountNumber.Trim();
+                            ////^[9*][6*][9*][8*][8*][8*][8*]$
+                            //char[] chars = account_number.ToCharArray();
+                            //string regex_item = "^";
+                            //for (var i = 0; i < chars.Length; i++)
+                            //{
+                            //    regex_item += "[" + chars[i] + "*x]";
+                            //}
+                            //regex_item += "$";
+                            //regex.Add(new ENTITIES.Models.BankingAccount
+                            //{
+                            //    Id = b.Id,
+                            //    AccountNumber = regex_item
+                            //});
+                            bool match = StringHelpers.MatchPattern(b.AccountNumber, detail.AccountNumber);
+                            if (match) {
+                                banking = b;
+                                break;
                             }
-                            regex_item += "$";
-                            regex.Add(new ENTITIES.Models.BankingAccount
-                            {
-                                Id = b.Id,
-                                AccountNumber = regex_item
-                            });
                         }
                     }
-                    banking = regex.FirstOrDefault(x => Regex.IsMatch(detail.AccountNumber, x.AccountNumber));
+                    //banking = regex.FirstOrDefault(x => Regex.IsMatch(detail.AccountNumber, x.AccountNumber));
                 }catch(Exception ex)
                 {
                     LogHelper.InsertLogTelegram("UpdateOrderPayment - OrderRepository - Regex Match Banking Account ["+detail.AccountNumber+"]" + ex.ToString());

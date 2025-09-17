@@ -336,5 +336,17 @@ namespace Utilities
             }
             return (buf);
         }
+        public static bool MatchPattern(string original, string inputPattern)
+        {
+            if (original.Length != inputPattern.Length)
+                return false;
+
+            // Escape pattern (tránh bug nếu có ký tự đặc biệt trong inputPattern)
+            string regexPattern = Regex.Escape(inputPattern)
+                                       .Replace("\\*", "."); // * đại diện cho 1 ký tự bất kỳ
+
+            // So khớp toàn bộ chuỗi
+            return Regex.IsMatch(original, $"^{regexPattern}$");
+        }
     }
 }
