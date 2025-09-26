@@ -2152,7 +2152,7 @@ namespace API_CORE.Controllers.B2C
                     bool? is_vin_hotel = Convert.ToBoolean(objParr[0]["is_vin_hotel"] == null || objParr[0]["is_vin_hotel"].ToString().Trim() == "" ? "false" : objParr[0]["is_vin_hotel"].ToString());
                     int total_nights = (todate - fromdate).Days;
                     List<HotelSearchEntities> result = new List<HotelSearchEntities>();
-                    bool is_cached = false;
+                    //bool is_cached = false;
                     string cache_name_detail = CacheName.ClientHotelSearchResult + "_" + fromdate.ToString("yyyyMMdd") + "_" + todate.ToString("yyyyMMdd") + "_" + "1" + "0" + "1" + "0" + "_" + hotelid + client_type;
                     var str = redisService.Get(cache_name_detail, Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_search_result"]));
                     if (str != null && str.Trim() != "")
@@ -2166,7 +2166,7 @@ namespace API_CORE.Controllers.B2C
                     }
                     //LogHelper.InsertLogTelegram("ListByLocationDetail - HotelB2CController: Cannot get from Redis [" + cache_name_detail + "] - token: " + token);
 
-                    if (!is_cached && is_vin_hotel != null && is_vin_hotel == true)
+                    if (is_vin_hotel != null && is_vin_hotel == true)
                     {
                         string distributionChannelId = configuration["config_api_vinpearl:Distribution_ID"].ToString();
 
@@ -2177,16 +2177,20 @@ namespace API_CORE.Controllers.B2C
                         int number_child_each_room = 0;
                         int number_infant_each_room = 0;
                         string input_api_vin_phase = "{\"arrivalDate\":\"" + fromdate.ToString("yyyy-MM-dd") + "\",\"departureDate\":\"" + todate.ToString("yyyy-MM-dd") + "\",\"numberOfRoom\":" + number_room_each + ",\"propertyIds\":[\"" + hotel_id_vin + "\"],\"distributionChannelId\":\"" + distributionChannelId + "\",\"roomOccupancy\":{\"numberOfAdult\":" + number_adult_each_room + ",\"otherOccupancies\":[{\"otherOccupancyRefCode\":\"child\",\"quantity\":" + number_child_each_room + "},{\"otherOccupancyRefCode\":\"infant\",\"quantity\":" + number_infant_each_room + "}]}}";
+                        JObject data_hotel = null;
+                        try
+                        {
+                            var vin_lib = new VinpearlLib(configuration);
+                            var response = vin_lib.getHotelAvailability(input_api_vin_phase).Result;
 
-                        var vin_lib = new VinpearlLib(configuration);
-                        var response = vin_lib.getHotelAvailability(input_api_vin_phase).Result;
 
-
-                        var data_hotel = JObject.Parse(response);
+                            data_hotel = JObject.Parse(response);
+                        }
+                        catch { }
                         // Đọc Json ra các Field để map với những trường cần lấy
 
                         #region Check Data Invalid
-                        if (data_hotel["isSuccess"].ToString().ToLower() == "false")
+                        if (data_hotel!=null && data_hotel["isSuccess"]!=null && data_hotel["isSuccess"].ToString().ToLower() == "false")
                         {
                             return Ok(new
                             {
@@ -2302,7 +2306,8 @@ namespace API_CORE.Controllers.B2C
                             result.Add(hotel_item);
                         }
                     }
-                    else if (!is_cached)
+                    //else if (!is_cached)
+                    else
                     {
                         var hotel_datas = hotelDetailRepository.GetFEHotelList(new HotelFESearchModel
                         {

@@ -185,7 +185,7 @@ namespace Caching.Elasticsearch
             }
 
         }
-        public async Task<List<HotelESViewModel>> GetListProductAll(string txtsearch, string index_name = "hotel_store", string Type = "product")
+        public async Task<List<HotelESViewModel>> GetListProductAll(string txtsearch)
         {
             List<HotelESViewModel> result = new List<HotelESViewModel>();
             try
@@ -193,12 +193,12 @@ namespace Caching.Elasticsearch
                 int top = 4000;
                 var nodes = new Uri[] { new Uri(_ElasticHost) };
                 var connectionPool = new StaticConnectionPool(nodes);
-                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex(Type);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("product");
                 var elasticClient = new ElasticClient(connectionSettings);
                 if (txtsearch == null) txtsearch = "";
                 ISearchResponse<HotelESViewModel> search_response;
                 search_response = elasticClient.Search<HotelESViewModel>(s => s
-                           .Index(index_name)
+                           .Index(index_hotel)
                            .From(0)
                            .Size(top)
                            .Query(q =>
@@ -209,7 +209,14 @@ namespace Caching.Elasticsearch
                                      .Query("*" + txtsearch + "*")),
                                      sh => sh.QueryString(m => m
                                      .DefaultField(f => f.street)
+                                     .Query("*" + txtsearch + "*")),
+                                     sh => sh.QueryString(m => m
+                                     .DefaultField(f => f.state)
+                                     .Query("*" + txtsearch + "*")),
+                                     sh => sh.QueryString(m => m
+                                     .DefaultField(f => f.city)
                                      .Query("*" + txtsearch + "*"))
+
 
                                  )
                              )
