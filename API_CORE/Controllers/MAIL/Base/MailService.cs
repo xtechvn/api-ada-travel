@@ -2643,6 +2643,54 @@ namespace API_CORE.Controllers.MAIL.Base
             message.CC.Add(new MailAddress("anhhieuk51@gmail.com"));
             smtp.Send(message);
         }
+        public async Task<bool> sendMailRecruitment(string name,string phone,string location,string area, string email)
+        {
+            bool ressult = true;
+            try
+            {
+                //AccountClient orderInfo = JsonConvert.DeserializeObject<AccountClient>(objectStr);
+
+
+                MailMessage message = new MailMessage();
+
+                var subject = "Ứng tuyền adavigo vị trí "+ location;
+                message.Subject = subject;
+                //config send email
+                string from_mail = new ConfigurationBuilder().AddJsonFile("appsettings.json")
+                    .Build().GetSection("MAIL_CONFIG")["FROM_MAIL"];
+                string account = new ConfigurationBuilder().AddJsonFile("appsettings.json")
+                    .Build().GetSection("MAIL_CONFIG")["USERNAME"];
+                string password = new ConfigurationBuilder().AddJsonFile("appsettings.json")
+                    .Build().GetSection("MAIL_CONFIG")["PASSWORD"];
+                string host = new ConfigurationBuilder().AddJsonFile("appsettings.json")
+                    .Build().GetSection("MAIL_CONFIG")["HOST"];
+                string port = new ConfigurationBuilder().AddJsonFile("appsettings.json")
+                    .Build().GetSection("MAIL_CONFIG")["PORT"];
+                message.IsBodyHtml = true;
+                message.From = new MailAddress(from_mail);
+                //message.Body = await GetTemplateHotelBooking(orderid);
+                //attachment 
+
+                string sendEmailsFrom = account;
+                string sendEmailsFromPassword = password;
+                SmtpClient smtp = new SmtpClient(host, Convert.ToInt32(port));
+                smtp.EnableSsl = true;
+                smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                smtp.Credentials = new NetworkCredential(sendEmailsFrom, sendEmailsFromPassword);
+                smtp.Timeout = 200000;
+                message.To.Add("anhhieuk51@gmail.com");
+                message.Bcc.Add("anhhieuk51@gmail.com");
+
+                smtp.Send(message);
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("sendMailHotelBooking - Base.MailService: " + ex + "-orderid:" + orderid);
+                ressult = false;
+            }
+            return ressult;
+        }
     }
 
 }
