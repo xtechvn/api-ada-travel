@@ -97,6 +97,8 @@ namespace API_CORE
             services.AddTransient<IPlayGroundDetailRepository, PlayGroundDetailRepository>();
             services.AddTransient<INotifyRepository, NotifyRepository>();
             services.AddTransient<ICommentRepository,CommentRepository>();
+            services.AddTransient<IRecruitmentRepository, RecruitmentRepository>();
+
 
             services.AddTransient<IOtherBookingRepository, OtherBookingRepository>();
             services.AddTransient<ITourRepository, TourRepository>();
