@@ -2686,7 +2686,7 @@ namespace API_CORE.Controllers.MAIL.Base
             }
             catch (Exception ex)
             {
-                LogHelper.InsertLogTelegram("sendMailHotelBooking - Base.MailService: " + ex + "-orderid:" + orderid);
+                LogHelper.InsertLogTelegram("sendMailHotelBooking - Base.MailService: " + ex );
                 ressult = false;
             }
             return ressult;
