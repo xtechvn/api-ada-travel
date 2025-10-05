@@ -45,10 +45,10 @@ namespace API_CORE.Controllers.Mail
         public MailController(IConfiguration _configuration, IContactClientRepository _contactClientRepository,
             IClientRepository _clientRepository, IFlyBookingDetailRepository _flyBookingDetailRepository,
              IFlightSegmentRepository _flightSegmentRepository, IOrderRepository _orderRepository, IVinWonderBookingRepository vinWonderBookingRepository,
-             IPassengerRepository _passengerRepository, IBagageRepository _bagageRepository,IContractPayRepository contractPayRepository,
+             IPassengerRepository _passengerRepository, IBagageRepository _bagageRepository, IContractPayRepository contractPayRepository,
              IAirPortCodeRepository _airPortCodeRepository, IWebHostEnvironment _webHostEnvironment, IAirlinesRepository _airlinesRepository, IAccountClientRepository _accountClientRepository,
              IHotelBookingRepositories _hotelBookingRepositories, IOtherBookingRepository otherBookingRepository, ITourRepository tourRepository, IAllCodeRepository allCodeRepository,
-             IUserRepository userRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository,IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository,IHotelBookingRoomRepository hotelBookingRoomRepository)
+             IUserRepository userRepository, IVoucherRepository _voucherRepository, INotifyRepository _notifyRepository, IHotelBookingRoomExtraPackageRepository hotelBookingRoomExtraPackageRepository, IHotelBookingRoomRepository hotelBookingRoomRepository)
         {
             configuration = _configuration;
             clientRepository = _clientRepository;
@@ -66,7 +66,7 @@ namespace API_CORE.Controllers.Mail
 
             _mail_service = new API_CORE.Controllers.MAIL.Base.MailService(configuration, _contactClientRepository, vinWonderBookingRepository, _clientRepository, _flyBookingDetailRepository,
                       _flightSegmentRepository, _orderRepository, _passengerRepository, _bagageRepository, _airPortCodeRepository, _webHostEnvironment, _airlinesRepository, _hotelBookingRepositories,
-                      otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository, _voucherRepository, _notifyRepository,hotelBookingRoomExtraPackageRepository,hotelBookingRoomRepository);
+                      otherBookingRepository, tourRepository, allCodeRepository, userRepository, contractPayRepository, _voucherRepository, _notifyRepository, hotelBookingRoomExtraPackageRepository, hotelBookingRoomRepository);
         }
 
         [HttpPost("send-mail.json")]
@@ -247,11 +247,11 @@ namespace API_CORE.Controllers.Mail
                     var email = objParr[0]["email"].ToString();
                     var accountClient = accountClientRepository.GetAccountClientByUserName(email, template_type);
                     if (template_type == 2)
-                    {                       
+                    {
                         if (accountClient != null)
                         {
                             var client = clientRepository.GetDetail((long)accountClient.ClientId);
-                            if (client == null) 
+                            if (client == null)
                             {
                                 return Ok(new
                                 {
@@ -265,7 +265,7 @@ namespace API_CORE.Controllers.Mail
                             return Ok(new
                             {
                                 status = (int)ResponseType.ERROR,
-                                msg = "Tài khoản không tồn tại, tài khoản "+ email+" không tồn tại"
+                                msg = "Tài khoản không tồn tại, tài khoản " + email + " không tồn tại"
                             });
                         }
 
@@ -311,7 +311,7 @@ namespace API_CORE.Controllers.Mail
             }
             catch (Exception ex)
             {
-                LogHelper.InsertLogTelegram("sendMailChangePass - MailController: " + ex +" token:"+token);
+                LogHelper.InsertLogTelegram("sendMailChangePass - MailController: " + ex + " token:" + token);
                 return null;
             }
         }
@@ -321,28 +321,28 @@ namespace API_CORE.Controllers.Mail
         {
             try
             {
-                
+
                 //var j_param = new Dictionary<string, string>
                 //        {
                 //            {"orderid","12326" },
                 //            {"email","mn13795@gmail.com" },
-                           
+
                 //        };
                 //var data_product = JsonConvert.SerializeObject(j_param);
                 ////token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2c"]);
-            
+
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
                 {
 
                     var OrderId = Convert.ToInt32(objParr[0]["orderid"]);
                     var email = objParr[0]["email"].ToString();
-                  //  var BookingCode = objParr[0]["booking_code"].ToString();
+                    //  var BookingCode = objParr[0]["booking_code"].ToString();
                     var url = JsonConvert.DeserializeObject<List<string>>(objParr[0]["url"].ToString());
 
-                    var resulstSendMail = await _mail_service.sendMailVinWordbookingTC(OrderId, email, "",url);
-                 
-                   
+                    var resulstSendMail = await _mail_service.sendMailVinWordbookingTC(OrderId, email, "", url);
+
+
                     if (!resulstSendMail)
                     {
                         return Ok(new
@@ -351,13 +351,13 @@ namespace API_CORE.Controllers.Mail
                             msg = "Gửi mail thất bại"
                         });
                     }
-             
+
                     return Ok(new
                     {
 
                         status = (int)ResponseType.SUCCESS,
                         msg = "Gửi mail thành công",
-                  
+
                     });
                 }
                 else
@@ -426,6 +426,39 @@ namespace API_CORE.Controllers.Mail
                         msg = "Key invalid!"
                     });
                 }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("sendMailChangePass - MailController: " + ex);
+                return null;
+            }
+        }
+
+        [HttpPost("recruitment/send-mail.json")]
+        public async Task<ActionResult> sendMailRecruitment(string name, string phone, string location, string area, string email)
+        {
+            try
+            {
+                var resulstSendMail = await _mail_service.sendMailRecruitment(name, phone, location, area, email);
+
+                if (!resulstSendMail)
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Gửi mail thất bại"
+                    });
+                }
+
+                return Ok(new
+                {
+
+                    status = (int)ResponseType.SUCCESS,
+                    msg = "Gửi mail thành công",
+
+                });
+
                 return null;
             }
             catch (Exception ex)
