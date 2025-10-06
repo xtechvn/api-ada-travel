@@ -427,7 +427,7 @@ namespace DAL
         /// </summary>
         /// <param name="cate_id"></param>
         /// <returns></returns>
-        public async Task<List<ArticleFeModel>> getArticleListByCategoryId(int cate_id)
+        public async Task<List<ArticleFeModel>> getArticleListByCategoryId(string cate_id, string tile, int min, int max)
         {
             try
             {
@@ -443,7 +443,9 @@ namespace DAL
                             var list_article = await (from _article in _DbContext.Recruitment.AsNoTracking()
                                                       join a in _DbContext.RecruitmentCategory.AsNoTracking() on _article.Id equals a.ArticleId into af
                                                       from detail in af.DefaultIfEmpty()
-                                                      where detail.CategoryId == (cate_id == -1 ? detail.CategoryId : cate_id) && _article.Status == ArticleStatus.PUBLISH
+                                                      where cate_id.Contains(detail.CategoryId.ToString()) && _article.Status == ArticleStatus.PUBLISH
+                                                      && (tile != null || tile != "" ? _article.Title.Contains(tile) : string.IsNullOrEmpty(tile)) &&
+                                                      (min == -1 && max == -1 ? min >= 0 : (_article.Minamount >= min && _article.Maxamount <= max))
                                                       orderby _article.PublishDate descending
                                                       select new ArticleFeModel
                                                       {
@@ -454,7 +456,7 @@ namespace DAL
                                                           image_43 = _article.Image43,
                                                           image_11 = _article.Image11,
                                                           publish_date = (DateTime)_article.PublishDate,
-                                                          body=_article.Body
+                                                          body = _article.Body
                                                       }
                                                      ).ToListAsync();
 
@@ -507,7 +509,7 @@ namespace DAL
                         publish_date = article.PublishDate ?? DateTime.Now,
                         author_id = (int)article.AuthorId
                     };
-                   
+
                     model.Categories = await _DbContext.RecruitmentCategory.Where(s => s.ArticleId == article.Id).Select(s => (int)s.CategoryId).ToListAsync();
                     model.category_id = model.Categories != null || model.Categories.Count > 0 ? model.Categories[0] : -1;
                     model.MainCategory = model.Categories != null || model.Categories.Count > 0 ? model.Categories[0] : -1;
@@ -737,7 +739,7 @@ namespace DAL
                     var list_article = await (from _article in _DbContext.Article.AsNoTracking()
                                               join b in _DbContext.ArticleTag.AsNoTracking() on _article.Id equals b.ArticleId
                                               join c in _DbContext.Tag.AsNoTracking() on b.TagId equals c.Id
-                                              where c.TagName.ToLower().Replace("#","") == tag.ToLower().Replace("#", "") && _article.Status == ArticleStatus.PUBLISH
+                                              where c.TagName.ToLower().Replace("#", "") == tag.ToLower().Replace("#", "") && _article.Status == ArticleStatus.PUBLISH
                                               orderby _article.PublishDate descending
                                               select new ArticleFeModel
                                               {
@@ -836,7 +838,7 @@ namespace DAL
                     using (var transaction = _DbContext.Database.BeginTransaction())
                     {
                         var group = await _DbContext.GroupProduct.Where(x => x.Id == cate_id && x.IsShowFooter == true).FirstOrDefaultAsync();
-                        if(group==null || group.Id <= 0)
+                        if (group == null || group.Id <= 0)
                         {
                             var result = new ArticleFEModelPagnition();
                             result.list_article_fe = new List<ArticleFeModel>();

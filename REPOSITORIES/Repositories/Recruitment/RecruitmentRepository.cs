@@ -184,11 +184,11 @@ namespace REPOSITORIES.Repositories
         }
 
         // Lấy ra danh sách các bài viết theo 1 chuyên mục
-        public async Task<List<ArticleFeModel>> getArticleListByCategoryId(int cate_id)
+        public async Task<List<ArticleFeModel>> getArticleListByCategoryId(string cate_id, string tile, int min, int max)
         {
             try
             {
-                return await _RecruitmentDAL.getArticleListByCategoryId(cate_id);
+                return await _RecruitmentDAL.getArticleListByCategoryId(cate_id, tile, min, max);
             }
             catch (Exception ex)
             {

@@ -44,13 +44,16 @@ namespace API_CORE.Controllers.RECRUITMENT
         {
             try
             {
-                // string j_param = "{'category_id':50}";
-                // token = CommonHelper.Encode(j_param, configuration["DataBaseConfig:key_api:b2c"]);
+                 string j_param = "{'category_id':'64','tile':'','min':-1,'max':-1}";
+                 token = CommonHelper.Encode(j_param, configuration["DataBaseConfig:key_api:b2c"]);
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
                 {
                     string db_type = string.Empty;
-                    int _category_id = Convert.ToInt32(objParr[0]["category_id"]);
+                    string _category_id =objParr[0]["category_id"].ToString();
+                    string tile = objParr[0]["tile"].ToString();
+                    int min = Convert.ToInt32(objParr[0]["min"]);
+                    int max = Convert.ToInt32(objParr[0]["max"]);
                     string cache_name = CacheType.Recruitment_CATEGORY_ID + _category_id;
                     var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     var list_article = new List<ArticleFeModel>();
@@ -62,7 +65,7 @@ namespace API_CORE.Controllers.RECRUITMENT
                     }
                     else
                     {
-                        list_article = await recruitmentRepository.getArticleListByCategoryId(_category_id);
+                        list_article = await recruitmentRepository.getArticleListByCategoryId(_category_id, tile, min, max);
                         if (list_article.Count() > 0)
                         {
                             _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_core"]));

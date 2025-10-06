@@ -29,6 +29,8 @@ namespace ENTITIES.Models
         public DateTime? DownTime { get; set; }
         public DateTime? UpTime { get; set; }
         public short? Position { get; set; }
+        public double? Maxamount { get; set; }
+        public double? Minamount { get; set; }
 
         public virtual ICollection<ArticleRelated> ArticleRelated { get; set; }
         public virtual ICollection<ArticleTag> ArticleTag { get; set; }
