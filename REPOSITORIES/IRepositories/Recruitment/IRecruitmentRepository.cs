@@ -12,7 +12,7 @@ namespace REPOSITORIES.IRepositories
         Task<ArticleModel> GetArticleDetail(long Id);
         Task<long> ChangeArticleStatus(long Id, int Status);
         Task<List<string>> GetSuggestionTag(string name);
-        Task<List<ArticleFeModel>> getArticleListByCategoryId(string cate_id, string tile, int min, int max);
+        Task<List<ArticleFeModel>> getArticleListByCategoryId(string cate_id, string tile, double min, double max);
         Task<ArticleFeDetailModel> GetArticleDetailLite(long article_id);
         Task<List<ArticleRelationModel>> FindArticleByTitle(string title,int parent_cate_faq_id);
         Task<List<int>> GetArticleCategoryIdList(long Id);

@@ -427,47 +427,80 @@ namespace DAL
         /// </summary>
         /// <param name="cate_id"></param>
         /// <returns></returns>
-        public async Task<List<ArticleFeModel>> getArticleListByCategoryId(string cate_id, string tile, int min, int max)
+        public async Task<List<ArticleFeModel>> getArticleListByCategoryId(string cate_id, string title, double min, double max)
         {
             try
             {
-                var model = new ArticleModel();
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
-                    using (var transaction = _DbContext.Database.BeginTransaction())
+                    using (var transaction = await _DbContext.Database.BeginTransactionAsync())
                     {
                         try
                         {
+                            // ✅ Convert cate_id CSV -> List<int>
+                            var cateIds = cate_id.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                                 .Select(id =>
+                                                 {
+                                                     int val;
+                                                     return int.TryParse(id.Trim().Replace("[", "").Replace("]", ""), out val)
+                                                         ? (int?)val
+                                                         : null;
+                                                 })
+                                                 .Where(x => x.HasValue)
+                                                 .Select(x => x.Value)
+                                                 .ToList();
 
+                            // Nếu không có category nào, return luôn rỗng
+                            if (!cateIds.Any())
+                                return new List<ArticleFeModel>();
 
-                            var list_article = await (from _article in _DbContext.Recruitment.AsNoTracking()
-                                                      join a in _DbContext.RecruitmentCategory.AsNoTracking() on _article.Id equals a.ArticleId into af
-                                                      from detail in af.DefaultIfEmpty()
-                                                      where cate_id.Contains(detail.CategoryId.ToString()) && _article.Status == ArticleStatus.PUBLISH
-                                                      && (tile != null || tile != "" ? _article.Title.Contains(tile) : string.IsNullOrEmpty(tile)) &&
-                                                      (min == -1 && max == -1 ? min >= 0 : (_article.Minamount >= min && _article.Maxamount <= max))
-                                                      orderby _article.PublishDate descending
-                                                      select new ArticleFeModel
-                                                      {
-                                                          id = _article.Id,
-                                                          title = _article.Title,
-                                                          lead = _article.Lead,
-                                                          image_169 = _article.Image169,
-                                                          image_43 = _article.Image43,
-                                                          image_11 = _article.Image11,
-                                                          publish_date = (DateTime)_article.PublishDate,
-                                                          body = _article.Body
-                                                      }
-                                                     ).ToListAsync();
+                            // ✅ Query: lấy danh sách ArticleId duy nhất thuộc các cateIds
+                            var articleIds = await (
+                                from rc in _DbContext.RecruitmentCategory.AsNoTracking()
+                                where rc.CategoryId.HasValue && cateIds.Contains(rc.CategoryId.Value)
+                                select rc.ArticleId
+                            ).Distinct().ToListAsync();
 
-                            transaction.Commit();
-                            list_article = list_article.Where(x => x.body != null && x.body.Trim() != "" && x.lead != null && x.lead.Trim() != "" && x.title != null && x.title.Trim() != "").ToList();
+                            // Nếu không có bài nào match, return luôn
+                            if (!articleIds.Any())
+                                return new List<ArticleFeModel>();
 
-                            return list_article;
+                            // ✅ Query: lấy bài viết theo articleIds
+                            var list_article = await (
+                                from _article in _DbContext.Recruitment.AsNoTracking()
+                                where articleIds.Contains(_article.Id)
+                                      && _article.Status == ArticleStatus.PUBLISH
+                                      && (string.IsNullOrEmpty(title) || _article.Title.Contains(title))
+                                      && ((min == -1 && max == -1) || (_article.Minamount >= min && _article.Maxamount <= max))
+                                orderby _article.PublishDate descending
+                                select new ArticleFeModel
+                                {
+                                    id = _article.Id,
+                                    title = _article.Title,
+                                    lead = _article.Lead,
+                                    image_169 = _article.Image169,
+                                    image_43 = _article.Image43,
+                                    image_11 = _article.Image11,
+                                    publish_date = (DateTime)_article.PublishDate,
+                                    body = _article.Body,
+                                    Minamount = _article.Minamount,
+                                    Maxamount = _article.Maxamount
+                                }
+                            ).ToListAsync();
+
+                            await transaction.CommitAsync();
+
+                            // ✅ Lọc bỏ bài viết rỗng
+                            return list_article
+                                .Where(x => !string.IsNullOrWhiteSpace(x.body)
+                                         && !string.IsNullOrWhiteSpace(x.lead)
+                                         && !string.IsNullOrWhiteSpace(x.title))
+                                .ToList();
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            transaction.Rollback();
+                            await transaction.RollbackAsync();
+                            LogHelper.InsertLogTelegram("getArticleListByCategoryId - RecruitmentDAL inner: " + ex);
                             return null;
                         }
                     }
@@ -475,10 +508,13 @@ namespace DAL
             }
             catch (Exception ex)
             {
-                LogHelper.InsertLogTelegram("getArticleListByCategoryId - RecruitmentDAL: " + ex);
+                LogHelper.InsertLogTelegram("getArticleListByCategoryId - RecruitmentDAL outer: " + ex);
                 return null;
             }
         }
+
+
+
 
         /// <summary>
         /// cuonglv

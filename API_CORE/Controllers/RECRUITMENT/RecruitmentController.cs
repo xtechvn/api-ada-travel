@@ -44,44 +44,8 @@ namespace API_CORE.Controllers.RECRUITMENT
         {
             try
             {
-                 string j_param = "{'category_id':'64','tile':'','min':-1,'max':-1}";
-                 token = CommonHelper.Encode(j_param, configuration["DataBaseConfig:key_api:b2c"]);
                 JArray objParr = null;
-                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
-                {
-                    string db_type = string.Empty;
-                    string _category_id =objParr[0]["category_id"].ToString();
-                    string tile = objParr[0]["tile"].ToString();
-                    int min = Convert.ToInt32(objParr[0]["min"]);
-                    int max = Convert.ToInt32(objParr[0]["max"]);
-                    string cache_name = CacheType.Recruitment_CATEGORY_ID + _category_id;
-                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
-                    var list_article = new List<ArticleFeModel>();
-
-                    if (j_data != null)
-                    {
-                        list_article = JsonConvert.DeserializeObject<List<ArticleFeModel>>(j_data);
-                        db_type = "cache";
-                    }
-                    else
-                    {
-                        list_article = await recruitmentRepository.getArticleListByCategoryId(_category_id, tile, min, max);
-                        if (list_article.Count() > 0)
-                        {
-                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_core"]));
-                        }
-                        db_type = "database";
-                    }
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.SUCCESS,
-                        data = list_article,     // map sang "data" cho FE
-                       
-                        category_id = _category_id,
-                        msg = "Get " + db_type + " Successfully !!!"
-                    });
-                }
-                else
+                if (!CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
                 {
                     return Ok(new
                     {
@@ -89,6 +53,86 @@ namespace API_CORE.Controllers.RECRUITMENT
                         msg = "Key ko hop le"
                     });
                 }
+
+                string db_type = "database";
+
+                // ---- read input ----
+                string rawCateIds = objParr[0]["category_ids"]?.ToString() ?? string.Empty;
+                string title = objParr[0]["title"]?.ToString() ?? string.Empty;
+                double min = Convert.ToDouble(objParr[0]["min"] ?? "-1");
+                double max = Convert.ToDouble(objParr[0]["max"] ?? "-1");
+
+                // ---- parse category_ids (CSV hoặc JSON array) ----
+                List<int> categoryIds;
+                if (!string.IsNullOrWhiteSpace(rawCateIds) && rawCateIds.TrimStart().StartsWith("["))
+                {
+                    // JSON array
+                    categoryIds = JsonConvert.DeserializeObject<List<int>>(rawCateIds) ?? new List<int>();
+                }
+                else
+                {
+                    // CSV
+                    categoryIds = (rawCateIds ?? "")
+                                  .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                  .Select(s => { int v; return int.TryParse(s.Trim(), out v) ? (int?)v : null; })
+                                  .Where(v => v.HasValue)
+                                  .Select(v => v.Value)
+                                  .ToList();
+                }
+
+                // nếu không có cate nào thì trả rỗng
+                if (categoryIds.Count == 0)
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        data = new List<ArticleFeModel>(),
+                        msg = "No category selected."
+                    });
+                }
+
+                // ---- chỉ cache khi KHÔNG có filter ----
+                bool useCache = string.IsNullOrWhiteSpace(title) && min == -1 && max == -1;
+
+                var list_article = new List<ArticleFeModel>();
+
+                if (useCache)
+                {
+                    string cache_name = CacheType.Recruitment_CATEGORY_ID + string.Join("_", categoryIds);
+                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
+
+                    if (j_data != null)
+                    {
+                        list_article = JsonConvert.DeserializeObject<List<ArticleFeModel>>(j_data) ?? new List<ArticleFeModel>();
+                        db_type = "cache";
+                    }
+                    else
+                    {
+                        // gọi DB
+                        list_article = await recruitmentRepository.getArticleListByCategoryId(
+                            string.Join(",", categoryIds), title, min, max);
+
+                        if (list_article?.Count > 0)
+                        {
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_core"]));
+                        }
+                        db_type = "database";
+                    }
+                }
+                else
+                {
+                    // Có filter → luôn query DB, KHÔNG dùng cache
+                    list_article = await recruitmentRepository.getArticleListByCategoryId(
+                        string.Join(",", categoryIds), title, min, max);
+                    db_type = "database";
+                }
+
+                return Ok(new
+                {
+                    status = (int)ResponseType.SUCCESS,
+                    data = list_article ?? new List<ArticleFeModel>(),
+                    msg = "Get " + db_type + " Successfully !!!"
+                });
             }
             catch (Exception ex)
             {
@@ -100,6 +144,7 @@ namespace API_CORE.Controllers.RECRUITMENT
                 });
             }
         }
+
 
 
         [HttpPost("get-list-detail-by-categoryid.json")]

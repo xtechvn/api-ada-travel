@@ -77,6 +77,9 @@ namespace ENTITIES.ViewModels.ArticleViewModels
         public int article_type { get; set; }
         public short? position { get; set; }
         public int status { get; set; }
+        public double? Maxamount { get; set; }
+        public double? Minamount { get; set; }
+
     }
     public class ArticleFEModelPagnition
     {

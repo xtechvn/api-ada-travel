@@ -183,8 +183,8 @@ namespace REPOSITORIES.Repositories
             }
         }
 
-        // Lấy ra danh sách các bài viết theo 1 chuyên mục
-        public async Task<List<ArticleFeModel>> getArticleListByCategoryId(string cate_id, string tile, int min, int max)
+        // Lấy ra danh sách các bài viết theo chuyên mục
+        public async Task<List<ArticleFeModel>> getArticleListByCategoryId(string cate_id, string tile, double min, double max)
         {
             try
             {
