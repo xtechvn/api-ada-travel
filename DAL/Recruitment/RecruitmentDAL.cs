@@ -440,8 +440,8 @@ namespace DAL
                         {
 
 
-                            var list_article = await (from _article in _DbContext.Article.AsNoTracking()
-                                                      join a in _DbContext.ArticleCategory.AsNoTracking() on _article.Id equals a.ArticleId into af
+                            var list_article = await (from _article in _DbContext.Recruitment.AsNoTracking()
+                                                      join a in _DbContext.RecruitmentCategory.AsNoTracking() on _article.Id equals a.ArticleId into af
                                                       from detail in af.DefaultIfEmpty()
                                                       where detail.CategoryId == (cate_id == -1 ? detail.CategoryId : cate_id) && _article.Status == ArticleStatus.PUBLISH
                                                       orderby _article.PublishDate descending
@@ -491,7 +491,7 @@ namespace DAL
                 var model = new ArticleFeDetailModel();
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
-                    var article = await _DbContext.Article.FirstOrDefaultAsync(x => x.Status == ArticleStatus.PUBLISH && x.Id == article_id);
+                    var article = await _DbContext.Recruitment.FirstOrDefaultAsync(x => x.Status == ArticleStatus.PUBLISH && x.Id == article_id);
                     if (article == null) return null;
                     model = new ArticleFeDetailModel
                     {
@@ -508,7 +508,7 @@ namespace DAL
                         author_id = (int)article.AuthorId
                     };
                    
-                    model.Categories = await _DbContext.ArticleCategory.Where(s => s.ArticleId == article.Id).Select(s => (int)s.CategoryId).ToListAsync();
+                    model.Categories = await _DbContext.RecruitmentCategory.Where(s => s.ArticleId == article.Id).Select(s => (int)s.CategoryId).ToListAsync();
                     model.category_id = model.Categories != null || model.Categories.Count > 0 ? model.Categories[0] : -1;
                     model.MainCategory = model.Categories != null || model.Categories.Count > 0 ? model.Categories[0] : -1;
                     var group_product = await _DbContext.GroupProduct.Where(x => x.Status == 0 && x.Id == model.MainCategory).FirstOrDefaultAsync();
@@ -526,25 +526,25 @@ namespace DAL
                     {
                         model.category_name = "Tin tức";
                     }
-                    model.RelatedArticleIds = await _DbContext.ArticleRelated.Where(s => s.ArticleId == article.Id).Select(s => (long)s.ArticleRelatedId).ToListAsync();
+                    //model.RelatedArticleIds = await _DbContext.ArticleRelated.Where(s => s.ArticleId == article.Id).Select(s => (long)s.ArticleRelatedId).ToListAsync();
 
-                    if (model.RelatedArticleIds != null && model.RelatedArticleIds.Count > 0)
-                    {
-                        model.RelatedArticleList = await (from _article in _DbContext.Article.AsNoTracking()
-                                                          join a in _DbContext.User.AsNoTracking() on _article.AuthorId equals a.Id
-                                                          join b in _DbContext.ArticleCategory.AsNoTracking() on _article.Id equals b.ArticleId
-                                                          join c in _DbContext.GroupProduct.AsNoTracking() on b.CategoryId equals c.Id
-                                                          where model.RelatedArticleIds.Contains(_article.Id)
-                                                          select new ArticleRelationModel
-                                                          {
-                                                              Id = _article.Id,
-                                                              Image = _article.Image169 ?? _article.Image43 ?? _article.Image11,
-                                                              Title = _article.Title,
-                                                              publish_date = _article.PublishDate ?? DateTime.Now,
-                                                              category_name = c.Name ?? "Tin tức"
-                                                          }).ToListAsync();
-                        model.RelatedArticleList = model.RelatedArticleList.GroupBy(x => x.Id).Select(x => x.First()).ToList();
-                    }
+                    //if (model.RelatedArticleIds != null && model.RelatedArticleIds.Count > 0)
+                    //{
+                    //    model.RelatedArticleList = await (from _article in _DbContext.Article.AsNoTracking()
+                    //                                      join a in _DbContext.User.AsNoTracking() on _article.AuthorId equals a.Id
+                    //                                      join b in _DbContext.ArticleCategory.AsNoTracking() on _article.Id equals b.ArticleId
+                    //                                      join c in _DbContext.GroupProduct.AsNoTracking() on b.CategoryId equals c.Id
+                    //                                      where model.RelatedArticleIds.Contains(_article.Id)
+                    //                                      select new ArticleRelationModel
+                    //                                      {
+                    //                                          Id = _article.Id,
+                    //                                          Image = _article.Image169 ?? _article.Image43 ?? _article.Image11,
+                    //                                          Title = _article.Title,
+                    //                                          publish_date = _article.PublishDate ?? DateTime.Now,
+                    //                                          category_name = c.Name ?? "Tin tức"
+                    //                                      }).ToListAsync();
+                    //    model.RelatedArticleList = model.RelatedArticleList.GroupBy(x => x.Id).Select(x => x.First()).ToList();
+                    //}
                 }
                 return model;
             }

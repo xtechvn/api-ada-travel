@@ -5,6 +5,8 @@
         public const int REMOVE = 0;
         public const int REMOVE_AND_RE_LOAD = 1;
         public const string ARTICLE_CATEGORY_ID = "ARTICLE_CATEGORY_";
+        public const string Recruitment_CATEGORY_ID = "Recruitment_CATEGORY_";
+
         public const string ARTICLE_B2C_CATEGORY_MENU = "ARTICLE_B2C_CATEGORY_MENU";
         public const string ARTICLE_B2C_FOOTER_MENU = "ARTICLE_B2C_FOOTER_MENU";
         public const string ARTICLE_B2C_MOST_VIEWED = "ARTICLE_B2C_MOST_VIEWED";

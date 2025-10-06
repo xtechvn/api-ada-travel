@@ -2678,8 +2678,8 @@ namespace API_CORE.Controllers.MAIL.Base
                 smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
                 smtp.Credentials = new NetworkCredential(sendEmailsFrom, sendEmailsFromPassword);
                 smtp.Timeout = 200000;
-                message.To.Add("anhhieuk51@gmail.com");
-                message.Bcc.Add("anhhieuk51@gmail.com");
+                message.To.Add("nguyendang01092003@gmail.com");
+                message.Bcc.Add("nguyendang01092003@gmail.com");
 
                 smtp.Send(message);
 

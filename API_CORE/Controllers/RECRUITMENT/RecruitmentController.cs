@@ -1,13 +1,16 @@
 ﻿using Caching.RedisWorker;
+using ENTITIES.ViewModels.Articles;
 using ENTITIES.ViewModels.ArticleViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using REPOSITORIES.IRepositories;
+using REPOSITORIES.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Utilities;
 using Utilities.Contants;
@@ -48,7 +51,7 @@ namespace API_CORE.Controllers.RECRUITMENT
                 {
                     string db_type = string.Empty;
                     int _category_id = Convert.ToInt32(objParr[0]["category_id"]);
-                    string cache_name = CacheType.ARTICLE_CATEGORY_ID + _category_id;
+                    string cache_name = CacheType.Recruitment_CATEGORY_ID + _category_id;
                     var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     var list_article = new List<ArticleFeModel>();
 
@@ -69,7 +72,8 @@ namespace API_CORE.Controllers.RECRUITMENT
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
-                        data_list = list_article,
+                        data = list_article,     // map sang "data" cho FE
+                       
                         category_id = _category_id,
                         msg = "Get " + db_type + " Successfully !!!"
                     });
@@ -93,7 +97,86 @@ namespace API_CORE.Controllers.RECRUITMENT
                 });
             }
         }
-       
+
+
+        [HttpPost("get-list-detail-by-categoryid.json")]
+        public async Task<ActionResult> getListRecruitmentByCategoryId(string token)
+        {
+            try
+            {
+                // string j_param = "{'category_id':47,'page':1, 'size': 10}";
+                // token = CommonHelper.Encode(j_param, configuration["DataBaseConfig:key_api:b2c"]);
+
+                JArray objParr = null;
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
+                {
+                    string db_type = string.Empty;
+                    int _category_id = Convert.ToInt32(objParr[0]["category_id"]);
+                    //int page = Convert.ToInt32(objParr[0]["page"]);
+                    //int size = Convert.ToInt32(objParr[0]["size"]);
+                    //int take = (size <= 0) ? 10 : size;
+                    //int skip = ((page - 1) <= 0) ? 0 : (page - 1) * take;
+                    string cache_name = CacheType.ARTICLE_CATEGORY_ID + _category_id;
+                    string j_data = null;
+                    try
+                    {
+                        j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.InsertLogTelegram("NewsController - getListArticleByCategoryId: " + ex + "\n Token: " + token);
+
+                    }
+                    List<ArticleGroupViewModel> group_product = null;
+
+                    if (j_data != null)
+                    {
+                        group_product = JsonConvert.DeserializeObject<List<ArticleGroupViewModel>>(j_data);
+                    }
+                    else
+                    {
+                        group_product = await groupProductRepository.GetArticleCategoryByParentID(_category_id);
+                        if (group_product.Count > 0)
+                        {
+                            try
+                            {
+                                _redisService.Set(cache_name, JsonConvert.SerializeObject(group_product), Convert.ToInt32(configuration["Redis:Database:db_core"]));
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelper.InsertLogTelegram("NewsController - GetAllCategory: " + ex + "\n Token: " + token);
+
+                            }
+                        }
+                    }
+
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        msg = "Success",
+                        categories = group_product
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Key ko hop le"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("NewsController - getListArticleByCategoryId: " + ex + "\n Token: " + token);
+                return Ok(new
+                {
+                    status = (int)ResponseType.FAILED,
+                    msg = "Error: " + ex.ToString(),
+                });
+            }
+        }
+
         [HttpPost("get-detail.json")]
         public async Task<ActionResult> GetArticleDetailLite(string token)
         {
@@ -121,7 +204,7 @@ namespace API_CORE.Controllers.RECRUITMENT
                     else
                     {
                         detail = await recruitmentRepository.GetArticleDetailLite(article_id);
-                        detail.Tags = await _tagRepository.GetAllTagByArticleID(article_id);
+                        //detail.Tags = await _tagRepository.GetAllTagByArticleID(article_id);
                         if (detail != null)
                         {
                             _redisService.Set(cache_name, JsonConvert.SerializeObject(detail), Convert.ToInt32(configuration["Redis:Database:db_core"]));
