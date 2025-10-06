@@ -23,10 +23,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
+using System.Text;
 using System.Threading.Tasks;
 using TheArtOfDev.HtmlRenderer.PdfSharp;
 using Utilities;
 using Utilities.Contants;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace API_CORE.Controllers.MAIL.Base
 {
@@ -54,7 +56,7 @@ namespace API_CORE.Controllers.MAIL.Base
         private readonly INotifyRepository notifyRepository;
         private IHotelBookingRoomExtraPackageRepository _hotelBookingRoomExtraPackageRepository;
         private IHotelBookingRoomRepository _hotelBookingRoomRepository;
-      
+
 
         public MailService(IConfiguration _configuration, IContactClientRepository _contactClientRepository, IVinWonderBookingRepository vinWonderBookingRepository,
             IClientRepository _clientRepository, IFlyBookingDetailRepository _flyBookingDetailRepository,
@@ -712,7 +714,7 @@ namespace API_CORE.Controllers.MAIL.Base
                 return null;
             }
         }
-        public bool sendMailChangePassword(int template_type, string email,long ClientId, string subject)
+        public bool sendMailChangePassword(int template_type, string email, long ClientId, string subject)
         {
             bool ressult = true;
             try
@@ -967,7 +969,7 @@ namespace API_CORE.Controllers.MAIL.Base
                         var user_receiver_id = new List<int>();
                         var list_user = new List<User>();
                         var ListId = notifyRepository.getListUserByRoleId((int)RoleType.TPKd);
-                        if (ListId.Rows != null && ListId.Rows.Count > 0 )
+                        if (ListId.Rows != null && ListId.Rows.Count > 0)
                         {
                             var accountants = ListId.AsEnumerable();
                             foreach (var item in accountants)
@@ -990,7 +992,7 @@ namespace API_CORE.Controllers.MAIL.Base
 
                             }
                         }
-                        
+
                     }
                 }
                 if (configuration["PaymentEmailMonitor:To"] != null && configuration["PaymentEmailMonitor:To"].Trim() != "")
@@ -1656,7 +1658,7 @@ namespace API_CORE.Controllers.MAIL.Base
                                 "<tr>" +
                                     "<td style='border: 1px solid #999; padding: 5px; font-weight: bold;'>Tổng tiền phòng:</td>" +
                                     "<td colspan= '3' style = 'border: 1px solid #999; padding: 5px;' >" + item.Hotel[0].TotalAmount.ToString("N0") + "</td>" +
-                               "</tr>"+
+                               "</tr>" +
                                "<tr>" +
                                     "<td style='border: 1px solid #999; padding: 5px; font-weight: bold;'>Ghi chú:</td>" +
                                     "<td colspan= '3' style = 'border: 1px solid #999; padding: 5px;' >" + item.Hotel[0].Note + "</td>" +
@@ -1833,7 +1835,8 @@ namespace API_CORE.Controllers.MAIL.Base
                                         else
                                         {
                                             AmountDVK += (double)item2.UnitPrice;
-                                        };
+                                        }
+                                        ;
 
                                         if (item2.UnitPrice != null) operator_price = Math.Round(((double)item2.UnitPrice / (double)item2.Nights / (double)item2.Quantity), 0);
                                         if (operator_price <= 0) operator_price = item2.SalePrice != null ? (double)item2.SalePrice : 0;
@@ -2384,7 +2387,7 @@ namespace API_CORE.Controllers.MAIL.Base
                 //2 get template mail
                 string workingDirectory = AppDomain.CurrentDomain.BaseDirectory;
                 var template = workingDirectory + @"/MailTemplate/B2C/OrderFlyTemplate.html";
-          
+
                 var subject = File.ReadAllText(template);
 
                 if (order_id == -1)
@@ -2407,7 +2410,7 @@ namespace API_CORE.Controllers.MAIL.Base
                 var listPassengerId = listPassenger != null ? listPassenger.Select(n => n.Id).ToList() : new List<int>();
                 var listBaggage = new List<Baggage>();
                 if (listPassengerId.Count > 0)
-                    listBaggage = bagageRepository.GetBaggages(listPassengerId); 
+                    listBaggage = bagageRepository.GetBaggages(listPassengerId);
 
 
                 var images_url = "https://static-image.adavigo.com/uploads/images/airlinelogo/";
@@ -2423,7 +2426,7 @@ namespace API_CORE.Controllers.MAIL.Base
                     var expiryDateMin = flyBookingDetail.ExpiryDate;
                     foreach (var item in flyBookingDetailList)
                     {
-                        if (item.ExpiryDate < expiryDateMin )
+                        if (item.ExpiryDate < expiryDateMin)
                             expiryDateMin = item.ExpiryDate;
                     }
                     if (flyBookingDetailList.FirstOrDefault(n => string.IsNullOrEmpty(n.BookingCode)) != null)
@@ -2488,11 +2491,11 @@ namespace API_CORE.Controllers.MAIL.Base
                                     "<td>" + count + @"</td>" +
                                     "<td><strong>" + item.Name + @"</strong></td>" +
                                     "<td>" + (item.Gender == false ? "Nữ" : "Nam") + @"</td>" +
-                                    //"<td>" + birthday + @"</td>" +
-                                    //"<td style=" + "\"" + "font-size: 12px; font-weight: bold;" + "\"" + ">" +
-                                    //    "<p {{displayChieuDi}}> Chiều đi: " + flightSegmentGo?.HandBaggageValue + " kg xách tay " + baggeGo + @"</p>" +
-                                    //    "<p {{displayChieuVe}}> Chiều về: " + flightSegmentBack?.HandBaggageValue + " kg xách tay " + baggeBack + @" </p>" +
-                                    //"</td>" +
+                                //"<td>" + birthday + @"</td>" +
+                                //"<td style=" + "\"" + "font-size: 12px; font-weight: bold;" + "\"" + ">" +
+                                //    "<p {{displayChieuDi}}> Chiều đi: " + flightSegmentGo?.HandBaggageValue + " kg xách tay " + baggeGo + @"</p>" +
+                                //    "<p {{displayChieuVe}}> Chiều về: " + flightSegmentBack?.HandBaggageValue + " kg xách tay " + baggeBack + @" </p>" +
+                                //"</td>" +
                                 "</tr> ";
                     count++;
                 }
@@ -2579,8 +2582,8 @@ namespace API_CORE.Controllers.MAIL.Base
                     subject = subject.Replace("{{displayChieuVe}}", @"style=" + "\"" + "display: none!important;" + "\"");
                     subject = subject.Replace("{{isDisplayBack}}", "display: none!important;");
                 }
-           
-                var data_VietQRBankList =await ApiQRService.GetVietQRBankList();
+
+                var data_VietQRBankList = await ApiQRService.GetVietQRBankList();
                 var selected_bank = data_VietQRBankList.Count > 0 ? data_VietQRBankList.FirstOrDefault(x => x.shortName.Trim().ToLower().Contains("Techcombank".Trim().ToLower())) : null;
                 string bank_code = "Techcombank";
                 if (selected_bank != null) bank_code = selected_bank.bin;
@@ -2593,7 +2596,7 @@ namespace API_CORE.Controllers.MAIL.Base
 
                     subject = subject.Replace("{{LinkQR}}", configuration["config_value:ImageStatic"] + url_path);
                 }
-            
+
 
                 SendEmail(orderInfo.OrderNo, subject, contactClient?.Email, client.Email, true);
                 //-- Logging
@@ -2621,13 +2624,13 @@ namespace API_CORE.Controllers.MAIL.Base
                 Port = int.Parse(port),
                 EnableSsl = true,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
-                Credentials = new NetworkCredential(account,password),
+                Credentials = new NetworkCredential(account, password),
                 Timeout = 10000,
             };
             //config send email
             string from_mail = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MAIL_CONFIG")["FROM_MAIL"];
-            
-           
+
+
             var message = new MailMessage()
             {
                 IsBodyHtml = true,
@@ -2637,13 +2640,13 @@ namespace API_CORE.Controllers.MAIL.Base
                 BodyEncoding = System.Text.Encoding.UTF8,
                 SubjectEncoding = System.Text.Encoding.UTF8,
             };
-        
+
             message.CC.Add(new MailAddress(clientEmail));
             message.To.Add(email);
             message.CC.Add(new MailAddress("anhhieuk51@gmail.com"));
             smtp.Send(message);
         }
-        public async Task<bool> sendMailRecruitment(string name,string phone,string location,string area, string email)
+        public async Task<bool> sendMailRecruitment(string name, string phone, string location, string area, string email, string note, string Path)
         {
             bool ressult = true;
             try
@@ -2653,7 +2656,7 @@ namespace API_CORE.Controllers.MAIL.Base
 
                 MailMessage message = new MailMessage();
 
-                var subject = "Ứng tuyền adavigo vị trí "+ location;
+                var subject = "Ứng tuyền adavigo vị trí " + location + " - " + area;
                 message.Subject = subject;
                 //config send email
                 string from_mail = new ConfigurationBuilder().AddJsonFile("appsettings.json")
@@ -2668,8 +2671,37 @@ namespace API_CORE.Controllers.MAIL.Base
                     .Build().GetSection("MAIL_CONFIG")["PORT"];
                 message.IsBodyHtml = true;
                 message.From = new MailAddress(from_mail);
-                //message.Body = await GetTemplateHotelBooking(orderid);
+                message.Body = "<!doctype html>\r\n<html>\r\n\r\n<head>\r\n    <meta name=\"viewport\" content=\"width=device-width\">\r\n    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\r\n    <title>Email Order Notify</title>\r\n    <style>\r\n        * {\r\n            margin: 0;\r\n            padding: 0;\r\n            -webkit-box-sizing: border-box;\r\n            box-sizing: border-box;\r\n        }\r\n        th {\r\n            color: black\r\n        }\r\n\r\n        td {\r\n            color: black\r\n        }\r\n    </style>\r\n</head>\r\n\r\n<body class=\"\" style=\"background-color: #ffffff !important; font-family: sans-serif; -webkit-font-smoothing: antialiased; font-size: 16px; line-height: 27px; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\">\r\n\r\n    <div style=\"width: 800px; max-width: 100%;margin: 20px auto;color: #00264D;font-size:16px;background: #fff\">\r\n        <div style=\"padding: 15px;\">\r\n            <body style=\"background-color: #f6f6f6; font-family:Arial; -webkit-font-smoothing: antialiased; font-size: 14px;color: #00264D; line-height: 1.4;max-width: 800px; margin: 0 auto; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\">\r\n                <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse: separate; width: 100%;\">\r\n                    <tr>\r\n                        <td class=\"container\" style=\"padding: 0;background: #fff url(images/email/Mask.png) no-repeat right 0 top 0;\">\r\n                            <div class=\"content\" style=\"margin: 0 auto; max-width: 800px;box-sizing: border-box; display: block; padding: 15px 20px;\">\r\n                              \r\n                                <table style=\"border: 0; border-spacing: 0; text-indent: 0; border-collapse: collapse; font-size: 13px; width: 100%; margin-bottom: 15px;;\" data-mce-style=\"border: 0; border-spacing: 0; text-indent: 0; border-collapse: collapse; font-size: 13px; width: 100%; margin-bottom: 15px;\"\r\n                                       class=\"mce-item-table\" data-mce-selected=\"1\">\r\n                                    <tbody>\r\n\r\n                                        <tr>\r\n                                            <td style=\"border: 1px solid #999; padding: 5px; font-weight: bold; width: 25%;\">Họ tên</td>\r\n            " +
+                    "                                <td colspan=\"3\" style=\"border: 1px solid #999; padding: 5px;\">" + name + "</td>\r\n   " +
+                    "                                     </tr>\r\n                                        <tr>\r\n                                          " +
+                    "  <td style=\"border: 1px solid #999; padding: 5px; font-weight: bold; width: 25%;\">Số điện thoại </td>\r\n                  " +
+                    "                          <td colspan=\"3\" style=\"border: 1px solid #999; padding: 5px;\">" + phone + "</td>\r\n\r\n         " +
+                    "                               </tr> \r\n\t\t\t\t\t\t\t\t\t\t<tr>\r\n                                        " +
+                    "    <td style=\"border: 1px solid #999; padding: 5px; font-weight: bold; width: 25%;\">Email liên hệ </td>\r\n     " +
+                    "                                       <td colspan=\"3\" style=\"border: 1px solid #999; padding: 5px;\">" + email + "</td>\r\n\r\n   " +
+                    "                                     </tr>\r\n\t\t\t\t\t\t\t\t\t\t<tr>\r\n                                          " +
+                    "  <td style=\"border: 1px solid #999; padding: 5px; font-weight: bold; width: 25%;\">Vị trí công việc </td>\r\n              " +
+                    "                              <td colspan=\"3\" style=\"border: 1px solid #999; padding: 5px;\">" + location + "</td>\r\n\r\n   " +
+
+                    "                                     </tr>\r\n\t\t\t\t\t\t\t\t\t\t\r\n                                        <tr>\r\n       " +
+                    "                                     <td style=\"border: 1px solid #999; padding: 5px; font-weight: bold; width: 25%;\">Địa điểm làm việc </td>\r\n    " +
+                    "                                        <td colspan=\"3\" style=\"border: 1px solid #999; padding: 5px;\">"+ area + "</td>\r\n\r\n                       " +
+                    "                 </tr>\r\n                                        \r\n                                        <tr>\r\n              " +
+                    "                              <td style=\"border: 1px solid #999; padding: 5px; font-weight: bold; width: 25%;\">Ghi chú:</td>\r\n  " +
+                    "                                          <td colspan=\"3\" style=\"border: 1px solid #999; padding: 5px;\">"+note+"</td>\r\n                                                            </tr>\r\n                                      \r\n                                    </tbody>\r\n                                </table>\r\n                              \r\n                            </div>\r\n                        </td>\r\n                    </tr>\r\n                </table>\r\n            </body>\r\n\r\n          \r\n\r\n\r\n\r\n            </div>\r\n        </div>\r\n    \r\n    </div>\r\n\r\n</body>\r\n\r\n</html>";
                 //attachment 
+                if (Path != "" && Path != null)
+                {
+                    var file_name = Path.Remove(0, Path.LastIndexOf('/') + 1);
+                    string fileName = file_name.Substring(0, file_name.Length <= 100 ? file_name.Length : 100);
+                    var Base64urlpath = StringHelpers.ConvertImageURLToBase64(Path);
+                    Byte[] bytes = Convert.FromBase64String(Cleaning(Base64urlpath));
+                    MemoryStream ms = new MemoryStream(bytes); // create MemoryStrem
+                    Attachment data = new Attachment(ms, fileName);
+
+                    message.Attachments.Add(data);
+                }
+
 
                 string sendEmailsFrom = account;
                 string sendEmailsFromPassword = password;
@@ -2686,13 +2718,30 @@ namespace API_CORE.Controllers.MAIL.Base
             }
             catch (Exception ex)
             {
-                LogHelper.InsertLogTelegram("sendMailHotelBooking - Base.MailService: " + ex );
+                LogHelper.InsertLogTelegram("sendMailHotelBooking - Base.MailService: " + ex);
                 ressult = false;
             }
             return ressult;
         }
-    }
+        public static string Cleaning(string img)
+        {
+            try
+            {
+                var Base64 = img.Split(',')[1];
+                StringBuilder sb = new StringBuilder(Base64, Base64.Length);
 
+                sb.Replace(" ", string.Empty);
+                return sb.ToString();
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("Cleaning - MailService: " + ex);
+            }
+            return null;
+
+        }
+    }
 }
 
 

@@ -1,4 +1,5 @@
 ﻿using API_CORE.Service.Mail;
+using Elasticsearch.Net;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.VinWonder;
 using Microsoft.AspNetCore.Hosting;
@@ -436,11 +437,12 @@ namespace API_CORE.Controllers.Mail
         }
 
         [HttpPost("recruitment/send-mail.json")]
-        public async Task<ActionResult> sendMailRecruitment(string name, string phone, string location, string area, string email)
+        public async Task<ActionResult> sendMailRecruitment(string name, string phone, string location, string area, string email, string note, string Path)
         {
             try
             {
-                var resulstSendMail = await _mail_service.sendMailRecruitment(name, phone, location, area, email);
+              
+                var resulstSendMail = await _mail_service.sendMailRecruitment(name, phone, location, area, email, note, Path);
 
                 if (!resulstSendMail)
                 {
