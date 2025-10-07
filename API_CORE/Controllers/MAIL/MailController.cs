@@ -1,6 +1,8 @@
 ﻿using API_CORE.Service.Mail;
+using APP.PUSH_LOG.Functions;
 using Elasticsearch.Net;
 using ENTITIES.Models;
+using ENTITIES.ViewModels.MongoDb;
 using ENTITIES.ViewModels.VinWonder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -441,7 +443,18 @@ namespace API_CORE.Controllers.Mail
         {
             try
             {
-              
+                var data = new SystemLogMongDBRecruitmentModel()
+                {
+                    name = name,
+                    phone = phone,
+                    location = location,
+                    area = area,
+                    email = email,
+                    note = note,
+                    Path = Path,
+                    CreatedTime=DateTime.Now,
+                };
+               await MongoDBSMSAccess.InsertLogRecruitment(configuration, data);
                 var resulstSendMail = await _mail_service.sendMailRecruitment(name, phone, location, area, email, note, Path);
 
                 if (!resulstSendMail)

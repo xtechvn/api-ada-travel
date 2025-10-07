@@ -1,6 +1,7 @@
 ﻿using ENTITIES.APPModels;
 using ENTITIES.APPModels.ReadBankMessages;
 using ENTITIES.APPModels.SystemLogs;
+using ENTITIES.ViewModels.MongoDb;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -227,6 +228,35 @@ namespace APP.PUSH_LOG.Functions
                 LogHelper.InsertLogTelegram("API_CORE - GetLogByFilter - Cannot Excute: " + ex.ToString());
             }
             return null;
+        }
+        public static async Task<bool> InsertLogRecruitment(IConfiguration _configuration, SystemLogMongDBRecruitmentModel model)
+        {
+            try
+            {
+                MongoDbConfig config = new MongoDbConfig()
+                {
+                    host = _configuration["DataBaseConfig:MongoServer:Host"],
+                    port = Convert.ToInt32(_configuration["DataBaseConfig:MongoServer:Port"]),
+                    user_name = _configuration["DataBaseConfig:MongoServer:user"],
+                    password = _configuration["DataBaseConfig:MongoServer:pwd"],
+                    database_name = _configuration["DataBaseConfig:MongoServer:catalog_log"]
+                };
+                //-- "mongodb://user1:password1@localhost/test"
+                string url = "mongodb://" + config.user_name + ":" + config.password + "@" + config.host + ":" + config.port + "/?authSource=" + config.database_name;
+                var client = new MongoClient(url);
+                IMongoDatabase db = client.GetDatabase(config.database_name);
+                IMongoCollection<SystemLogMongDBRecruitmentModel> log_collection = db.GetCollection<SystemLogMongDBRecruitmentModel>("Recruitment_Log");
+               
+                
+                model.GenID();
+                await log_collection.InsertOneAsync(model);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("InsertLogRecruitment - MongoDBSMSAccess - Cannot Excute: " + ex.ToString());
+            }
+            return false;
         }
     }
 }
