@@ -2710,8 +2710,29 @@ namespace API_CORE.Controllers.MAIL.Base
                 smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
                 smtp.Credentials = new NetworkCredential(sendEmailsFrom, sendEmailsFromPassword);
                 smtp.Timeout = 200000;
-                message.To.Add("binhdt@adavigo.com");
-                message.Bcc.Add("binhdt@adavigo.com");
+                string toMail = new ConfigurationBuilder().AddJsonFile("appsettings.json")
+    .Build().GetSection("MAIL_CONFIG")["TO_MAIL"];
+                string bccMail = new ConfigurationBuilder().AddJsonFile("appsettings.json")
+                    .Build().GetSection("MAIL_CONFIG")["BCC_MAIL"];
+
+                // gửi tới TO
+                if (!string.IsNullOrEmpty(toMail))
+                {
+                    foreach (var addr in toMail.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        message.To.Add(addr.Trim());
+                    }
+                }
+
+                // gửi BCC
+                if (!string.IsNullOrEmpty(bccMail))
+                {
+                    foreach (var addr in bccMail.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        message.Bcc.Add(addr.Trim());
+                    }
+                }
+
 
                 smtp.Send(message);
 

@@ -164,7 +164,7 @@ namespace API_CORE.Controllers.RECRUITMENT
                     //int size = Convert.ToInt32(objParr[0]["size"]);
                     //int take = (size <= 0) ? 10 : size;
                     //int skip = ((page - 1) <= 0) ? 0 : (page - 1) * take;
-                    string cache_name = CacheType.ARTICLE_CATEGORY_ID + _category_id;
+                    string cache_name = CacheType.Recruitment_CATEGORY_ID + _category_id;
                     string j_data = null;
                     try
                     {
@@ -240,7 +240,7 @@ namespace API_CORE.Controllers.RECRUITMENT
                 {
                     string db_type = string.Empty;
                     long article_id = Convert.ToInt64(objParr[0]["article_id"]);
-                    string cache_name = CacheType.ARTICLE_ID + article_id;
+                    string cache_name = CacheType.Recruitment_ID + article_id;
                     var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
                     var detail = new ArticleFeDetailModel();
 

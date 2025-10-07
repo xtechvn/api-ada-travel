@@ -15,6 +15,8 @@
         public const string CATEGORY_TAG = "CATEGORY_TAG_";
         public const string MENU_NEWS = "MENU_NEWS";
         public const string ARTICLE_ID = "ARTICLE_";
+        public const string Recruitment_ID = "Recruitment_";
+
         public const string PROVINCE = "PROVINCE";
         public const string DISTRICT = "DISTRICT_";
         public const string WARD = "WARD_";
