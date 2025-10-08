@@ -451,16 +451,33 @@ namespace DAL
                             // Chỉ quan tâm 2 nhóm: Kinh nghiệm (65) & Vị trí (67)
                             var allowedParents = new HashSet<int> {  67,65 };
 
-                            // 1) Lấy ArticleId có mapping vào cateIds và thuộc các ParentId cho phép
-                            var articleIds = await (
-                                from rc in _DbContext.RecruitmentCategory.AsNoTracking()
-                                join gp in _DbContext.GroupProduct.AsNoTracking()
-                                     on rc.CategoryId equals gp.Id
-                                where rc.CategoryId != null
-                                      && cateIds.Contains(rc.CategoryId.Value)
-                                      //&& allowedParents.Contains(gp.ParentId)   // ParentId là int
-                                select rc.ArticleId
-                            ).Distinct().ToListAsync();
+                            // 1. Lấy thông tin ParentId cho các cateIds
+                            var gpInfos = await _DbContext.GroupProduct.AsNoTracking()
+                                .Where(gp => cateIds.Contains(gp.Id))
+                                .Select(gp => new { gp.Id, gp.ParentId })
+                                .ToListAsync();
+
+                            var industryIds = gpInfos.Where(x => x.ParentId == 66).Select(x => x.Id).ToList(); // ngành nghề
+                            var locationIds = gpInfos.Where(x => x.ParentId == 67).Select(x => x.Id).ToList(); // vị trí
+                            var expIds = gpInfos.Where(x => x.ParentId == 65).Select(x => x.Id).ToList(); // kinh nghiệm
+
+                            // 2. Query articleIds
+                            var raw = await _DbContext.RecruitmentCategory.AsNoTracking()
+                                .Where(rc => rc.ArticleId != null)
+                                .Select(rc => new { rc.ArticleId, rc.CategoryId })
+                                .ToListAsync();
+
+                            // Group by ArticleId
+                            var articleIds = raw.GroupBy(x => x.ArticleId.Value).Where(g =>
+                                // Ngành nghề: chỉ cần match 1 (OR)
+                                (industryIds.Count == 0 || g.Any(x => industryIds.Contains(x.CategoryId.Value)))
+                                // Vị trí: phải match hết (AND)
+                                && (locationIds.Count == 0 || g.Any(x => locationIds.Contains(x.CategoryId.Value)))
+                                // Kinh nghiệm: ví dụ OR
+                                && (expIds.Count == 0 || g.Any(x => expIds.Contains(x.CategoryId.Value)))
+                            ).Select(g => g.Key).ToList();
+
+
 
                             if (!articleIds.Any())
                                 return new List<ArticleFeModel>();
@@ -497,8 +514,9 @@ namespace DAL
                                     from rc in _DbContext.RecruitmentCategory.AsNoTracking()
                                     join gp in _DbContext.GroupProduct.AsNoTracking()
                                          on rc.CategoryId equals gp.Id
-                                    where articleIds.Contains(rc.ArticleId)
-                                          && rc.CategoryId != null
+                                    where articleIds.Contains((long)rc.ArticleId)
+
+                                           && rc.CategoryId != null
                                           && allowedParents.Contains(gp.ParentId)
                                     select new { rc.ArticleId, gp.Name, gp.ParentId }
                                 ).ToListAsync();
