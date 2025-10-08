@@ -437,61 +437,98 @@ namespace DAL
                     {
                         try
                         {
-                            // ✅ Convert cate_id CSV -> List<int>
+                            // 0) Parse cate_id -> List<int>
                             var cateIds = cate_id.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                                 .Select(id =>
-                                                 {
-                                                     int val;
-                                                     return int.TryParse(id.Trim().Replace("[", "").Replace("]", ""), out val)
-                                                         ? (int?)val
-                                                         : null;
-                                                 })
-                                                 .Where(x => x.HasValue)
-                                                 .Select(x => x.Value)
+                                                 .Select(s => s.Trim().Trim('[', ']'))
+                                                 .Select(s => int.TryParse(s, out var v) ? (int?)v : null)
+                                                 .Where(v => v.HasValue)
+                                                 .Select(v => v.Value)
                                                  .ToList();
 
-                            // Nếu không có category nào, return luôn rỗng
                             if (!cateIds.Any())
                                 return new List<ArticleFeModel>();
 
-                            // ✅ Query: lấy danh sách ArticleId duy nhất thuộc các cateIds
+                            // Chỉ quan tâm 2 nhóm: Kinh nghiệm (65) & Vị trí (67)
+                            var allowedParents = new HashSet<int> {  67,65 };
+
+                            // 1) Lấy ArticleId có mapping vào cateIds và thuộc các ParentId cho phép
                             var articleIds = await (
                                 from rc in _DbContext.RecruitmentCategory.AsNoTracking()
-                                where rc.CategoryId.HasValue && cateIds.Contains(rc.CategoryId.Value)
+                                join gp in _DbContext.GroupProduct.AsNoTracking()
+                                     on rc.CategoryId equals gp.Id
+                                where rc.CategoryId != null
+                                      && cateIds.Contains(rc.CategoryId.Value)
+                                      //&& allowedParents.Contains(gp.ParentId)   // ParentId là int
                                 select rc.ArticleId
                             ).Distinct().ToListAsync();
 
-                            // Nếu không có bài nào match, return luôn
                             if (!articleIds.Any())
                                 return new List<ArticleFeModel>();
 
-                            // ✅ Query: lấy bài viết theo articleIds
-                            var list_article = await (
-                                from _article in _DbContext.Recruitment.AsNoTracking()
-                                where articleIds.Contains(_article.Id)
-                                      && _article.Status == ArticleStatus.PUBLISH
-                                      && (string.IsNullOrEmpty(title) || _article.Title.Contains(title))
-                                      && ((min == -1 && max == -1) || (_article.Minamount >= min && _article.Maxamount <= max))
-                                orderby _article.PublishDate descending
+                            // 2) Lấy danh sách bài viết
+                            var articles = await (
+                                from a in _DbContext.Recruitment.AsNoTracking()
+                                where articleIds.Contains(a.Id)
+                                      && a.Status == ArticleStatus.PUBLISH
+                                      && (string.IsNullOrEmpty(title) || a.Title.Contains(title))
+                                      && ((min == -1 && max == -1) || (a.Minamount >= min && a.Maxamount <= max))
+                                orderby a.PublishDate descending
                                 select new ArticleFeModel
                                 {
-                                    id = _article.Id,
-                                    title = _article.Title,
-                                    lead = _article.Lead,
-                                    image_169 = _article.Image169,
-                                    image_43 = _article.Image43,
-                                    image_11 = _article.Image11,
-                                    publish_date = (DateTime)_article.PublishDate,
-                                    body = _article.Body,
-                                    Minamount = _article.Minamount,
-                                    Maxamount = _article.Maxamount
+                                    id = a.Id,
+                                    title = a.Title,
+                                    lead = a.Lead,
+                                    image_169 = a.Image169,
+                                    image_43 = a.Image43,
+                                    image_11 = a.Image11,
+                                    publish_date = (DateTime)a.PublishDate,
+                                    body = a.Body,
+                                    Minamount = a.Minamount,
+                                    Maxamount = a.Maxamount,
+                                    category_name = "" // gán ở bước 3
                                 }
                             ).ToListAsync();
 
+                            if (!articles.Any())
+                                return new List<ArticleFeModel>();
+
+                            // 3) Lấy tên category cho các bài viết, chỉ trong 2 nhóm allowedParents
+                            var catNames = await (
+                                    from rc in _DbContext.RecruitmentCategory.AsNoTracking()
+                                    join gp in _DbContext.GroupProduct.AsNoTracking()
+                                         on rc.CategoryId equals gp.Id
+                                    where articleIds.Contains(rc.ArticleId)
+                                          && rc.CategoryId != null
+                                          && allowedParents.Contains(gp.ParentId)
+                                    select new { rc.ArticleId, gp.Name, gp.ParentId }
+                                ).ToListAsync();
+
+
+                            // Vị trí (67) lên trước, Kinh nghiệm (65) sau
+                            var catNameDict = catNames
+                                .GroupBy(x => x.ArticleId)
+                                .ToDictionary(
+                                    g => g.Key,
+                                    g => string.Join(", ",
+                                            g.OrderBy(x => x.ParentId == 67 ? 0 : 1) // 67 trước, 65 sau
+                                             .ThenBy(x => x.Name)                   // nếu muốn sort thêm theo tên
+                                             .Select(x => x.Name)
+                                             .Distinct())
+                                );
+
+
+                            foreach (var art in articles)
+                            {
+                                if (catNameDict.TryGetValue(art.id, out var names))
+                                    art.category_name = names;
+                                else
+                                    art.category_name = string.Empty;
+                            }
+
                             await transaction.CommitAsync();
 
-                            // ✅ Lọc bỏ bài viết rỗng
-                            return list_article
+                            // 4) Loại bài thiếu dữ liệu bắt buộc rồi trả kết quả
+                            return articles
                                 .Where(x => !string.IsNullOrWhiteSpace(x.body)
                                          && !string.IsNullOrWhiteSpace(x.lead)
                                          && !string.IsNullOrWhiteSpace(x.title))
@@ -512,6 +549,7 @@ namespace DAL
                 return null;
             }
         }
+
 
 
 
