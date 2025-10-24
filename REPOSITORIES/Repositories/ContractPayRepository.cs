@@ -137,6 +137,10 @@ namespace REPOSITORIES.Repositories
                 };
 
                 db_data.order = orderDAL.GetDetail(detail.OrderId);
+                if (db_data.order.IsLock == true)
+                {
+                    return null;
+                }
                 if (db_data.order == null || db_data.order.OrderId <= 0)
                 {
                 //    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
