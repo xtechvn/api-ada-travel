@@ -39,6 +39,7 @@ namespace REPOSITORIES.Repositories
         private readonly IdentifierServiceRepository identifierServiceRepository;
         private readonly UserDAL userDAL;
         private readonly BaggageDAL baggageDAL;
+        private readonly UserAgenDAL userAgenDAL;
         private int id_bot = 2052;
         public SaveBookingRepository(IOptions<DataBaseConfig> _dataBaseConfig)
         {
@@ -53,6 +54,7 @@ namespace REPOSITORIES.Repositories
             userDAL = new UserDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
             identifierServiceRepository = new IdentifierServiceRepository(dataBaseConfig);
             baggageDAL = new BaggageDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
+            userAgenDAL = new UserAgenDAL(dataBaseConfig.Value.SqlServer.ConnectionString);
         }
         public async Task<long> saveBookingAda(BookingFlyMua_Di data)
         {
@@ -61,6 +63,7 @@ namespace REPOSITORIES.Repositories
                 //client
                 var clentid = 0;
                 var Acclentid = 0;
+                var SalerId = -1;
                 var CheckPhone = ClientDAL.CheckPhoneClient(data.order.customerPhone);
                 if (CheckPhone == true)
                 {
@@ -91,6 +94,7 @@ namespace REPOSITORIES.Repositories
                 {
                     var detail_client = ClientDAL.GetByPhone(data.order.customerPhone);
                     clentid = (int)detail_client.Id;
+                    SalerId= userAgenDAL.GetUserAgentByClientId(clentid)!=null? (int)userAgenDAL.GetUserAgentByClientId(clentid):-1;
                 }
                 //ContactClient
                 var ContactClientViewModel = new ContactClientViewModel
@@ -121,7 +125,7 @@ namespace REPOSITORIES.Repositories
                 model_order.AccountClientId = Acclentid;
                 model_order.SystemType = 2;
                 model_order.CreatedBy = id_bot;
-                model_order.SalerId = -1;
+                model_order.SalerId = SalerId;
                 model_order.UserUpdateId = id_bot;
                 model_order.PercentDecrease = 0;
                 model_order.SalerGroupId = "";

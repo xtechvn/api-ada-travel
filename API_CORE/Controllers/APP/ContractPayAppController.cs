@@ -611,7 +611,7 @@ namespace API_CORE.Controllers.APP
                         data = ""
                     });
                 }
-                string bank_name_approve = "Techcombank,VIB,Vietcombank,VietinBank,VPBank,HdBank,MBBank,MSB".ToUpper();
+                string bank_name_approve = "Techcombank,VIB,Vietcombank,VietinBank,VPBank,HdBank,MBBank,MSB,ShinhanBank".ToUpper();
                 string url_n8n = "https://n8n.adavigo.com/webhook/bank-message";
                 if (_configuration["config_value:BankName"] != null && _configuration["config_value:BankName"].ToString() != null
                     && _configuration["config_value:N8NTransferAnalytic"] != null && _configuration["config_value:N8NTransferAnalytic"].ToString() != null)
