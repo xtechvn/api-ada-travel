@@ -6,6 +6,7 @@ using ENTITIES.ViewModels.VinWonder;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -81,27 +82,27 @@ namespace DAL.VinWonder
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     var listData = dt.ToList<OrderVinWonderDetailViewModel>();
-                    data=listData;
+                    data = listData;
                 }
-               
+
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
-                    
+
                     if (data != null && data.Count > 0)
                     {
-                        foreach(var item in data)
+                        foreach (var item in data)
                         {
 
                             var listPassenger = _DbContext.Passenger.Where(s => s.OrderId == (long)item.OrderId).ToList();
                             item.Passenger = listPassenger;
-                            var VinWonderBooking =( from a in _DbContext.VinWonderBooking.Where(s=>s.AdavigoBookingId==bookingId)
+                            var VinWonderBooking = (from a in _DbContext.VinWonderBooking.Where(s => s.AdavigoBookingId == bookingId)
                                                     select new vinWonderdetail
                                                     {
-                                                        
-                                                        BookingId=a.Id,
-                                                        OrderId=a.OrderId,
-                                                        SiteCode=a.SiteCode,
-                                                        SiteName=a.SiteName
+
+                                                        BookingId = a.Id,
+                                                        OrderId = a.OrderId,
+                                                        SiteCode = a.SiteCode,
+                                                        SiteName = a.SiteName
                                                     }
                                                     ).FirstOrDefault();
                             var VinWonderBookingTicket = (from a in _DbContext.VinWonderBookingTicket.Where(s => s.BookingId == VinWonderBooking.BookingId)
@@ -118,12 +119,12 @@ namespace DAL.VinWonder
                             VinWonderBooking.VinWonderBookingTicket = VinWonderBookingTicket;
                             item.vinWonderdetail = VinWonderBooking;
                         }
-                      
+
                     }
                     return data;
                 }
 
-               
+
             }
             catch (Exception ex)
             {
@@ -152,7 +153,7 @@ namespace DAL.VinWonder
             {
                 SqlParameter[] objParam = new SqlParameter[1];
                 objParam[0] = new SqlParameter("@OrderID", orderid);
-                
+
                 var dt = _DbWorker.GetDataTable(StoreProceduresName.SP_GetVinWonderBookingEmailByOrderID, objParam);
                 if (dt != null && dt.Rows.Count > 0)
                 {
@@ -227,6 +228,36 @@ namespace DAL.VinWonder
             catch (Exception ex)
             {
                 LogHelper.InsertLogTelegram("GetVinWonderBookingByOrderID - HotelDAL. " + ex);
+                return null;
+            }
+        }
+
+        public DataTable SearchOffers(
+     int supplierId, DateTime visitDate,
+     int adults, int children, int seniors,
+     string search, int? categoryId, int? ticketTypeId, int? playZoneId, int? productId)
+        {
+            try
+            {
+                var prms = new[]
+                {
+            new SqlParameter("@SupplierId", supplierId),
+            new SqlParameter("@VisitDate", visitDate),
+            new SqlParameter("@Adults", adults),
+            new SqlParameter("@Children", children),
+            new SqlParameter("@Seniors", seniors),
+            new SqlParameter("@Search", (object?)search ?? DBNull.Value),
+            new SqlParameter("@CategoryId", (object?)categoryId ?? DBNull.Value),
+            new SqlParameter("@TicketTypeId", (object?)ticketTypeId ?? DBNull.Value),
+            new SqlParameter("@PlayZoneId", (object?)playZoneId ?? DBNull.Value),
+            new SqlParameter("@ProductId", (object?)productId ?? DBNull.Value)
+        };
+
+                return _DbWorker.GetDataTable("SP_TicketSearchOffers", prms);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("TicketDAL.SearchOffers: " + ex);
                 return null;
             }
         }

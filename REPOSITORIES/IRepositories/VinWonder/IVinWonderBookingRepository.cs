@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Entities.ViewModels.Ticket;
+
 
 namespace REPOSITORIES.IRepositories.VinWonder
 {
@@ -23,5 +25,8 @@ namespace REPOSITORIES.IRepositories.VinWonder
         Task<List<VinWonderBooking>> GetVinWonderBookingByOrderID(long orderid);
         Task<List<VinWonderBookingTicket>> GetVinWonderBookingTicketByBookingID(long BookingId);
         Task<List<VinWonderBookingTicketCustomer>> GetVinWondeCustomerByBookingId(long BookingId);
+        List<TicketSearchOffersViewModel> SearchOffers(int supplierId, DateTime visitDate,
+     int adults, int children, int seniors,
+     string search, int? categoryId, int? ticketTypeId, int? playZoneId, int? productId);
     }
 }

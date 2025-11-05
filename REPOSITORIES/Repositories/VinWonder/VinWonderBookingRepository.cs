@@ -9,8 +9,13 @@ using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories.VinWonder;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using Utilities;
+using Entities.ViewModels.Ticket;
+using System.Linq;  // <-- REQUIRED for LINQ's .ToList()
+
+
 
 namespace REPOSITORIES.Repositories.VinWonder
 {
@@ -168,5 +173,42 @@ namespace REPOSITORIES.Repositories.VinWonder
                 return null;
             }
         }
+
+        public List<TicketSearchOffersViewModel> SearchOffers(
+         int supplierId, DateTime visitDate,
+         int adults, int children, int seniors,
+         string search, int? categoryId, int? ticketTypeId, int? playZoneId, int? productId)
+        {
+            try
+            {
+                var dt = vinWonderBookingDAL.SearchOffers(
+                    supplierId, visitDate, adults, children, seniors,
+                    search, categoryId, ticketTypeId, playZoneId, productId);
+
+                if (dt == null || dt.Rows.Count == 0)
+                    return new List<TicketSearchOffersViewModel>();
+
+                // ✅ Cách chuẩn: dùng LINQ to DataTable, KHÔNG dùng ToList<T>()
+                var list = dt.AsEnumerable().Select(r => new TicketSearchOffersViewModel
+                {
+                    ProductId = r.Field<int?>("ProductId") ?? 0,
+                    ProductName = r.Field<string>("ProductName"),
+                    PriceAdult = r.Field<decimal?>("PriceAdult") ?? 0,
+                    PriceChild = r.Field<decimal?>("PriceChild") ?? 0,
+                    PriceSenior = r.Field<decimal?>("PriceSenior") ?? 0
+                  
+                }).ToList();
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("TicketRepository.SearchOffers: " + ex);
+                return new List<TicketSearchOffersViewModel>();
+            }
+        }
+
+
     }
 }
+

@@ -1,6 +1,8 @@
 ﻿using API_CORE.Service.Vin;
 using APP.PUSH_LOG.Functions;
 using Caching.RedisWorker;
+using Entities.ViewModels.Ticket;
+using ENTITIES.Models;
 using ENTITIES.ViewModels.Booking;
 using ENTITIES.ViewModels.MongoDb;
 using ENTITIES.ViewModels.Order;
@@ -387,7 +389,7 @@ namespace API_CORE.Controllers.B2C
                                     .Select(group => new
                                     {
                                         rate_code = group.Key,
-                                        prices = group.Select(p => new { p.service_id, p.profit, p.unit_type,p.id,p.baseprice }).ToList()
+                                        prices = group.Select(p => new { p.service_id, p.profit, p.unit_type, p.id, p.baseprice }).ToList()
                                     });
                     return Ok(new { status = price_list.Count > 0 ? ((int)ResponseType.SUCCESS) : ((int)ResponseType.EMPTY), data = group_prices });
                 }
@@ -550,6 +552,65 @@ namespace API_CORE.Controllers.B2C
             }
         }
 
+        [HttpPost("get-ticket-offers.json")]
+        public async Task<ActionResult> GetTicketOffers(string token)
+        {
+            try
+            {
+          
+                var j_param = new Dictionary<string, object>
+                {
+                   { "supplier_id", 5790 },
+            { "visit_date", "2025-11-05" },
+            { "adults", 2 },
+            { "children", 1 },
+            { "seniors", 1 },
+            { "search", null },
+            { "category_id", null },
+            { "ticket_type_id", null },
+            { "playzone_id", null },
+            { "product_id", null }
+                };
+                var data_product = JsonConvert.SerializeObject(j_param);
+
+                 token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2c"]);
+
+                JArray objParr = null;
+                if (!CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
+                    return Ok(new { status = 2, msg = "Key không hợp lệ" });
+
+                var item = objParr.FirstOrDefault() as JObject;
+                if (item == null)
+                    return Ok(new { status = 2, msg = "Token sai cấu trúc" });
+
+                int supplierId = item["supplier_id"]?.ToObject<int>() ?? 0;
+                DateTime visitDate = item["visit_date"]?.ToObject<DateTime>() ?? DateTime.Today;
+                int adults = item["adults"]?.ToObject<int>() ?? 1;
+                int children = item["children"]?.ToObject<int>() ?? 0;
+                int seniors = item["seniors"]?.ToObject<int>() ?? 0;
+                string search = item["search"]?.ToString();
+                int? categoryId = item["category_id"]?.ToObject<int?>();
+                int? ticketTypeId = item["ticket_type_id"]?.ToObject<int?>();
+                int? playZoneId = item["playzone_id"]?.ToObject<int?>();
+                int? productId = item["product_id"]?.ToObject<int?>();
+
+                var offers = _vinWonderBookingRepository.SearchOffers(
+                    supplierId, visitDate, adults, children, seniors,
+                    search, categoryId, ticketTypeId, playZoneId, productId
+                );
+
+                return Ok(new
+                {
+                    status = offers.Any() ? 0 : 1,
+                    data = offers
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("TicketApiController.GetTicketOffers: " + ex);
+                return Ok(new { status = 2, msg = "Lỗi xử lý dữ liệu: " + ex.Message });
+            }
+        }
 
     }
 }
