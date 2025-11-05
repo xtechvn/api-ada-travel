@@ -195,8 +195,10 @@ namespace REPOSITORIES.Repositories.VinWonder
                     ProductName = r.Field<string>("ProductName"),
                     PriceAdult = r.Field<decimal?>("PriceAdult") ?? 0,
                     PriceChild = r.Field<decimal?>("PriceChild") ?? 0,
-                    PriceSenior = r.Field<decimal?>("PriceSenior") ?? 0
-                  
+                    PriceSenior = r.Field<decimal?>("PriceSenior") ?? 0,
+                    TotalPrice = r.Field<decimal?>("TotalPrice") ?? 0
+
+
                 }).ToList();
 
                 return list;
