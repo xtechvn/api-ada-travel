@@ -137,6 +137,10 @@ namespace REPOSITORIES.Repositories
                 };
 
                 db_data.order = orderDAL.GetDetail(detail.OrderId);
+                if (db_data.order.IsLock == true)
+                {
+                    return null;
+                }
                 if (db_data.order == null || db_data.order.OrderId <= 0)
                 {
                 //    LogHelper.InsertLogTelegram("UpdateOrderBankTransferPayment - ContractPayAppController -> UpdateOrderPayment "
@@ -226,27 +230,45 @@ namespace REPOSITORIES.Repositories
                 if (banking==null || banking.Id<=0) banking = bankingAccountDAL.GetByAccountNumber(detail.BankName, detail.AccountNumber);
                 //Check if exists
                 var exists_payment = await orderDAL.GetOrderPayment(db_data.order.OrderId, detail.Amount, detail.ReceiveTime);
+                if (db_data.order.PaymentStatus != 1)
+                {
+                    if ((previous_amount + detail.Amount) >= db_data.order.Amount)
+                    {
+
+                        db_data.order.DebtStatus = (int)DebtStatus.PAID;
+                        db_data.order.PaymentStatus = (int)PaymentStatus.PAID;
+                        db_data.order.IsFinishPayment = (int)PaymentStatus.PAID;
+
+                    }
+                    else
+                    {
+                        db_data.order.PaymentStatus = (int)PaymentStatus.PAID_NOT_ENOUGH;
+                        db_data.order.DebtStatus = (int)DebtStatus.PAID_NOT_ENOUGH;
+                        db_data.order.IsFinishPayment = (int)PaymentStatus.PAID_NOT_ENOUGH;
+
+                    }
+                }
                 if (exists_payment == null || exists_payment.Id <= 0)
                 {
                     db_data.is_payment_exists = false;
-                    if (db_data.order.PaymentStatus != 1)
-                    {
-                        if ((previous_amount + detail.Amount) >= db_data.order.Amount)
-                        {
+                    //if (db_data.order.PaymentStatus != 1)
+                    //{
+                    //    if ((previous_amount + detail.Amount) >= db_data.order.Amount)
+                    //    {
                           
-                            db_data.order.DebtStatus = (int)DebtStatus.PAID;
-                            db_data.order.PaymentStatus = (int)PaymentStatus.PAID;
-                            db_data.order.IsFinishPayment = (int)PaymentStatus.PAID;
+                    //        db_data.order.DebtStatus = (int)DebtStatus.PAID;
+                    //        db_data.order.PaymentStatus = (int)PaymentStatus.PAID;
+                    //        db_data.order.IsFinishPayment = (int)PaymentStatus.PAID;
 
-                        }
-                        else
-                        {
-                            db_data.order.PaymentStatus = (int)PaymentStatus.PAID_NOT_ENOUGH;
-                            db_data.order.DebtStatus = (int)DebtStatus.PAID_NOT_ENOUGH;
-                            db_data.order.IsFinishPayment = (int)PaymentStatus.PAID_NOT_ENOUGH;
+                    //    }
+                    //    else
+                    //    {
+                    //        db_data.order.PaymentStatus = (int)PaymentStatus.PAID_NOT_ENOUGH;
+                    //        db_data.order.DebtStatus = (int)DebtStatus.PAID_NOT_ENOUGH;
+                    //        db_data.order.IsFinishPayment = (int)PaymentStatus.PAID_NOT_ENOUGH;
 
-                        }
-                    }
+                    //    }
+                    //}
                     
                     exists_payment = new Payment()
                     {
