@@ -175,9 +175,9 @@ namespace REPOSITORIES.Repositories.VinWonder
         }
 
         public List<TicketSearchOffersViewModel> SearchOffers(
-         int supplierId, DateTime visitDate,
-         int adults, int children, int seniors,
-         string search, int? categoryId, int? ticketTypeId, int? playZoneId, int? productId)
+    int supplierId, DateTime visitDate,
+    int adults, int children, int seniors,
+    string search, int? categoryId, int? ticketTypeId, int? playZoneId, int? productId)
         {
             try
             {
@@ -188,17 +188,33 @@ namespace REPOSITORIES.Repositories.VinWonder
                 if (dt == null || dt.Rows.Count == 0)
                     return new List<TicketSearchOffersViewModel>();
 
-                // ✅ Cách chuẩn: dùng LINQ to DataTable, KHÔNG dùng ToList<T>()
                 var list = dt.AsEnumerable().Select(r => new TicketSearchOffersViewModel
                 {
+                    TicketId = r.Field<int?>("TicketId") ?? 0,
                     ProductId = r.Field<int?>("ProductId") ?? 0,
                     ProductName = r.Field<string>("ProductName"),
+
+                    // unit selling price
                     PriceAdult = r.Field<decimal?>("PriceAdult") ?? 0,
                     PriceChild = r.Field<decimal?>("PriceChild") ?? 0,
                     PriceSenior = r.Field<decimal?>("PriceSenior") ?? 0,
-                    TotalPrice = r.Field<decimal?>("TotalPrice") ?? 0
 
+                    // unit base
+                    BaseAdult = r.Field<decimal?>("BaseAdult"),
+                    BaseChild = r.Field<decimal?>("BaseChild"),
+                    BaseSenior = r.Field<decimal?>("BaseSenior"),
 
+                    // unit profit
+                    ProfitAdult = r.Field<decimal?>("ProfitAdult"),
+                    ProfitChild = r.Field<decimal?>("ProfitChild"),
+                    ProfitSenior = r.Field<decimal?>("ProfitSenior"),
+
+                    // totals
+                    TotalAmount = r.Field<decimal?>("TotalAmount"),
+                    BaseTotalAmount = r.Field<decimal?>("BaseTotalAmount"),
+                    ProfitTotalAmount = r.Field<decimal?>("ProfitTotalAmount"),
+
+                    VisitDate = r.Field<DateTime?>("VisitDate") ?? visitDate
                 }).ToList();
 
                 return list;
@@ -209,6 +225,7 @@ namespace REPOSITORIES.Repositories.VinWonder
                 return new List<TicketSearchOffersViewModel>();
             }
         }
+
 
 
     }
