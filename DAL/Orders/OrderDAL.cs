@@ -833,13 +833,13 @@ namespace DAL.Orders
             {
                 using (var _DbContext = new EntityDataContext(_connection))
                 {
-                    Order orders = await _DbContext.Order.FirstOrDefaultAsync(x => x.OrderId == order_id);
-                    if (orders != null && orders.OrderId > 0 && orders.ExpriryDate <= DateTime.Now)
-                    {
-                        orders.OrderStatus = (int)OrderStatus.CANCEL;
-                        _DbContext.Update(orders);
-                        await _DbContext.SaveChangesAsync();
-                    }
+                    //Order orders = await _DbContext.Order.FirstOrDefaultAsync(x => x.OrderId == order_id);
+                    //if (orders != null && orders.OrderId > 0 && orders.ExpriryDate <= DateTime.Now)
+                    //{
+                    //    orders.OrderStatus = (int)OrderStatus.CANCEL;
+                    //    _DbContext.Update(orders);
+                    //    await _DbContext.SaveChangesAsync();
+                    //}
                     return true;
                 }
             }
