@@ -298,7 +298,7 @@ namespace REPOSITORIES.Repositories
                         var PassengerViewModel = new PassengerViewModel();
                         PassengerViewModel.Name = item.FirstName + " " + item.LastName;
                         PassengerViewModel.PersonType = item.PaxType;
-                        PassengerViewModel.Gender = item.Title== "MRS"? false:true;
+                        PassengerViewModel.Gender = item.Title== "MRS"|| item.Title == "MS"? false:true;
                         PassengerViewModel.OrderId = order_id;
                         PassengerViewModel.GroupBookingId = string.Join(",", group_fly_id);
                         var passenger = PassengerDAL.CreatePassengers(PassengerViewModel);

@@ -452,9 +452,9 @@ namespace API_CORE.Controllers.Mail
                     email = email,
                     note = note,
                     Path = Path,
-                    CreatedTime=DateTime.Now,
+                    CreatedTime = DateTime.Now,
                 };
-               await MongoDBSMSAccess.InsertLogRecruitment(configuration, data);
+                await MongoDBSMSAccess.InsertLogRecruitment(configuration, data);
                 var resulstSendMail = await _mail_service.sendMailRecruitment(name, phone, location, area, email, note, Path);
 
                 if (!resulstSendMail)
@@ -481,6 +481,100 @@ namespace API_CORE.Controllers.Mail
                 LogHelper.InsertLogTelegram("sendMailChangePass - MailController: " + ex);
                 return null;
             }
+        }
+        [HttpPost("send-mail-tu-van-tour.json")]
+        public async Task<ActionResult> sendMailTuVanTour(string token)
+        {
+            try
+            {
+                //var order = new Order()
+                //{
+                //    name = 1000000,
+                //    ClientId = 9,
+                //    OrderNo = "F4039714",
+                //    OrderId = 1,
+                //    ServiceType = 1,
+                //    CreateTime = DateTime.Now,
+                //    ContactClientId = 2,
+                //    OrderStatus = 1,
+                //    ContractId = 3,
+                //    SmsContent = "Đặt hàng thành công"
+                //};
+                //var j_param = new Dictionary<string, string>
+                //        {
+                //            {"template_type","1" },
+                //            {"object", JsonConvert.SerializeObject(order) }
+                //        };
+                //var data_product = JsonConvert.SerializeObject(j_param);
+                //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:api_manual"]);
+
+                JArray objParr = null;
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:api_manual"]))
+                {
+                    string name = objParr[0]["name"].ToString();
+                    string phone = objParr[0]["phone"].ToString();
+                    string email = objParr[0]["email"].ToString();
+
+                    MailService mailService = new MailService();
+                    MailMessage message = new MailMessage();
+                    //message.To.Add("thang.nguyenvan1@vti.com.vn");
+
+                    var subject = string.Empty;
+
+                    subject = "Tư vấn Tour";
+
+                    message.Body = "<div>" +
+                    "<div> < label >Họ tên</label>" +
+                        "<div >" + name + "</div>" +
+                      "</div>" +
+                      "<div> < label >Số điện thoại</label>" +
+                        "<div >" + phone + "</div>" +
+                      "</div>" +
+                      "<div> < label >email</label>" +
+                        "<div >" + email + "</div>" +
+                      "</div>" +
+                       "</div>";
+                    ;
+
+                    message.Subject = subject;
+
+                    //config send email
+                    message.IsBodyHtml = true;
+                    message.From = new MailAddress(configuration["MAIL_CONFIG:FROM_MAIL"]);
+                    string sendEmailsFrom = configuration["MAIL_CONFIG:USERNAME"];
+                    string sendEmailsFromPassword = configuration["MAIL_CONFIG:PASSWORD"];
+                    SmtpClient smtp = new SmtpClient(configuration["MAIL_CONFIG:HOST"],
+                        Convert.ToInt32(configuration["MAIL_CONFIG:PORT"]));
+                    smtp.EnableSsl = true;
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtp.Credentials = new NetworkCredential(sendEmailsFrom, sendEmailsFromPassword);
+                    smtp.Timeout = 20000;
+                    var Email_TV = new MailAddress(configuration["MAIL_CONFIG:Tu_van"]);
+                    message.To.Add(Email_TV);
+                    smtp.Send(message);
+
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        msg = "Gửi mail thành công"
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "Key invalid!"
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("sendMail - MailController: " + ex);
+                return Ok(new { status = (int)ResponseType.ERROR, msg = "error: " + ex.ToString() });
+            }
+
         }
     }
 }
