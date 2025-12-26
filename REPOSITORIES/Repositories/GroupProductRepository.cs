@@ -50,7 +50,7 @@ namespace REPOSITORIES.Repositories
                 group = group.Where(x => x.IsShowHeader == true).ToList();
                 var list = new List<ArticleGroupViewModel>();
                 
-                list.AddRange(group.Select(x => new ArticleGroupViewModel() { id = x.Id, image_path = x.ImagePath, name = x.Name, order_no = (int)x.OrderNo, url_path = x.Path }).OrderBy(x => x.order_no).ToList());
+                list.AddRange(group.Select(x => new ArticleGroupViewModel() { id = x.Id, description = x.Description, image_path = x.ImagePath, name = x.Name, order_no = (int)x.OrderNo, url_path = x.Path }).OrderBy(x => x.order_no).ToList());
                 return list;
             }
             catch (Exception ex)

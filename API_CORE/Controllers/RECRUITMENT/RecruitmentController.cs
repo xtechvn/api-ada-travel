@@ -166,15 +166,15 @@ namespace API_CORE.Controllers.RECRUITMENT
                     //int skip = ((page - 1) <= 0) ? 0 : (page - 1) * take;
                     string cache_name = CacheType.Recruitment_CATEGORY_ID + _category_id;
                     string j_data = null;
-                    try
-                    {
-                        j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.InsertLogTelegram("NewsController - getListArticleByCategoryId: " + ex + "\n Token: " + token);
+                    //try
+                    //{
+                    //    j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_core"]));
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    LogHelper.InsertLogTelegram("NewsController - getListArticleByCategoryId: " + ex + "\n Token: " + token);
 
-                    }
+                    //}
                     List<ArticleGroupViewModel> group_product = null;
 
                     if (j_data != null)
