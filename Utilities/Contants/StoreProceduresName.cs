@@ -137,6 +137,8 @@ namespace Utilities.Contants
 
         public static string SP_fe_GetListHotel = "SP_fe_GetListHotel";
         public static string SP_fe_GetListHotelPosition = "SP_fe_GetListHotelPosition";
+        public static string SP_fe_GetListHotelFlashSale = "SP_fe_GetListHotelFlashSale";
+
         public static string SP_fe_GetHotelRoomByHotelId = "SP_fe_GetHotelRoomByHotelId";
         public static string SP_FE_GetHotelRoomPrice = "SP_FE_GetHotelRoomPrice";
         public static string SP_GetListProgramsPackageByRoomId = "SP_GetListProgramsPackageByRoomId";

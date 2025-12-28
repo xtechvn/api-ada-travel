@@ -124,6 +124,19 @@ namespace REPOSITORIES.Repositories.Hotel
                 throw;
             }
         }
+        public List<HotelFEDataModel> GetFEHotelListFlashSale(HotelFESearchModel model)
+        {
+            try
+            {
+                var dataTable = _hotelDAL.GetFEHotelListFlashSale(model);
+                return dataTable.ToList<HotelFEDataModel>();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public List<HotelFERoomDataModel> GetFEHotelRoomList(int hotel_id)
         {
             try

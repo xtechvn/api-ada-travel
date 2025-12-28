@@ -261,6 +261,29 @@ namespace DAL.Hotel
                 return null;
             }
         }
+        public DataTable GetFEHotelListFlashSale(HotelFESearchModel model)
+        {
+            try
+            {
+                SqlParameter[] objParams = new SqlParameter[]
+                {
+            new SqlParameter("@ProvinceId", model.ProvinceId ?? (object)DBNull.Value),
+            new SqlParameter("@PageIndex", model.PageIndex),
+            new SqlParameter("@PageSize", model.PageSize),
+                };
+
+                return _DbWorker.GetDataTable(
+                    StoreProceduresName.SP_fe_GetListHotelFlashSale,
+                    objParams
+                );
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("SP_fe_GetListHotelFlashSale - HotelDAL. " + ex);
+                return null;
+            }
+        }
+
         public DataTable GetFEHotelListPosition(HotelFESearchModel model)
         {
             try

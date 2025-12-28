@@ -2460,6 +2460,78 @@ namespace API_CORE.Controllers.B2C
                 return Ok(new { status = ResponseType.FAILED, msg = "error: " + ex.ToString() });
             }
         }
+        [HttpPost("flash-sale")]
+        public IActionResult GetHotelFlashSale(string token)
+        {
+            try
+            {
+                #region Test FIX CỨNG (GIỐNG search-by-location-position)
+        //        var j_param = new Dictionary<string, string>
+        //{
+        //    { "province_id", "1" },
+        //    { "page_index", "1" },
+        //    { "page_size", "10" }
+        //};
+
+        //        var data_product = JsonConvert.SerializeObject(j_param);
+
+        //        token = CommonHelper.Encode(
+        //            data_product,
+        //            configuration["DataBaseConfig:key_api:b2c"]
+        //        );
+                #endregion
+
+                // ===== DECODE TOKEN (BẮT BUỘC PHẢI CÓ) =====
+                JArray objParr = null;
+                if (!CommonHelper.GetParamWithKey(
+                        token,
+                        out objParr,
+                        configuration["DataBaseConfig:key_api:b2c"]))
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "Key invalid!"
+                    });
+                }
+
+                // ===== PARSE PARAM =====
+                string provinceId = objParr[0]["province_id"]?.ToString();
+                int pageIndex = objParr[0]["page_index"] != null
+                    ? Convert.ToInt32(objParr[0]["page_index"])
+                    : 1;
+
+                int pageSize = objParr[0]["page_size"] != null
+                    ? Convert.ToInt32(objParr[0]["page_size"])
+                    : 20;
+
+                // ===== CALL SERVICE =====
+                var data = hotelDetailRepository.GetFEHotelListFlashSale(
+                    new HotelFESearchModel
+                    {
+                        ProvinceId = provinceId,
+                        PageIndex = pageIndex,
+                        PageSize = pageSize
+                    });
+
+                return Ok(new
+                {
+                    status = (int)ResponseType.SUCCESS,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetHotelFlashSale - HotelB2CController: " + ex);
+                return Ok(new
+                {
+                    status = (int)ResponseType.ERROR,
+                    msg = ex.Message
+                });
+            }
+        }
+
+
 
         [HttpPost("search-by-location-position")]
         public async Task<ActionResult> ListByLocationPosition(string token)

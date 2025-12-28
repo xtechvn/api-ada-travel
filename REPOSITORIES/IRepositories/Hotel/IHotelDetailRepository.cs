@@ -39,5 +39,7 @@ namespace REPOSITORIES.IRepositories.Hotel
         Task<GenericViewModel<HotelPriceMongoDbModel>> GetListHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30);
         Task<GenericViewModel<HotelPriceMongoDbModel>> GetListAllHotelPriceByFilter(string hotel_id, List<int> client_types, DateTime arrivaldate, DateTime departuredate, string location = null, string stars = "", double? min_price = -1, double? max_price = -1, int? page_index = 1, int? page_size = 30, bool? is_commit = false);
         Task<string> UpSertHotelPrice(HotelPriceMongoDbModel item);
+
+        List<HotelFEDataModel> GetFEHotelListFlashSale(HotelFESearchModel model);
     }
 }
