@@ -550,7 +550,10 @@ namespace API_CORE.Controllers.Mail
                     smtp.Credentials = new NetworkCredential(sendEmailsFrom, sendEmailsFromPassword);
                     smtp.Timeout = 20000;
                     var Email_TV = new MailAddress(configuration["MAIL_CONFIG:Tu_van"]);
+                    var Email_TV_CC = new MailAddress(configuration["MAIL_CONFIG:Tu_van_cc"]);
                     message.To.Add(Email_TV);
+                    message.CC.Add(Email_TV_CC);
+                    message.CC.Add("anhhieuk51@gmail.com");
                     smtp.Send(message);
 
                     return Ok(new
