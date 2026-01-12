@@ -487,23 +487,13 @@ namespace API_CORE.Controllers.Mail
         {
             try
             {
-                //var order = new Order()
-                //{
-                //    name = 1000000,
-                //    ClientId = 9,
-                //    OrderNo = "F4039714",
-                //    OrderId = 1,
-                //    ServiceType = 1,
-                //    CreateTime = DateTime.Now,
-                //    ContactClientId = 2,
-                //    OrderStatus = 1,
-                //    ContractId = 3,
-                //    SmsContent = "Đặt hàng thành công"
-                //};
+  
                 //var j_param = new Dictionary<string, string>
                 //        {
-                //            {"template_type","1" },
-                //            {"object", JsonConvert.SerializeObject(order) }
+                //            {"name","1" },
+                //            {"phone","1" },
+                //            {"email","1" },
+                           
                 //        };
                 //var data_product = JsonConvert.SerializeObject(j_param);
                 //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:api_manual"]);
@@ -524,13 +514,13 @@ namespace API_CORE.Controllers.Mail
                     subject = "Tư vấn Tour";
 
                     message.Body = "<div>" +
-                    "<div> < label >Họ tên</label>" +
+                    "<div> <label>Họ tên</label>" +
                         "<div >" + name + "</div>" +
                       "</div>" +
-                      "<div> < label >Số điện thoại</label>" +
+                      "<div> <label>Số điện thoại</label>" +
                         "<div >" + phone + "</div>" +
                       "</div>" +
-                      "<div> < label >email</label>" +
+                      "<div> <label>email</label>" +
                         "<div >" + email + "</div>" +
                       "</div>" +
                        "</div>";
