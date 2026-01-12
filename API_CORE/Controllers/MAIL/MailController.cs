@@ -499,7 +499,7 @@ namespace API_CORE.Controllers.Mail
                 //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:api_manual"]);
 
                 JArray objParr = null;
-                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:api_manual"]))
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
                 {
                     string name = objParr[0]["name"].ToString();
                     string phone = objParr[0]["phone"].ToString();
@@ -511,17 +511,17 @@ namespace API_CORE.Controllers.Mail
 
                     var subject = string.Empty;
 
-                    subject = "Tư vấn Tour";
+                    subject = "Tư vấn Tour - "+name;
 
                     message.Body = "<div>" +
-                    "<div> <label>Họ tên</label>" +
-                        "<div >" + name + "</div>" +
+                    "<div>" +
+                        "<div> Họ tên:" + name + "</div>" +
                       "</div>" +
-                      "<div> <label>Số điện thoại</label>" +
-                        "<div >" + phone + "</div>" +
+                      "<div>" +
+                        "<div> Số điện thoại:" + phone + "</div>" +
                       "</div>" +
-                      "<div> <label>email</label>" +
-                        "<div >" + email + "</div>" +
+                      "<div>" +
+                        "<div> lời nhắn:" + email + "</div>" +
                       "</div>" +
                        "</div>";
                     ;
