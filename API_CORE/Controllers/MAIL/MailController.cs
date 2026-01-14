@@ -487,29 +487,19 @@ namespace API_CORE.Controllers.Mail
         {
             try
             {
-                //var order = new Order()
-                //{
-                //    name = 1000000,
-                //    ClientId = 9,
-                //    OrderNo = "F4039714",
-                //    OrderId = 1,
-                //    ServiceType = 1,
-                //    CreateTime = DateTime.Now,
-                //    ContactClientId = 2,
-                //    OrderStatus = 1,
-                //    ContractId = 3,
-                //    SmsContent = "Đặt hàng thành công"
-                //};
+  
                 //var j_param = new Dictionary<string, string>
                 //        {
-                //            {"template_type","1" },
-                //            {"object", JsonConvert.SerializeObject(order) }
+                //            {"name","1" },
+                //            {"phone","1" },
+                //            {"email","1" },
+                           
                 //        };
                 //var data_product = JsonConvert.SerializeObject(j_param);
                 //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:api_manual"]);
 
                 JArray objParr = null;
-                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:api_manual"]))
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2c"]))
                 {
                     string name = objParr[0]["name"].ToString();
                     string phone = objParr[0]["phone"].ToString();
@@ -521,17 +511,17 @@ namespace API_CORE.Controllers.Mail
 
                     var subject = string.Empty;
 
-                    subject = "Tư vấn Tour";
+                    subject = "Tư vấn Tour - "+name;
 
                     message.Body = "<div>" +
-                    "<div> < label >Họ tên</label>" +
-                        "<div >" + name + "</div>" +
+                    "<div>" +
+                        "<div> Họ tên:" + name + "</div>" +
                       "</div>" +
-                      "<div> < label >Số điện thoại</label>" +
-                        "<div >" + phone + "</div>" +
+                      "<div>" +
+                        "<div> Số điện thoại:" + phone + "</div>" +
                       "</div>" +
-                      "<div> < label >email</label>" +
-                        "<div >" + email + "</div>" +
+                      "<div>" +
+                        "<div> lời nhắn:" + email + "</div>" +
                       "</div>" +
                        "</div>";
                     ;
@@ -550,7 +540,10 @@ namespace API_CORE.Controllers.Mail
                     smtp.Credentials = new NetworkCredential(sendEmailsFrom, sendEmailsFromPassword);
                     smtp.Timeout = 20000;
                     var Email_TV = new MailAddress(configuration["MAIL_CONFIG:Tu_van"]);
+                    var Email_TV_CC = new MailAddress(configuration["MAIL_CONFIG:Tu_van_cc"]);
                     message.To.Add(Email_TV);
+                    message.CC.Add(Email_TV_CC);
+                    message.CC.Add("anhhieuk51@gmail.com");
                     smtp.Send(message);
 
                     return Ok(new
