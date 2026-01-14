@@ -124,10 +124,14 @@ namespace Utilities.Contants
         public static string SP_GetVinWonderBookingTicketByBookingID = "SP_GetVinWonderBookingTicketByBookingID";
         public static string SP_GetVinWonderBookingCustomerByBookingId = "SP_GetVinWonderBookingCustomerByBookingId";
         public static string SP_GetDetailTourProductByID = "SP_GetDetailTourProductByID";
+
         public static string SP_fe_GetListTourProduct = "SP_fe_GetListTourProduct";
         public static string SP_GetDetailOtherBookingById = "SP_GetDetailOtherBookingById";
         public static string SP_fe_GetListFavoriteTourProduct = "SP_fe_GetListFavoriteTourProduct";
         public static string SP_fe_GetListTourByAccountId = "SP_fe_GetListTourByAccountId";
+
+        public static string SP_GetListFlashSaleProductByFlashSaleId = "SP_GetListFlashSaleProductByFlashSaleId";
+
 
 
         public static string SP_GetListBankingAccountBySupplierId = "SP_GetListBankingAccountBySupplierId";

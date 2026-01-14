@@ -9,6 +9,7 @@ namespace Repositories.IRepositories
     public interface ITourRepository
     {
          public Task<Tour> GetTourById(long tour_id);
+        List<TourFEDataModel> GetFETourListFlashSale();
          Task<TourViewModel> GetDetailTourByID(long TourId);
         Task<TourProductDetailModel> GetTourProductById(long id);
         Task<List<ListTourProductViewModel>> GetListTourProduct(string TourType,long pagesize, long pageindex, string StartPoint, string Endpoint, string transportation = "");

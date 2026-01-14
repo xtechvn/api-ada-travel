@@ -88,6 +88,21 @@ namespace Repositories.Repositories
                 return null;
             }
         }
+        public List<TourFEDataModel> GetFETourListFlashSale()
+        {
+            try
+            {
+                var dataTable = tourProductDAL.GetFETourListFlashSale();
+                return dataTable != null
+                    ? dataTable.ToList<TourFEDataModel>()
+                    : new List<TourFEDataModel>();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public async Task<List<ListTourProductViewModel>> GetListTourProduct(string TourType, long pagesize, long pageindex, string StartPoint, string Endpoint,string transportation="")
         {
             try

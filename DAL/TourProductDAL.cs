@@ -44,6 +44,23 @@ namespace DAL
                 return null;
             }
         }
+        public DataTable GetFETourListFlashSale()
+        {
+            try
+            {
+                // SP mới không có param
+                return _DbWorker.GetDataTable(
+                    StoreProceduresName.SP_GetListFlashSaleProductByFlashSaleId, // tên SP bạn đang dùng
+                    null
+                );
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("SP_GetListFlashSaleProductByFlashSaleId - TourDAL. " + ex);
+                return null;
+            }
+        }
+
         public async Task<List<ListTourProductViewModel>> GetListTourProduct(string TourType, long pagesize, long pageindex, string StartPoint, string Endpoint,string transportation="")
         {
             try

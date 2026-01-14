@@ -128,6 +128,61 @@ namespace API_CORE.Controllers.B2C
 
         }
 
+        [HttpPost("flash-sale")]
+        public IActionResult GetTourFlashSale(string token)
+        {
+            try
+            {
+                // ===== DECODE TOKEN (BẮT BUỘC PHẢI CÓ) =====
+                JArray objParr = null;
+                if (!CommonHelper.GetParamWithKey(
+                        token,
+                        out objParr,
+                        configuration["DataBaseConfig:key_api:b2c"]))
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "Key invalid!"
+                    });
+                }
+
+                // ===== PARSE PARAM (optional - giữ cho tương thích FE) =====
+                // Vì SP tự lấy active flashsale + (nên TOP 8), nên params này chỉ để giữ contract
+                int pageIndex = objParr[0]["page_index"] != null
+                    ? Convert.ToInt32(objParr[0]["page_index"])
+                    : 1;
+
+                int pageSize = objParr[0]["page_size"] != null
+                    ? Convert.ToInt32(objParr[0]["page_size"])
+                    : 8;
+
+                if (pageIndex <= 0) pageIndex = 1;
+                if (pageSize <= 0) pageSize = 8;
+                if (pageSize > 8) pageSize = 8; // rule: max 8
+
+                // ===== CALL SERVICE =====
+                // Nếu bạn vẫn muốn paging thực sự, phải làm ở SP.
+                // Còn hiện tại SP nên TOP 8 => trả luôn.
+                var data = _TourRepository.GetFETourListFlashSale();
+
+                return Ok(new
+                {
+                    status = (int)ResponseType.SUCCESS,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetTourFlashSale - TourB2CController: " + ex);
+                return Ok(new
+                {
+                    status = (int)ResponseType.ERROR,
+                    msg = ex.Message
+                });
+            }
+        }
+
         [HttpPost("list-tour.json")]
         public async Task<ActionResult> GetListTourDetail(string token)
         {
