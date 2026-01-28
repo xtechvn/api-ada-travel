@@ -122,7 +122,7 @@ namespace API_CORE
             services.AddSingleton<IFlyBookingMongoRepository, FlyBookingMongoRepository>();
             services.AddSingleton<IHotelBookingMongoRepository, HotelBookingMongoRepository>();
             services.AddSingleton<IVinWonderBookingRepository, VinWonderBookingRepository>();
-
+            services.AddScoped<TTLockCacheService>();
             // services.AddMvc().AddNewtonsoftJson();
             services.AddControllersWithViews().AddNewtonsoftJson();
 

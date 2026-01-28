@@ -26,6 +26,7 @@ using ENTITIES.Models;
 using API_CORE.Service.Hotel;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using REPOSITORIES.Repositories.Hotel;
+using Entities.ViewModels.Lock;
 
 namespace API_CORE.Controllers.B2C
 {
@@ -44,8 +45,9 @@ namespace API_CORE.Controllers.B2C
         private IHotelBookingMongoRepository hotelBookingMongoRepository;
         private IIdentifierServiceRepository identifierServiceRepository;
         private HotelDataService hotelDataService;
+        private readonly TTLockCacheService _ttlockService;
 
-        public HotelB2CController(IConfiguration _configuration, IElasticsearchDataRepository _elasticsearchDataRepository, ITourRepository TourRepository, RedisConn _redisService,
+        public HotelB2CController(IConfiguration _configuration, IElasticsearchDataRepository _elasticsearchDataRepository, ITourRepository TourRepository, RedisConn _redisService, TTLockCacheService ttlockService,
             IServicePiceRepository _price_repository, IHotelDetailRepository _hotelDetailRepository, IHotelBookingMongoRepository _hotelBookingMongoRepository, IIdentifierServiceRepository _identifierServiceRepository)
         {
             configuration = _configuration;
@@ -59,7 +61,106 @@ namespace API_CORE.Controllers.B2C
             hotelBookingMongoRepository = _hotelBookingMongoRepository;
             identifierServiceRepository = _identifierServiceRepository;
             hotelDataService = new HotelDataService(_configuration, _hotelDetailRepository);
+            _ttlockService = ttlockService;
         }
+
+
+        [HttpPost("checkoutlook")]
+        public async Task<IActionResult> AutoCheckoutRun()
+        {
+            try
+            {
+                var now = DateTime.Now;
+
+                // 1) Quét tất cả phòng due
+                var rooms = hotelDetailRepository.GetRoomsDueCheckoutReset();
+                if (rooms == null || rooms.Count == 0)
+                {
+                    return Ok(new { isSuccess = true, message = "No rooms due", data = new List<AutoCheckoutRunItem>() });
+                }
+
+                var results = new List<AutoCheckoutRunItem>();
+
+                foreach (var r in rooms)
+                {
+                    var item = new AutoCheckoutRunItem
+                    {
+                        RoomId = r.RoomId,
+                        HotelId = r.HotelId,
+                        LockId = r.LockId,
+                        RoomCode = r.RoomCode,
+                        RoomName = r.RoomName
+                    };
+
+                    try
+                    {
+                        // 2) Generate pass
+                        var newPwd = PasswordHelper.GenerateNumeric(6);
+
+                        // 3) Call TTLock
+                        var apiRes = await _ttlockService.ChangeAdminKeyboardPwdAsync(r.LockId, newPwd, changeType: 2);
+                        if (apiRes == null || apiRes.errcode != 0)
+                        {
+                            item.Status = "FAIL";
+                            item.Message = $"TTLock lỗi: {apiRes?.errmsg ?? "unknown"}";
+                            results.Add(item);
+                            continue;
+                        }
+
+                        // 4) Encrypt trước khi lưu DB
+                        //var encPwd = _lockSecretProtector.Protect(newPwd);
+
+                        // 5) Atomic DB: update HotelRoom + insert LockResetHistory
+                        var historyId = hotelDetailRepository.AutoCheckoutResetLock(
+                            hotelId: r.HotelId,
+                            roomId: r.RoomId,
+                            lockId: r.LockId,
+                            bookingId: null,   // nếu sau này map được booking-room thì truyền vào
+                            resetType: 2,
+                            passwordEnc: newPwd,
+                            now: now
+                        );
+
+                        if (historyId <= 0)
+                        {
+                            item.Status = "SKIP";
+                            item.Message = "Idempotent: đã xử lý trước đó hoặc không đủ điều kiện.";
+                            results.Add(item);
+                            continue;
+                        }
+
+                        item.Status = "OK";
+                        item.Message = "Reset OK";
+                        item.HistoryId = historyId;
+                        item.Password = newPwd; // n8n dùng gửi mail nội bộ
+                        results.Add(item);
+                    }
+                    catch (Exception exOne)
+                    {
+                        item.Status = "FAIL";
+                        item.Message = "Exception: " + exOne.Message;
+                        results.Add(item);
+                    }
+                }
+
+                return Ok(new
+                {
+                    isSuccess = true,
+                    message = "Done",
+                    count = results.Count,
+                    ok = results.Count(x => x.Status == "OK"),
+                    fail = results.Count(x => x.Status == "FAIL"),
+                    skip = results.Count(x => x.Status == "SKIP"),
+                    data = results
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("AutoCheckoutRun: " + ex);
+                return Ok(new { isSuccess = false, message = "Có lỗi xảy ra" });
+            }
+        }
+
 
         [HttpPost("suggestion")]
         public async Task<ActionResult> GetListProductAll(string token)
@@ -2460,76 +2561,8 @@ namespace API_CORE.Controllers.B2C
                 return Ok(new { status = ResponseType.FAILED, msg = "error: " + ex.ToString() });
             }
         }
-        [HttpPost("flash-sale")]
-        public IActionResult GetHotelFlashSale(string token)
-        {
-            try
-            {
-                #region Test FIX CỨNG (GIỐNG search-by-location-position)
-        //        var j_param = new Dictionary<string, string>
-        //{
-        //    { "province_id", "1" },
-        //    { "page_index", "1" },
-        //    { "page_size", "10" }
-        //};
+       
 
-        //        var data_product = JsonConvert.SerializeObject(j_param);
-
-        //        token = CommonHelper.Encode(
-        //            data_product,
-        //            configuration["DataBaseConfig:key_api:b2c"]
-        //        );
-                #endregion
-
-                // ===== DECODE TOKEN (BẮT BUỘC PHẢI CÓ) =====
-                JArray objParr = null;
-                if (!CommonHelper.GetParamWithKey(
-                        token,
-                        out objParr,
-                        configuration["DataBaseConfig:key_api:b2c"]))
-                {
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.ERROR,
-                        msg = "Key invalid!"
-                    });
-                }
-
-                // ===== PARSE PARAM =====
-                string provinceId = objParr[0]["province_id"]?.ToString();
-                int pageIndex = objParr[0]["page_index"] != null
-                    ? Convert.ToInt32(objParr[0]["page_index"])
-                    : 1;
-
-                int pageSize = objParr[0]["page_size"] != null
-                    ? Convert.ToInt32(objParr[0]["page_size"])
-                    : 20;
-
-                // ===== CALL SERVICE =====
-                var data = hotelDetailRepository.GetFEHotelListFlashSale(
-                    new HotelFESearchModel
-                    {
-                        ProvinceId = provinceId,
-                        PageIndex = pageIndex,
-                        PageSize = pageSize
-                    });
-
-                return Ok(new
-                {
-                    status = (int)ResponseType.SUCCESS,
-                    data = data
-                });
-            }
-            catch (Exception ex)
-            {
-                LogHelper.InsertLogTelegram("GetHotelFlashSale - HotelB2CController: " + ex);
-                return Ok(new
-                {
-                    status = (int)ResponseType.ERROR,
-                    msg = ex.Message
-                });
-            }
-        }
 
 
 

@@ -22,6 +22,29 @@ namespace DAL.Hotel
         {
             _DbWorker = new DbWorker(connection);
         }
+
+
+        public DataTable GetRoomsDueCheckoutReset()
+        {
+            return _DbWorker.GetDataTable("SP_GetRoomsDueCheckoutReset", null);
+        }
+
+        public DataTable AutoCheckoutResetLock(long hotelId, int roomId, long lockId, long? bookingId,
+            byte resetType, string passwordEnc, DateTime now)
+        {
+            SqlParameter[] objParam =
+            {
+            new SqlParameter("@HotelId", hotelId),
+            new SqlParameter("@RoomId", roomId),
+            new SqlParameter("@LockId", lockId),
+            new SqlParameter("@BookingId", (object)bookingId ?? DBNull.Value),
+            new SqlParameter("@ResetType", resetType),
+            new SqlParameter("@PasswordEnc", passwordEnc ?? (object)DBNull.Value),
+            new SqlParameter("@Now", now),
+        };
+
+            return _DbWorker.GetDataTable2("SP_AutoCheckoutResetLock", objParam);
+        }
         public async Task<ENTITIES.Models.Hotel> GetIDByHotelID(string hotel_id)
         {
             try

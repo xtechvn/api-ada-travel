@@ -1,4 +1,5 @@
 ﻿using Entities.ViewModels;
+using Entities.ViewModels.Lock;
 using ENTITIES.APPModels.PushHotel;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Booking;
@@ -13,6 +14,12 @@ namespace REPOSITORIES.IRepositories.Hotel
 {
     public interface IHotelDetailRepository
     {
+
+        List<RoomDueResetDto> GetRoomsDueCheckoutReset();
+        int AutoCheckoutResetLock(long hotelId, int roomId, long lockId, long? bookingId,
+        byte resetType, string passwordEnc, DateTime now);
+
+
         Dictionary<string, string> getLocationByStreet(string street);
 
         List<HotelFEDataModel> GetFEHotelList(HotelFESearchModel model);

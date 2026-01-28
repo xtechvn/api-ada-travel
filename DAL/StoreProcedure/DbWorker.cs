@@ -1,4 +1,5 @@
 ﻿
+using MongoDB.Driver.Core.Configuration;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -14,6 +15,27 @@ namespace DAL.StoreProcedure
         {
             _connection = connection;
         }
+        public DataTable GetDataTable2(string spName, SqlParameter[] parameters)
+        {
+            var dt = new DataTable();
+
+            using (var conn = new SqlConnection(_connection))
+            using (var cmd = new SqlCommand(spName, conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                if (parameters != null)
+                    cmd.Parameters.AddRange(parameters);
+
+                using (var da = new SqlDataAdapter(cmd))
+                {
+                    conn.Open();
+                    da.Fill(dt);
+                }
+            }
+
+            return dt;
+        }
+
 
         /// <summary>
         /// Get DataTable

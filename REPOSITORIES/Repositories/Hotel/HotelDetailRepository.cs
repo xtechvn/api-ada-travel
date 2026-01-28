@@ -2,6 +2,7 @@
 using DAL.MongoDB;
 using Entities.ConfigModels;
 using Entities.ViewModels;
+using Entities.ViewModels.Lock;
 using ENTITIES.APPModels.PushHotel;
 using ENTITIES.Models;
 using ENTITIES.ViewModels.Hotel;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Options;
 using REPOSITORIES.IRepositories.Hotel;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Utilities;
@@ -32,6 +34,57 @@ namespace REPOSITORIES.Repositories.Hotel
             hotelPriceMongoDAL = new HotelPriceMongoDAL(_dataBaseConfig.Value.MongoServer.connection_string, _dataBaseConfig.Value.MongoServer.catalog_core);
 
         }
+
+
+        public List<RoomDueResetDto> GetRoomsDueCheckoutReset()
+        {
+            try
+            {
+                var dt = _hotelDAL.GetRoomsDueCheckoutReset();
+                var list = new List<RoomDueResetDto>();
+                if (dt == null || dt.Rows.Count == 0) return list;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    list.Add(new RoomDueResetDto
+                    {
+                        RoomId = Convert.ToInt32(r["RoomId"]),
+                        HotelId = Convert.ToInt64(r["HotelId"]),
+                        LockId = Convert.ToInt64(r["LockId"]),
+                        RoomName = r["RoomName"]?.ToString(),
+                        RoomCode = r["RoomCode"]?.ToString(),
+                        LockResetCheckoutAt = Convert.ToDateTime(r["LockResetCheckoutAt"]),
+                    });
+                }
+                return list;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetRoomsDueCheckoutReset: " + ex);
+                return new List<RoomDueResetDto>();
+            }
+        }
+
+        public int AutoCheckoutResetLock(long hotelId, int roomId, long lockId, long? bookingId,
+            byte resetType, string passwordEnc, DateTime now)
+        {
+            try
+            {
+                var dt = _hotelDAL.AutoCheckoutResetLock(hotelId, roomId, lockId, bookingId, resetType, passwordEnc, now);
+                if (dt == null || dt.Rows.Count == 0) return 0;
+
+                var val = dt.Rows[0]["Id"];
+                if (val == null || val == DBNull.Value) return 0;
+
+                return Convert.ToInt32(val);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("AutoCheckoutResetLock: " + ex);
+                return 0;
+            }
+        }
+
 
         /// <summary>
         /// cuonglv: lấy ra thông tin tỉnh thành, quận huyện
