@@ -235,5 +235,30 @@ namespace DAL
                 return null;
             }
         }
+        public async Task<DataTable> GetListTourPriceByTourProductId(long id, string client_types = null)
+        {
+            try
+            {
+
+                SqlParameter[] objParam = new SqlParameter[2];
+                objParam[0] = new SqlParameter("@TourProductId", id);
+                if (client_types == null || client_types.Trim() == "")
+                {
+                    objParam[1] = new SqlParameter("@ClientType", DBNull.Value);
+
+                }
+                else
+                {
+                    objParam[1] = new SqlParameter("@ClientType", client_types);
+
+                }
+                return _DbWorker.GetDataTable(StoreProceduresName.SP_GetListTourPriceByTourProductId, objParam);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetListTourProgramPackagesByTourProductId - TourProductDAL: " + ex);
+                return null;
+            }
+        }
     }
 }

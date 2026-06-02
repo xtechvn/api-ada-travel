@@ -178,6 +178,7 @@ namespace Utilities.Contants
         public static string SP_GetListNational = "SP_GetListNational";
         public static string SP_GetListProvinces = "SP_GetListProvinces";
 
+        public static string SP_GetListTourPriceByTourProductId = "SP_GetListTourPriceByTourProductId";
         public static string SP_GetListTourProgramPackagesByTourProductId = "SP_GetListTourProgramPackagesByTourProductId";
         public static string SP_fe_SearchHotels = "SP_fe_SearchHotels";
         public static string SP_fe_SearchHotelsPosition = "SP_fe_SearchHotelsPosition";

@@ -968,7 +968,8 @@ namespace API_CORE.Controllers.B2B
 
                         tourProduct.OtherImages = attachments;
                     }
-                    var packages = await _TourRepository.GetListTourProgramPackagesByTourProductId(id, type);
+                    //var packages = await _TourRepository.GetListTourProgramPackagesByTourProductId(id, type);
+                    var packages = await _TourRepository.GetListTourPriceByTourProductId(id, type);//bản mới()
                     if (packages != null && packages.Count > 0)
                     {
                         var selected_packages = packages.OrderBy(x => x.AdultPrice).ToList();

@@ -189,6 +189,24 @@ namespace Repositories.Repositories
                 return null;
             }
         }
+        public async Task<List<TourProgramPackages>> GetListTourPriceByTourProductId(long id, string client_types = null)
+        {
+            try
+            {
+                var dt = await tourProductDAL.GetListTourPriceByTourProductId(id,client_types);
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    var data = dt.ToList<TourProgramPackages>();
+                    return data;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetListTourProgramPackagesByTourProductId - TourRepository: " + ex);
+                return null;
+            }
+        }
         public async Task<string> saveBooking(BookingTourMongoViewModel data, string booking_id)
         {
             try
