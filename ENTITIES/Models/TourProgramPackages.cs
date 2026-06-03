@@ -23,5 +23,6 @@ namespace ENTITIES.Models
         public DateTime? UpdatedDate { get; set; }
         public int RemainingQuantity { get; set; }
         public string StatusName { get; set; }
+        public double? Profit { get; set; }
     }
 }

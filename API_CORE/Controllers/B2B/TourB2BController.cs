@@ -1053,7 +1053,8 @@ namespace API_CORE.Controllers.B2B
                     int db_index = Convert.ToInt32(configuration["Redis:Database:db_core"]);
                     redisService.clear(cache_name, db_index);
                     request.tour_product = await _TourRepository.GetDetailTourProductById(id);
-                    var packages = await _TourRepository.GetListTourProgramPackagesByTourProductId(id, request.client_type);
+                    //var packages = await _TourRepository.GetListTourProgramPackagesByTourProductId(id, request.client_type);
+                    var packages = await _TourRepository.GetListTourPriceByTourProductId(id, request.client_type);// theo lịch trình tour bản mới
                     if (packages != null && packages.Count > 0)
                     {
                         if (!request.is_daily && request.tour_product_package_id > 0)
