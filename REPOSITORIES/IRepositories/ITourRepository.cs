@@ -23,5 +23,6 @@ namespace Repositories.IRepositories
         Task<TourProduct> GetDetailTourProductById(long id);
         Task<List<ListTourProductViewModel>> GetListTourProductPosition(string TourType, long pagesize, long pageindex, string StartPoint, string Endpoint, long PositionType);
         Task<List<TourProgramPackages>> GetListTourPriceByTourProductId(long id, string client_types = null);
+        Task<List<TourItinerary>> GetTourItineraryByDepartureId(int TourDepartureId);
     }
 }

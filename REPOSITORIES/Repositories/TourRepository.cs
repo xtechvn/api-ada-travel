@@ -256,6 +256,18 @@ namespace Repositories.Repositories
                 LogHelper.InsertLogTelegram("GetTourProductById - TourRepository: " + ex);
                 return null;
             }
+        }    
+        public async Task<List<TourItinerary>> GetTourItineraryByDepartureId(int TourDepartureId)
+        {
+            try
+            {
+                return await tourProductDAL.GetTourItineraryByDepartureId(TourDepartureId);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetTourItineraryByDepartureId - TourRepository: " + ex);
+                return null;
+            }
         }
     }
     

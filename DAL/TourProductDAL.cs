@@ -260,5 +260,27 @@ namespace DAL
                 return null;
             }
         }
+        public async Task<List<TourItinerary>> GetTourItineraryByDepartureId(int TourDepartureId)
+        {
+            try
+            {
+
+                SqlParameter[] objParam = new SqlParameter[1];
+
+                objParam[0] = new SqlParameter("@TourDepartureId", TourDepartureId);
+
+                var dt = _DbWorker.GetDataTable(StoreProceduresName.sp_GetTourItineraryByDepartureId, objParam);
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    var data = dt.ToList<TourItinerary>();
+                    return data;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetTourItineraryByDepartureId - TourProductDAL: " + ex);
+            }
+            return new List<TourItinerary>();
+        }
     }
 }

@@ -241,7 +241,7 @@ namespace API_CORE.Controllers.B2B
                         }); ;
                     }
 
-                    var listnational = await _tourIESRepository.GetListTour(startpoint, endpoint, tourtype,"", pageindex, pagesize, true, false);
+                    var listnational = await _tourIESRepository.GetListTour(startpoint, endpoint, tourtype, "", pageindex, pagesize, true, false);
                     if (listnational != null)
                     {
                         List<string> OtherImages = new List<string>();
@@ -819,7 +819,7 @@ namespace API_CORE.Controllers.B2B
                     string endpoint = objParr[0]["endpoint"].ToString();
                     string startpoint = objParr[0]["startpoint"].ToString();
                     int tourtype = Convert.ToInt32(objParr[0]["tourtype"].ToString());
-                    string clienttype =objParr[0]["clienttype"].ToString();
+                    string clienttype = objParr[0]["clienttype"].ToString();
                     int db_index = Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_core"]);
                     //var cache_name = CacheName.B2B_TOUR_Search + startpoint + endpoint+ pageindex+pagesize;
                     var cache_name = CacheName.B2B_TOUR_Search + "_" + tourtype + "_" + startpoint + endpoint + pageindex + pagesize;
@@ -839,7 +839,7 @@ namespace API_CORE.Controllers.B2B
                     if (startpoint.Trim() == "-1") startpoint = "";
                     if (endpoint.Trim() == "-1") endpoint = "";
                     var list_tour = await _TourRepository.GetListTourProduct(tourtype.ToString(), pagesize, pageindex, startpoint, endpoint);
-                    foreach(var item in list_tour)
+                    foreach (var item in list_tour)
                     {
                         var packages = await _TourRepository.GetListTourProgramPackagesByTourProductId(item.Id, clienttype);
                         if (packages != null && packages.Count > 0)
@@ -851,7 +851,7 @@ namespace API_CORE.Controllers.B2B
                             item.packages = 0;
                         }
                     }
-                    
+
                     if (list_tour != null && list_tour.Count > 0)
                     {
                         redisService.Set(cache_name, JsonConvert.SerializeObject(list_tour), db_index);
@@ -1190,7 +1190,7 @@ namespace API_CORE.Controllers.B2B
                 if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
                 {
                     var id = objParr[0]["booking_id"].ToString();
-                    if (id ==null || id.Trim()=="")
+                    if (id == null || id.Trim() == "")
                     {
                         return Ok(new
                         {
@@ -1200,7 +1200,7 @@ namespace API_CORE.Controllers.B2B
                         });
                     }
                     var booking = await _TourRepository.getBookingByID(new string[] { id });
-                    if(booking!=null && booking.Count > 0)
+                    if (booking != null && booking.Count > 0)
                     {
                         var exists = booking[0];
                         TourPaymentModel model = new TourPaymentModel()
@@ -1221,8 +1221,8 @@ namespace API_CORE.Controllers.B2B
                             phoneNumber = exists.contact.phoneNumber,
                             tourName = exists.tour_product.TourName,
                             voucherName = "",
-                            orderId=exists.order_id==null? -1: (long)exists.order_id,
-                            
+                            orderId = exists.order_id == null ? -1 : (long)exists.order_id,
+
                         };
                         return Ok(new
                         {
@@ -1246,5 +1246,52 @@ namespace API_CORE.Controllers.B2B
             }
 
         }
+        #region TourItinerary
+        [HttpPost("get-tour-itinerary")]
+        public async Task<ActionResult> GetListTourItinerary(string token)
+        {
+            try
+            {
+                #region Test
+                //var j_param = new Dictionary<string, string>
+                //{
+                //    {"id", "2"}
+                //};
+                //var data_product = JsonConvert.SerializeObject(j_param);
+                //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                #endregion
+                JArray objParr = null;
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
+                {
+                    var id = Convert.ToInt32(objParr[0]["id"].ToString());
+                    var data = await _TourRepository.GetTourItineraryByDepartureId(id);
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        data = data != null ? data : null,
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "Key invalid!"
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("ListByLocation - HotelB2BController: " + ex);
+
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.ERROR,
+                msg = "Key invalid!"
+            });
+        }
+        #endregion
     }
 }
