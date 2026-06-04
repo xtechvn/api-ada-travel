@@ -16,6 +16,7 @@ namespace ENTITIES.Models
         public bool? IsDaily { get; set; }
         public double? AdultPrice { get; set; }
         public double? ChildPrice { get; set; }
+        public double? InfPrice { get; set; }
         public int? ClientType { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
@@ -23,6 +24,8 @@ namespace ENTITIES.Models
         public DateTime? UpdatedDate { get; set; }
         public int RemainingQuantity { get; set; }
         public string StatusName { get; set; }
-        public double? Profit { get; set; }
+        public double? AdtProfit { get; set; }
+        public double? ChdProfit { get; set; }
+        public double? InfProfit { get; set; }
     }
 }
