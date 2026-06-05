@@ -116,6 +116,7 @@ namespace API_CORE
             services.AddSingleton<IDebtGuaranteeRepository, DebtGuaranteeRepository>();
             services.AddSingleton<ISaveBookingRepository, SaveBookingRepository>();
             services.AddTransient<IIdentifierServiceRepository, IdentifierServiceRepository>();
+            services.AddTransient<IFlightWarehouseRepository, FlightWarehouseRepository>();
             services.AddSwaggerGen();
 
             // Mongo DB                        

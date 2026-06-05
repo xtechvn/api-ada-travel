@@ -204,6 +204,8 @@ namespace Utilities.Contants
         public static string sp_UpdateDebtGuarantee = "sp_UpdateDebtGuarantee";
         public static string SP_InsertOrder = "SP_InsertOrder";
         public static string sp_GetTourItineraryByDepartureId = "sp_GetTourItineraryByDepartureId";
+
+        public static string SP_GetListFlightWarehouse = "SP_GetListFlightWarehouse";
     }
 
 }
