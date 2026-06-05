@@ -58,12 +58,12 @@ namespace DAL
             try
             {
 
-                SqlParameter[] objParam = new SqlParameter[1];
+                SqlParameter[] objParam = new SqlParameter[2];
                 objParam[0] = new SqlParameter("@ClientId", clientId);
+                objParam[1] = new SqlParameter("@Id", DBNull.Value);
 
-                DataTable tb = new DataTable();
-                _DbWorker.Fill(tb, StoreProceduresName.SP_GetUserAgentByClientId, objParam);
-
+                DataTable tb= _DbWorker.GetDataTable( StoreProceduresName.SP_GetUserAgentByClientId, objParam);
+                if (tb == null || tb.Rows.Count == 0) return null;
                 var s = tb.ToList<UserAgentSPModel>().FirstOrDefault();
                 if (s != null && s.UserId > 0) return s.UserId;
             }

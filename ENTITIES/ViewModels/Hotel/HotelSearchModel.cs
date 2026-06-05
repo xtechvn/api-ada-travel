@@ -70,6 +70,7 @@ namespace ENTITIES.ViewModels.Hotel
     public class HotelSearchEntities
     {
         public string hotel_id { get; set; }
+        public int hotel_supplier_id { get; set; }
         public string name { get; set; }
         public double star { get; set; }
         public long review_count { get; set; }

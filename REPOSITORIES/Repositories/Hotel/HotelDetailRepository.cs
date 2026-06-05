@@ -25,6 +25,7 @@ namespace REPOSITORIES.Repositories.Hotel
         private readonly DAL.Programs.ProgramsDAL _programsDAL;
         private readonly HotelPositionDAL _hotelPositionDAL;
         private readonly HotelPriceMongoDAL hotelPriceMongoDAL;
+        private readonly HotelRoomFundDetailDAL _hotelDALhotelRoomFundDetailDAL;
 
         public HotelDetailRepository(IOptions<DataBaseConfig> _dataBaseConfig)
         {
@@ -32,6 +33,7 @@ namespace REPOSITORIES.Repositories.Hotel
             _programsDAL = new DAL.Programs.ProgramsDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
             _hotelPositionDAL = new HotelPositionDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
             hotelPriceMongoDAL = new HotelPriceMongoDAL(_dataBaseConfig.Value.MongoServer.connection_string, _dataBaseConfig.Value.MongoServer.catalog_core);
+            _hotelDALhotelRoomFundDetailDAL = new DAL.Hotel.HotelRoomFundDetailDAL(_dataBaseConfig.Value.SqlServer.ConnectionString);
 
         }
 
@@ -490,6 +492,19 @@ namespace REPOSITORIES.Repositories.Hotel
             }
             catch (Exception ex)
             {
+                return null;
+            }
+        }
+        public async Task<List<HotelRoomFundDetailModel>> GetListHotelRoomFundDetailByHotelIdAndSupplierId(int HotelId, int SupplierId, DateTime? StartDate=null, DateTime? EndDate=null)
+        {
+            try
+            {
+
+                return await _hotelDALhotelRoomFundDetailDAL.GetListHotelRoomFundDetailByHotelIdAndSupplierId(HotelId,SupplierId,StartDate,EndDate);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetListHotelRoomFundDetailByHotelIdAndSupplierId - HotelDetailRepository. " + ex);
                 return null;
             }
         }

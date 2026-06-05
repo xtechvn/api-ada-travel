@@ -206,6 +206,7 @@ namespace Utilities.Contants
         public static string sp_GetTourItineraryByDepartureId = "sp_GetTourItineraryByDepartureId";
 
         public static string SP_GetListFlightWarehouse = "SP_GetListFlightWarehouse";
+        public static string sp_GetListHotelRoomFundDetailByHotelIdAndSupplierId = "sp_GetListHotelRoomFundDetailByHotelIdAndSupplierId";
     }
 
 }

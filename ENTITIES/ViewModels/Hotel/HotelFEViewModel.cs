@@ -27,6 +27,7 @@ namespace ENTITIES.ViewModels.Hotel
     public class HotelFEDataModel
     {
         public int Id { get; set; }
+        public int SupplierId { get; set; }
         public string Name { get; set; }
         public string HotelId { get; set; }
         public string ShortName { get; set; }

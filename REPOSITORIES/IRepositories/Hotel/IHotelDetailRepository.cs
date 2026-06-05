@@ -48,5 +48,6 @@ namespace REPOSITORIES.IRepositories.Hotel
         Task<string> UpSertHotelPrice(HotelPriceMongoDbModel item);
 
         List<HotelFEDataModel> GetFEHotelListFlashSale(HotelFESearchModel model);
+        Task<List<HotelRoomFundDetailModel>> GetListHotelRoomFundDetailByHotelIdAndSupplierId(int HotelId, int SupplierId, DateTime? StartDate=null, DateTime? EndDate=null);
     }
 }

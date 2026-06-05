@@ -1605,6 +1605,7 @@ namespace API_CORE.Controllers
                                 result.Add(new HotelSearchEntities
                                 {
                                     hotel_id = hotel.Id.ToString(),
+                                    hotel_supplier_id = hotel.SupplierId,
                                     name = hotel.Name,
                                     star = hotel.Star,
                                     country = hotel.Country,
@@ -1958,6 +1959,82 @@ namespace API_CORE.Controllers
                 return Ok(new { status = ((int)ResponseType.ERROR).ToString(), msg = "error: " + ex.ToString() });
             }
 
+        }
+
+        [HttpPost("hotel-manual/get-room-fund.json")]
+        public async Task<ActionResult> getHotelManualRoomsFund(string token)
+        {
+            try
+            {
+                #region Test
+
+                //var j_param = new Dictionary<string, string>
+                //    {
+                //          { "hotelId", ""},
+                //          { "supplierId", ""},
+                //          { "startDate", ""},
+                //          { "endDate", ""},
+                //    };
+
+                //var data_product = JsonConvert.SerializeObject(j_param);
+                //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                #endregion
+
+                JArray objParr = null;
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
+                {
+                    int hotelId = Convert.ToInt32(objParr[0]["hotelId"]);
+                    int supplierId = Convert.ToInt32(objParr[0]["supplierId"]);
+                    string startDate_str = objParr[0]["startDate"].ToString();
+                    string endDate_str = objParr[0]["endDate"].ToString();
+                    DateTime startDate, endDate;
+                    if (!string.IsNullOrEmpty(startDate_str) && !string.IsNullOrEmpty(endDate_str))
+                    {
+                        startDate = DateTime.ParseExact(startDate_str, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                        endDate = DateTime.ParseExact(endDate_str, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                        var data = await hotelDetailRepository.GetListHotelRoomFundDetailByHotelIdAndSupplierId(hotelId, supplierId, startDate, endDate);
+
+                        if (data != null && data.Count>0) {
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.SUCCESS,
+                                msg = "time không hợp lệ",
+                                data = data
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new
+                            {
+                                status = (int)ResponseType.ERROR,
+                                msg = "không có data hợp lệ",
+                                
+                            });
+                        }
+                         
+                    }
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "time không hợp lệ"
+                    });
+                }
+                return Ok(new
+                {
+                    status = (int)ResponseType.ERROR,
+                    msg = "key không hợp lệ"
+                });
+
+            }
+            catch (Exception ex)
+            {
+                LogService.InsertLog("VinController - getHotelManualRoomsFund: " + ex.ToString());
+                return Ok(new 
+                { 
+                    status = ((int)ResponseType.ERROR).ToString(),
+                    msg = "error: " 
+                });
+            }
         }
         #endregion
     }
