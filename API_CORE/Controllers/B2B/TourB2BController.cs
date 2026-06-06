@@ -201,17 +201,17 @@ namespace API_CORE.Controllers.B2B
         public async Task<ActionResult> GetListTourSearch(string token)
         {
             #region Test
-            //var j_param = new Dictionary<string, object>
-            //    {
-            //        {"startpoint", "-1"},
-            //        {"endpoint", "2"},
-            //        {"tourtype", "1"},
-            //        {"pageindex", "1"},
-            //        {"pagesize", "20"},
+            var j_param = new Dictionary<string, object>
+                {
+                    {"startpoint", "-1"},
+                    {"endpoint", "2"},
+                    {"tourtype", "1"},
+                    {"pageindex", "1"},
+                    {"pagesize", "20"},
 
-            //    };
-            //var data_product = JsonConvert.SerializeObject(j_param);
-            //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+                };
+            var data_product = JsonConvert.SerializeObject(j_param);
+            token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
             #endregion
             try
             {
@@ -841,7 +841,7 @@ namespace API_CORE.Controllers.B2B
                     var list_tour = await _TourRepository.GetListTourProduct(tourtype.ToString(), pagesize, pageindex, startpoint, endpoint);
                     foreach (var item in list_tour)
                     {
-                        var packages = await _TourRepository.GetListTourProgramPackagesByTourProductId(item.Id, clienttype);
+                        var packages = await _TourRepository.GetListTourPriceByTourProductId(item.Id, clienttype);
                         if (packages != null && packages.Count > 0)
                         {
                             item.packages = 1;
