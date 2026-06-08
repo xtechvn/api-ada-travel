@@ -35,5 +35,13 @@ namespace REPOSITORIES.Repositories.Fly
 
             return null;
         }
+        public async Task<FlightWarehouseBookingModel> GetBookingById(int id)
+        {
+            return await flightWarehouseBookingDAL.GetById(id);
+        }
+        public async Task<List<FlightWarehouseSegmentModel>> GetSegmentsByBookingId(int bookingId)
+        {
+            return await flightWarehouseBookingDAL.GetSegmentsByBookingId(bookingId);
+        }
     }
 }

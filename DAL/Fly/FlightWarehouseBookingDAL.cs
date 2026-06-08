@@ -49,5 +49,55 @@ namespace DAL.Fly
             }
             return null;
         }
+        public async Task<FlightWarehouseBookingModel> GetById(int id)
+        {
+            try
+            {
+
+                SqlParameter[] objParam = new SqlParameter[1];
+
+                objParam[0] = new SqlParameter("@Id", id);
+
+
+
+                var result = _DbWorker.GetDataTable(StoreProceduresName.sp_GetDetailFlightWarehouseBooking, objParam);
+                if (result != null && result.Rows.Count > 0)
+                {
+                    var data = result.ToList<FlightWarehouseBookingModel>();
+                    return data[0];
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetById - FlightWarehouseBookingDAL: " + ex);
+            }
+            return null;
+        }
+        public async Task<List<FlightWarehouseSegmentModel>> GetSegmentsByBookingId(int bookingId)
+        {
+            try
+            {
+
+                SqlParameter[] objParam = new SqlParameter[1];
+
+                objParam[0] = new SqlParameter("@BookingId", bookingId);
+
+
+
+                var result = _DbWorker.GetDataTable(StoreProceduresName.sp_GetDetailFlightWarehouseSegmentByBookingId, objParam);
+                if (result != null && result.Rows.Count > 0)
+                {
+                    var data = result.ToList<FlightWarehouseSegmentModel>();
+                    return data;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetByBookingId - FlightWarehouseSegmentDAL: " + ex);
+            }
+            return null;
+        }
     }
 }

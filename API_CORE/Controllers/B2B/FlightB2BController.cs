@@ -86,6 +86,65 @@ namespace API_CORE.Controllers.B2B
             }
 
         }
+        [HttpPost("get-detail")]
+        public async Task<ActionResult> GetDetail(string token)
+        {
+            #region Test
+            //var j_param = new Dictionary<string, object>
+            //    {
+            //      
+            //        {"id", "1"},
 
+            //    };
+            //var data_product = JsonConvert.SerializeObject(j_param);
+            //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+            #endregion
+            try
+            {
+                var tour_type_list = new List<int>() { (int)TourType.Noi_Dia, (int)TourType.In_bound, (int)TourType.Out_bound };
+                JArray objParr = null;
+
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
+                {
+                    var id = Convert.ToInt32(objParr[0]["id"]);
+                    var Booking = await _flightWarehouseRepository.GetBookingById(id);
+                    var Segment = await _flightWarehouseRepository.GetSegmentsByBookingId(id);
+                    var data = new FlightWarehouseBookingDetail();
+
+                    data.Booking = Booking;
+                    data.Segments = Segment;
+
+                    if (Booking != null && Segment != null && Segment.Count > 0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "success",
+                            data = data
+                        });
+                    }
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "No data"
+                    });
+
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Key invalid!"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetDetail - TourB2BController - [" + token + "] : " + ex.ToString());
+                return Ok(new { status = (int)ResponseType.ERROR, msg = "error: " + ex.ToString() });
+            }
+
+        }
     }
 }
