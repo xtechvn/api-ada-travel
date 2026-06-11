@@ -1,5 +1,6 @@
 ﻿using ENTITIES.Models;
 using ENTITIES.ViewModels;
+using ENTITIES.ViewModels.B2B;
 using ENTITIES.ViewModels.Tour;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,6 +25,6 @@ namespace Repositories.IRepositories
         Task<List<ListTourProductViewModel>> GetListTourProductPosition(string TourType, long pagesize, long pageindex, string StartPoint, string Endpoint, long PositionType);
         Task<List<TourProgramPackages>> GetListTourPriceByTourProductId(long id, string client_types = null);
         Task<List<TourItinerary>> GetTourItineraryByDepartureId(int TourDepartureId);
-        Task<List<ListTourProductViewModelV2>> GetListTourProductV2(string TourName, string FromDate, string ToDate, string Month, string PageIndex, string PageSize, string StartPoint, string Endpoint, string TourType);
+        Task<List<ListTourProductViewModelV2>> GetListTourProductV2(TourListingRequestV2 model);
     }
 }

@@ -4,6 +4,7 @@ using DAL.MongoDB.Hotel;
 using Entities.ConfigModels;
 using ENTITIES.Models;
 using ENTITIES.ViewModels;
+using ENTITIES.ViewModels.B2B;
 using ENTITIES.ViewModels.Hotel;
 using ENTITIES.ViewModels.Tour;
 using Microsoft.Extensions.Options;
@@ -269,11 +270,11 @@ namespace Repositories.Repositories
                 return null;
             }
         } 
-        public async Task<List<ListTourProductViewModelV2>> GetListTourProductV2(string TourName, string FromDate, string ToDate, string Month, string PageIndex, string PageSize, string StartPoint, string Endpoint, string TourType)
+        public async Task<List<ListTourProductViewModelV2>> GetListTourProductV2(TourListingRequestV2 model)
         {
             try
             {
-                return await tourProductDAL.GetListTourProductV2(TourName, FromDate, ToDate,Month,PageIndex,PageSize,StartPoint,Endpoint,TourType);
+                return await tourProductDAL.GetListTourProductV2(model);
             }
             catch (Exception ex)
             {

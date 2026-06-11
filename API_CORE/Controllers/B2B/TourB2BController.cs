@@ -1,5 +1,6 @@
 ﻿using Caching.RedisWorker;
 using CACHING.Elasticsearch;
+using ENTITIES.ViewModels.B2B;
 using ENTITIES.ViewModels.Tour;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -1320,18 +1321,11 @@ namespace API_CORE.Controllers.B2B
                 if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
                 {
 
-
-                    string startpoint = objParr[0]["startpoint"].ToString();
-                    string endpoint = objParr[0]["endpoint"].ToString();
-                    string tourtype = objParr[0]["tourtype"].ToString();
-                    string TourName = objParr[0]["tourname"].ToString();
-                    string FromDate = objParr[0]["fromdate"].ToString();
-                    string ToDate = objParr[0]["todate"].ToString();
-                    string Month = objParr[0]["month"].ToString();
-                    string PageIndex = objParr[0]["pageindex"].ToString();
-                    string PageSize = objParr[0]["pagesize"].ToString();
-
+                    var model = new TourListingRequestV2();
+                   
+                    model= JsonConvert.DeserializeObject<TourListingRequestV2>(objParr[0].ToString());
                     int db_index = Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_core"]);
+
                     //var cache_name = CacheName.B2B_TOUR_Search + startpoint + endpoint+ pageindex+pagesize;
                     //var cache_name = CacheName.B2B_TOUR_SearchV2 + "_" + tourtype + "_" + startpoint + endpoint + PageIndex + PageSize;
                     //-- Đọc từ cache, nếu có trả kết quả:
@@ -1347,24 +1341,24 @@ namespace API_CORE.Controllers.B2B
                     //        data = model
                     //    });
                     //}
-                    if (string.IsNullOrEmpty(FromDate))
+                    if (string.IsNullOrEmpty(model.fromdate))
                     {
-                        FromDate = DateTime.Now.ToString("yyyy-MM-dd");
+                        model.fromdate = DateTime.Now.ToString("yyyy-MM-dd");
                     }
-                    if (!string.IsNullOrEmpty(Month) && Month != "0")
+                    if (!string.IsNullOrEmpty(model.month) && model.month != "0")
                     {
-                        int month = Convert.ToInt32(Month);
+                        int month = Convert.ToInt32(model.month);
                         int year = DateTime.Now.Year; // hoặc lấy từ request
 
                         DateTime firstDay = new DateTime(year, month, 1);
                         DateTime lastDay = firstDay.AddMonths(1).AddDays(-1);
 
-                        FromDate = firstDay.ToString("yyyy-MM-dd");
-                        ToDate = lastDay.ToString("yyyy-MM-dd");
+                        model.fromdate = firstDay.ToString("yyyy-MM-dd");
+                        model.todate = lastDay.ToString("yyyy-MM-dd");
                     }
-                    if (startpoint.Trim() == "-1") startpoint = "";
-                    if (endpoint.Trim() == "-1") endpoint = "";
-                    var list_tour = await _TourRepository.GetListTourProductV2(TourName, FromDate, ToDate, Month, PageIndex, PageSize, startpoint, endpoint, tourtype);
+                    if (model.startpoint.Trim() == "-1") model.startpoint = "";
+                    if (model.endpoint.Trim() == "-1") model.endpoint = "";
+                    var list_tour = await _TourRepository.GetListTourProductV2(model);
 
 
                     if (list_tour != null && list_tour.Count > 0)

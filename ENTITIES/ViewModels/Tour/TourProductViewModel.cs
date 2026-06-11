@@ -264,6 +264,8 @@ namespace ENTITIES.ViewModels.Tour
         public int? RemainDay { get; set; }
 
         public int TotalRow { get; set; }
+        public int IsAllowDepositOnline { get; set; }
+        public int IsAllowReserveOnline { get; set; }
 
     }
 }

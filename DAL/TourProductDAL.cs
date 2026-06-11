@@ -2,6 +2,7 @@
 using DAL.StoreProcedure;
 using ENTITIES.Models;
 using ENTITIES.ViewModels;
+using ENTITIES.ViewModels.B2B;
 using ENTITIES.ViewModels.Tour;
 using iTextSharp.text;
 using Nest;
@@ -284,52 +285,69 @@ namespace DAL
             }
             return new List<TourItinerary>();
         }
-        public async Task<List<ListTourProductViewModelV2>> GetListTourProductV2(string TourName, string FromDate, string ToDate, string Month, string PageIndex, string PageSize, string StartPoint, string Endpoint,string TourType)
+        public async Task<List<ListTourProductViewModelV2>> GetListTourProductV2(TourListingRequestV2 model)
         {
             try
             {
-                SqlParameter[] objParam = new SqlParameter[9];
-                if(TourName == null || TourName == "")
+                SqlParameter[] objParam = new SqlParameter[11];
+                if(model.tourname == null || model.tourname == "")
                 {
                     objParam[0] = new SqlParameter("@TourName", DBNull.Value);
                 }
                 else
                 {
-                    objParam[0] = new SqlParameter("@TourName", TourName);
+                    objParam[0] = new SqlParameter("@TourName", model.tourname);
                 }
                
-                objParam[1] = new SqlParameter("@FromDate", FromDate);
-                if(ToDate==null|| ToDate == "")
+                objParam[1] = new SqlParameter("@FromDate", model.fromdate);
+                if(model.todate ==null|| model.todate == "")
                 {
                     objParam[2] = new SqlParameter("@ToDate", DBNull.Value);
 
                 }
                 else
                 {
-                    objParam[2] = new SqlParameter("@ToDate", ToDate);
+                    objParam[2] = new SqlParameter("@ToDate", model.todate);
 
                 }
                 objParam[3] = new SqlParameter("@Month", DBNull.Value);
-                if (StartPoint == null || StartPoint == "" || StartPoint == "-1")
+                if (model.startpoint == null || model.startpoint == "" || model.startpoint == "-1")
                 {
                     objParam[4] = new SqlParameter("@StartPoint", DBNull.Value);
                 }
                 else
                 {
-                    objParam[4] = new SqlParameter("@StartPoint", StartPoint);
+                    objParam[4] = new SqlParameter("@StartPoint", model.startpoint);
                 }
-                if (Endpoint == null || Endpoint == "")
+                if (model.tourname == null || model.tourname == "")
                 {
                     objParam[5] = new SqlParameter("@Endpoint", DBNull.Value);
                 }
                 else
                 {
-                    objParam[5] = new SqlParameter("@Endpoint", Endpoint);
+                    objParam[5] = new SqlParameter("@Endpoint", model.endpoint);
                 }
-                objParam[6] = new SqlParameter("@PageIndex", PageIndex);
-                objParam[7] = new SqlParameter("@PageSize", PageSize);
-                objParam[8] = new SqlParameter("@TourType", TourType);
-               
+                objParam[6] = new SqlParameter("@PageIndex", model.pageindex);
+                objParam[7] = new SqlParameter("@PageSize", model.pagesize);
+                objParam[8] = new SqlParameter("@TourType", model.tourtype);
+                if(model.tourname == null || model.tourname == "")
+                {
+                    objParam[9] = new SqlParameter("@noShopping", DBNull.Value);
+                }
+                else
+                {
+                    objParam[9] = new SqlParameter("@noShopping", model.noShopping);
+
+                }
+                if (model.isHoliday == null || model.isHoliday == "")
+                {
+                    objParam[10] = new SqlParameter("@isHoliday", DBNull.Value);
+                }
+                else {
+                    objParam[10] = new SqlParameter("@isHoliday", model.isHoliday);
+
+                }
+
                 DataTable dt = _DbWorker.GetDataTable(StoreProceduresName.SP_FE_GetTourSearchB2B, objParam);
                 if (dt != null && dt.Rows.Count > 0)
                 {
