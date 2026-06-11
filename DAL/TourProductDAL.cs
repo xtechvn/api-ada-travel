@@ -330,7 +330,7 @@ namespace DAL
                 objParam[6] = new SqlParameter("@PageIndex", model.pageindex);
                 objParam[7] = new SqlParameter("@PageSize", model.pagesize);
                 objParam[8] = new SqlParameter("@TourType", model.tourtype);
-                if(model.tourname == null || model.tourname == "")
+                if(model.noShopping == null || model.noShopping == "")
                 {
                     objParam[9] = new SqlParameter("@noShopping", DBNull.Value);
                 }
