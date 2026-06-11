@@ -4,10 +4,12 @@ using ENTITIES.Models;
 using ENTITIES.ViewModels;
 using ENTITIES.ViewModels.Tour;
 using iTextSharp.text;
+using Nest;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Utilities;
@@ -281,6 +283,66 @@ namespace DAL
                 LogHelper.InsertLogTelegram("GetTourItineraryByDepartureId - TourProductDAL: " + ex);
             }
             return new List<TourItinerary>();
+        }
+        public async Task<List<ListTourProductViewModelV2>> GetListTourProductV2(string TourName, string FromDate, string ToDate, string Month, string PageIndex, string PageSize, string StartPoint, string Endpoint,string TourType)
+        {
+            try
+            {
+                SqlParameter[] objParam = new SqlParameter[9];
+                if(TourName == null || TourName == "")
+                {
+                    objParam[0] = new SqlParameter("@TourName", DBNull.Value);
+                }
+                else
+                {
+                    objParam[0] = new SqlParameter("@TourName", TourName);
+                }
+               
+                objParam[1] = new SqlParameter("@FromDate", FromDate);
+                if(ToDate==null|| ToDate == "")
+                {
+                    objParam[2] = new SqlParameter("@ToDate", DBNull.Value);
+
+                }
+                else
+                {
+                    objParam[2] = new SqlParameter("@ToDate", ToDate);
+
+                }
+                objParam[3] = new SqlParameter("@Month", DBNull.Value);
+                if (StartPoint == null || StartPoint == "" || StartPoint == "-1")
+                {
+                    objParam[4] = new SqlParameter("@StartPoint", DBNull.Value);
+                }
+                else
+                {
+                    objParam[4] = new SqlParameter("@StartPoint", StartPoint);
+                }
+                if (Endpoint == null || Endpoint == "")
+                {
+                    objParam[5] = new SqlParameter("@Endpoint", DBNull.Value);
+                }
+                else
+                {
+                    objParam[5] = new SqlParameter("@Endpoint", Endpoint);
+                }
+                objParam[6] = new SqlParameter("@PageIndex", PageIndex);
+                objParam[7] = new SqlParameter("@PageSize", PageSize);
+                objParam[8] = new SqlParameter("@TourType", TourType);
+               
+                DataTable dt = _DbWorker.GetDataTable(StoreProceduresName.SP_FE_GetTourSearchB2B, objParam);
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    var data = dt.ToList<ListTourProductViewModelV2>();
+                    return data;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetListTourProduct - TourProductDAL: " + ex);
+                return null;
+            }
         }
     }
 }

@@ -1293,6 +1293,113 @@ namespace API_CORE.Controllers.B2B
                 msg = "Key invalid!"
             });
         }
+
+        [HttpPost("search-tour-v2")]
+        public async Task<ActionResult> SearchTourV2(string token)
+        {
+            #region Test
+            //var j_param = new Dictionary<string, object>
+            //    {
+            //        {"startpoint", "-1"},
+            //        {"endpoint", ""},
+            //        {"tourtype", "1"},
+            //        {"pageindex", "1"},
+            //        {"pagesize", "20"},
+            //        {"tourname", ""},
+            //        {"fromdate", ""},
+            //        {"todate", ""},
+            //        {"month", "0"},
+            //    };
+            //var data_product = JsonConvert.SerializeObject(j_param);
+            //token = CommonHelper.Encode(data_product, configuration["DataBaseConfig:key_api:b2b"]);
+            #endregion
+            try
+            {
+                JArray objParr = null;
+
+                if (CommonHelper.GetParamWithKey(token, out objParr, configuration["DataBaseConfig:key_api:b2b"]))
+                {
+
+
+                    string startpoint = objParr[0]["startpoint"].ToString();
+                    string endpoint = objParr[0]["endpoint"].ToString();
+                    string tourtype = objParr[0]["tourtype"].ToString();
+                    string TourName = objParr[0]["tourname"].ToString();
+                    string FromDate = objParr[0]["fromdate"].ToString();
+                    string ToDate = objParr[0]["todate"].ToString();
+                    string Month = objParr[0]["month"].ToString();
+                    string PageIndex = objParr[0]["pageindex"].ToString();
+                    string PageSize = objParr[0]["pagesize"].ToString();
+
+                    int db_index = Convert.ToInt32(configuration["DataBaseConfig:Redis:Database:db_core"]);
+                    //var cache_name = CacheName.B2B_TOUR_Search + startpoint + endpoint+ pageindex+pagesize;
+                    //var cache_name = CacheName.B2B_TOUR_SearchV2 + "_" + tourtype + "_" + startpoint + endpoint + PageIndex + PageSize;
+                    //-- Đọc từ cache, nếu có trả kết quả:
+                    //var str = redisService.Get(cache_name, db_index);
+                    //if (str != null && str.Trim() != "")
+                    //{
+                    //    List<ListTourProductViewModel> model = JsonConvert.DeserializeObject<List<ListTourProductViewModel>>(str);
+                    //    //-- Trả kết quả
+                    //    return Ok(new
+                    //    {
+                    //        status = (int)ResponseType.SUCCESS,
+                    //        msg = "",
+                    //        data = model
+                    //    });
+                    //}
+                    if (string.IsNullOrEmpty(FromDate))
+                    {
+                        FromDate = DateTime.Now.ToString("yyyy-MM-dd");
+                    }
+                    if (!string.IsNullOrEmpty(Month) && Month != "0")
+                    {
+                        int month = Convert.ToInt32(Month);
+                        int year = DateTime.Now.Year; // hoặc lấy từ request
+
+                        DateTime firstDay = new DateTime(year, month, 1);
+                        DateTime lastDay = firstDay.AddMonths(1).AddDays(-1);
+
+                        FromDate = firstDay.ToString("yyyy-MM-dd");
+                        ToDate = lastDay.ToString("yyyy-MM-dd");
+                    }
+                    if (startpoint.Trim() == "-1") startpoint = "";
+                    if (endpoint.Trim() == "-1") endpoint = "";
+                    var list_tour = await _TourRepository.GetListTourProductV2(TourName, FromDate, ToDate, Month, PageIndex, PageSize, startpoint, endpoint, tourtype);
+
+
+                    if (list_tour != null && list_tour.Count > 0)
+                    {
+                        //redisService.Set(cache_name, JsonConvert.SerializeObject(list_tour), db_index);
+
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = "",
+                            data = list_tour
+                        });
+                    }
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "No Data"
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Key invalid!"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("SearchTour - TourB2CController - [" + token + "] : " + ex.ToString());
+                return Ok(new { status = (int)ResponseType.ERROR, msg = "error: " + ex.ToString() });
+            }
+
+        }
         #endregion
     }
 }

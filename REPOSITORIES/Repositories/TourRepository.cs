@@ -268,6 +268,18 @@ namespace Repositories.Repositories
                 LogHelper.InsertLogTelegram("GetTourItineraryByDepartureId - TourRepository: " + ex);
                 return null;
             }
+        } 
+        public async Task<List<ListTourProductViewModelV2>> GetListTourProductV2(string TourName, string FromDate, string ToDate, string Month, string PageIndex, string PageSize, string StartPoint, string Endpoint, string TourType)
+        {
+            try
+            {
+                return await tourProductDAL.GetListTourProductV2(TourName, FromDate, ToDate,Month,PageIndex,PageSize,StartPoint,Endpoint,TourType);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegram("GetTourItineraryByDepartureId - TourRepository: " + ex);
+                return null;
+            }
         }
     }
     

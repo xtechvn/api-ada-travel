@@ -162,7 +162,7 @@ namespace ENTITIES.ViewModels.Tour
         public string Phone { get; set; }
         public string ClientName { get; set; }
         public string Note { get; set; }
-       
+
         public int TotalChildren { get; set; }
         public int TotalAdult { get; set; }
         public int TotalBaby { get; set; }
@@ -180,8 +180,8 @@ namespace ENTITIES.ViewModels.Tour
     }
     public class TourProductSearchCacheModel
     {
-       public List<ListTourProductViewModel> data { get; set; }
-       public List<string> listimages { get; set; }
+        public List<ListTourProductViewModel> data { get; set; }
+        public List<string> listimages { get; set; }
     }
     public class TourPaymentModel
     {
@@ -204,6 +204,66 @@ namespace ENTITIES.ViewModels.Tour
         public long packageId { get; set; }
         public string bookingId { get; set; }
 
+
+    }
+    public class ListTourProductViewModelV2
+    {
+        public long Id { get; set; }
+        public string TourName { get; set; }
+        public string Avatar { get; set; }
+        public int? Days { get; set; }
+        public int? Star { get; set; }
+        public int? Status { get; set; }
+
+        public long TourDepartureId { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
+        public int? Total { get; set; }
+        public int BookedQuantity { get; set; }
+        public int AvailableQuantity { get; set; }
+
+        public DateTime? BookingDeadline { get; set; }
+
+        public decimal? MinPrice { get; set; }
+
+        public string DestinationNames { get; set; }
+
+        #region Chiều đi
+
+        public int? GoTransportType { get; set; }
+        public string GoTransportName { get; set; }
+        public string GoTransportProvider { get; set; }
+        public string GoTransportCode { get; set; }
+        public DateTime? GoDepartureDate { get; set; }
+
+        public string GoStartPoint { get; set; }
+        public string GoStartPointName { get; set; }
+
+        public string GoEndPoint { get; set; }
+        public string GoEndPointName { get; set; }
+
+        #endregion
+
+        #region Chiều về
+
+        public int? ReturnTransportType { get; set; }
+        public string ReturnTransportName { get; set; }
+        public string ReturnTransportProvider { get; set; }
+        public string ReturnTransportCode { get; set; }
+        public DateTime? ReturnDepartureDate { get; set; }
+
+        public string ReturnStartPoint { get; set; }
+        public string ReturnStartPointName { get; set; }
+
+        public string ReturnEndPoint { get; set; }
+        public string ReturnEndPointName { get; set; }
+
+        #endregion
+
+        public int? RemainDay { get; set; }
+
+        public int TotalRow { get; set; }
 
     }
 }

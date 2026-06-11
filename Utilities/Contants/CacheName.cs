@@ -61,7 +61,7 @@ namespace Utilities.Contants
         public const string B2B_HOTEL_VOUCHER = "B2B_HOTEL_VOUCHER_";
         public const string B2B_SUMMARY = "B2B_SUMMARY_";
         public const string HotelExclusiveList_BAN_CHAY_POSITION = "HEXL_BAN_CHAY_B2C_POSITION_";
-
+        public const string B2B_TOUR_SearchV2 = "B2B_TOUR_SEARCHV2";
         #region V2:
         public const string HotelByLocation = "B2B_HOTEL_LOCATION_";
         public const string ALLHotelByLocation = "B2B_ALL_HOTEL_LOCATION_";
