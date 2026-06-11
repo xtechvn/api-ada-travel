@@ -319,7 +319,7 @@ namespace DAL
                 {
                     objParam[4] = new SqlParameter("@StartPoint", model.startpoint);
                 }
-                if (model.tourname == null || model.tourname == "")
+                if (model.endpoint == null || model.endpoint == "")
                 {
                     objParam[5] = new SqlParameter("@Endpoint", DBNull.Value);
                 }
