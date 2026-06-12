@@ -98,21 +98,24 @@ namespace REPOSITORIES.Repositories.Fly
 
             try
             {
-
-                foreach (var item in list_session_id)
+                if(list_session_id != null)
                 {
-                    var a = await BookingMongoDAL.getBookingBySessionId(item, account_client_id);
-                    data.AddRange(a);
-                }
-                if (data.Count == 0)
-                {
-                    account_client_id = 0;
                     foreach (var item in list_session_id)
                     {
                         var a = await BookingMongoDAL.getBookingBySessionId(item, account_client_id);
                         data.AddRange(a);
                     }
+                    if (data.Count == 0)
+                    {
+                        account_client_id = 0;
+                        foreach (var item in list_session_id)
+                        {
+                            var a = await BookingMongoDAL.getBookingBySessionId(item, account_client_id);
+                            data.AddRange(a);
+                        }
+                    }
                 }
+                
             }
             catch (Exception ex)
             {

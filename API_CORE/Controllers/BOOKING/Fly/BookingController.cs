@@ -136,7 +136,7 @@ namespace API_CORE.Controllers.BOOKING.Fly
                     data.voucher_name = objParr[0]["voucher_name"] != null ? objParr[0]["voucher_name"].ToString() : "";
 
                     string session = (string)booking_data.SelectToken("ListBooking[0].Session");
-                    var list_session_id = Array.ConvertAll(session.Split(','), s => (s).ToString());
+                    var list_session_id = session!=null? Array.ConvertAll(session.Split(','), s => (s).ToString()):null;
                     var datalist = await bookingRepository.getBookingBySessionId(list_session_id, data.account_client_id);
                     if (datalist.Count != 0)
                     {
