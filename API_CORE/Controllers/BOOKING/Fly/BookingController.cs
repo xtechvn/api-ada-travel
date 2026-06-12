@@ -165,7 +165,7 @@ namespace API_CORE.Controllers.BOOKING.Fly
                     var result = bookingRepository.saveBooking(data);
                     if (result != null)
                     {
-
+                        data.session_id = result;
                         MongoDBSMSAccess.InsertLogMongoDb(configuration, JsonConvert.SerializeObject(data), data.session_id);
                         return Ok(new
                         {

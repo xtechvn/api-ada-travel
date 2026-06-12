@@ -29,7 +29,7 @@ namespace REPOSITORIES.Repositories.Fly
                 data.GenID();
                 var result = BookingMongoDAL.saveBooking(data);
                 if (result != null)
-                    return "-1";
+                    return data._id.ToString();
             }
             catch (Exception ex)
             {
